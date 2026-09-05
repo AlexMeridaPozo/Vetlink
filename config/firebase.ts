@@ -1,21 +1,39 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
-// Your web app's Firebase configuration
+// Firebase configuration loaded from environment variables (EXPO_PUBLIC_*)
+// Values are defined in .env (local only, not committed to Git)
+// See .env.example for the required variable names
 const firebaseConfig = {
-  apiKey: "AIzaSyDiqLibp6p-BMAe9rOc46VMv6PKWQEtPOU",
-  authDomain: "vetlink-bc8e2.firebaseapp.com",
-  projectId: "vetlink-bc8e2",
-  storageBucket: "vetlink-bc8e2.firebasestorage.app",
-  messagingSenderId: "811948016554",
-  appId: "1:811948016554:web:e4447edc179e04d8b221d3",
-  measurementId: "G-18F2V51VBK"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+// Warn in development if any required variable is missing
+if (__DEV__) {
+  const missing = Object.entries(firebaseConfig)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    console.warn(
+      '[Firebase] Missing environment variables:',
+      missing.join(', '),
+      '\nCheck that your .env file exists and contains all EXPO_PUBLIC_FIREBASE_* variables.'
+    );
+  }
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication (npx expo start --web)
+// Initialize Firebase Authentication
 const auth = getAuth(app);
 
 export { auth };
+

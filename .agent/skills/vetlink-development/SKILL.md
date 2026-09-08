@@ -4,17 +4,17 @@
 
 El proyecto es VetLink, una aplicación móvil para la gestión y cuidado de mascotas.
 
-Tecnologías principales:
-- Expo
-- React Native
-- Firebase
+Tecnologías y versiones del entorno:
+- Expo SDK: 57.x (Expo Router v57, `expo-router/react-navigation`)
+- React Native: 0.86.x (New Architecture / Edge-to-Edge nativo)
+- React: 19.x
+- Firebase: Firebase JS SDK 12.x
 - Firebase Authentication
 - Cloud Firestore
 - Firebase Storage cuando sea necesario
-- Git
-- GitHub
-- Trello / Kanban
-- Scrum
+- Módulos nativos / NFC: `react-native-nfc-manager` mediante Expo Config Plugins / Development Builds
+- Git / GitHub (Flujo de ramas por User Story)
+- Trello / Kanban / Scrum
 
 La aplicación debe desarrollarse respetando la consigna académica del Proyecto Integrador Final de Aplicaciones Móviles.
 
@@ -619,35 +619,23 @@ Todo código generado debe ser:
 
 ---
 
-# 26. DOCUMENTACIÓN DEL USO DE IA
+# 26. DOCUMENTACIÓN DEL USO DE IA (DOCUMENTACION_USO_DE_IA_PROMPTS.md)
 
-Cada utilización importante de IA debe poder documentarse.
+Cada vez que se desarrolle o modifique una **pantalla** de la aplicación asistida por IA (formularios, componentes visuales, selectores, validaciones de User Stories), se debe registrar o actualizar en el archivo raíz:
 
-Registrar:
+`DOCUMENTACION_USO_DE_IA_PROMPTS.md`
 
-- Herramienta utilizada.
-- Propósito.
-- Prompt o descripción de la solicitud.
-- Resultado obtenido.
-- Cambios realizados por el equipo.
-- Validaciones/pruebas realizadas.
-
-Ejemplo:
-
-Herramienta:
-Antigravity / ChatGPT
-
-Propósito:
-Implementación de registro de usuarios.
-
-Prompt:
-"Implementar el registro de usuario de VetLink utilizando Firebase Authentication..."
-
-Resultado:
-Generación inicial de pantalla y lógica de registro.
-
-Validación:
-El equipo revisó el código y realizó pruebas de registro, errores de email y contraseña.
+Reglas estrictas de documentación:
+1. **Foco exclusivo en pantallas:** Registrar únicamente prompts relevantes sobre las interfaces y pantallas de VetLink. No incluir prompts sobre configuraciones internas, dependencias ni infraestructura no visible.
+2. **Explicación simple:** Redactar de forma clara, directa y sin tecnicismos excesivos para facilitar el trabajo del documentador en Google Docs.
+3. **Estructura obligatoria por pantalla:**
+   - **Integrante / Responsable:** Nombre del miembro del equipo.
+   - **Herramienta:** Antigravity (Gemini 3.7 Flash) / ChatGPT / etc.
+   - **¿Para qué se usó? (Objetivo):** Qué resuelve la pantalla.
+   - **Prompt utilizado:** Texto exacto del prompt.
+   - **¿Qué devolvió la IA?:** Componente/código generado para la pantalla.
+   - **Validación del integrante:** Pruebas visuales, inputs, errores y funcionamiento.
+4. **Tabla resumen:** Mantener actualizada la tabla consolidada al final del archivo para copiar directamente a Google Docs.
 
 ---
 

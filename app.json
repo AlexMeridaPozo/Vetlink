@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "civilink",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
@@ -18,8 +17,11 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.NFC"
+      ],
+      "package": "com.alexmp.CiviLink"
     },
     "web": {
       "output": "static",
@@ -38,11 +40,28 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser",
+      "react-native-nfc-manager",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permite acceder a la cámara para escanear el código QR de la mascota."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3383a1d6-8889-4c64-9af6-1019d53b519c"
+      }
     }
   }
 }

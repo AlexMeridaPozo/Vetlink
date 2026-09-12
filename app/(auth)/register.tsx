@@ -1,9 +1,11 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { auth } from '@/config/firebase';
+import { router } from 'expo-router';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+
 
 
 export default function RegisterScreen() {
@@ -29,19 +31,31 @@ export default function RegisterScreen() {
     if (!password.trim()) {
       setErrors(prev => ({ ...prev, password: 'La contraseña es obligatoria' }));
       hasErrors = true;
+    } else if (password.length < 6) {
+      setErrors(prev => ({ ...prev, password: 'La contraseña debe tener al menos 6 caracteres' }));
+      hasErrors = true;
     }
 
     if (hasErrors) {
-      Alert.alert('Error', 'Por favor, complete todos los campos.');
+      Alert.alert('Error', 'Por favor, revise los campos del formulario.');
       return;
     }
+
 
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password); //permite crear la cuenta con email y contraseña
       await updateProfile(userCredential.user, { displayName: name }); //permite guardar el nombre completo del usuario
       console.log('Usuario registrado exitosamente:', userCredential.user);
-      Alert.alert('Éxito', 'Cuenta creada correctamente.');
+      Alert.alert('Éxito', 'Cuenta creada correctamente.', [
+        {
+          text: 'OK',
+          onPress: () => router.replace('/(auth)/login'),
+        },
+      ]);
+      if (Platform.OS === 'web') {
+        router.replace('/(auth)/login');
+      }
     } catch (error: any) { // Si el registro sale error, esto le muestra
       let errorMessage = 'Hubo un error al crear la cuenta';
       if (error.code === 'auth/email-already-in-use') {
@@ -51,8 +65,15 @@ export default function RegisterScreen() {
       } else if (error.code === 'auth/weak-password') {
         errorMessage = 'La contraseña es débil.';
       }
+      else if (password.length < 6) {  //contraseña menos de 6 caracteres
+        errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+      }
       Alert.alert('Error', errorMessage);
 
+      if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Demasiados intentos fallidos. Intente más tarde.';
+      }
+      Alert.alert('Error', errorMessage);
     }
     setLoading(false);
   };
@@ -146,6 +167,13 @@ export default function RegisterScreen() {
               </ThemedText>
             </TouchableOpacity>
           </View>
+
+          <View style={styles.footerContainer}>
+            <ThemedText style={styles.footerText}>¿Ya tienes una cuenta? </ThemedText>
+            <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+              <ThemedText style={styles.footerLink}>Inicia sesión</ThemedText>
+            </TouchableOpacity>
+          </View>
         </ThemedView>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -214,4 +242,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  footerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  footerLink: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#04b639ff',
+  },
 });
+

@@ -41,10 +41,13 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.4",
-    "eas-cli": "^23.2.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~57.0.2",
     "typescript": "~6.0.3"
   },
-  "private": true
+  "private": true,
+  "allowScripts": {
+    "@firebase/util@1.15.3": true,
+    "dtrace-provider@0.8.8": true
+  }
 }

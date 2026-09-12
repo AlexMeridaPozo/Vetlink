@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/themed-view';
 import { auth } from '@/config/firebase';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,

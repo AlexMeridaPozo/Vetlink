@@ -22,8 +22,28 @@ Crea la pantalla de registro en app/(auth)/register.tsx para VetLink. Debe tener
 
 ---
 
+## US02 — Pantalla de Login de Usuarios (`app/(auth)/login.tsx`)
+- **Integrante / Responsable:** Alex Mérida Pozo *(o asignar integrante del equipo)*
+- **Herramienta:** Antigravity (Gemini 3.7 Flash)
+- **¿Para qué se usó? (Objetivo):** Diseñar y programar la pantalla de inicio de sesión manteniendo el mismo estilo que la pantalla de registro, con conexión a Firebase Authentication.
+- **Prompt utilizado:**
+```text
+En base a la skill que agregue para que cumpla con las consignas, quiero agregar la pantalla de login en app/(auth)/login.tsx.
+Debe tener:
+1. Mismo estilo visual que register.tsx.
+2. Campos para Email y Contraseña.
+3. Validaciones de campos obligatorios.
+4. Conexión con signInWithEmailAndPassword de Firebase.
+5. Mensajes de error en español y botón con estado de carga.
+```
+- **¿Qué devolvió la IA?:** El código completo de React Native para la pantalla de login, actualización del enrutador de Expo, y documentación correspondiente.
+- **Validación del integrante:** Se probó el acceso correcto a cuentas existentes, alertas en caso de contraseñas incorrectas o nulas.
+
+---
+
 ## 📋 Tabla Resumen para Google Docs
 
 | Integrante | Pantalla / Módulo | Herramienta | Resumen del Prompt | Resultado en la Pantalla | Validación Humana |
 |---|---|---|---|---|---|
 | Alex Mérida | Registro (`register.tsx`) | Antigravity | Crear formulario completo con selección de rol y validaciones | Pantalla interactiva con campos, selector de rol y estados de carga | Pruebas de diseño, inputs y registro en Firebase |
+| Alex Mérida | Login (`login.tsx`) | Antigravity | Crear pantalla de inicio de sesión compatible visualmente y validaciones | Formulario de login interactivo con auth en Firebase | Pruebas de credenciales correctas e incorrectas |

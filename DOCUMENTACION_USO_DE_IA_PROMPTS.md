@@ -22,22 +22,16 @@ Crea la pantalla de registro en app/(auth)/register.tsx para VetLink. Debe tener
 
 ---
 
-## US02 — Pantalla de Login de Usuarios (`app/(auth)/login.tsx`)
+## US02 — Pantalla de Inicio de Sesión / Login (`app/(auth)/login.tsx`)
 - **Integrante / Responsable:** Alex Mérida Pozo *(o asignar integrante del equipo)*
 - **Herramienta:** Antigravity (Gemini 3.7 Flash)
-- **¿Para qué se usó? (Objetivo):** Diseñar y programar la pantalla de inicio de sesión manteniendo el mismo estilo que la pantalla de registro, con conexión a Firebase Authentication.
+- **¿Para qué se usó? (Objetivo):** Diseñar y programar la pantalla de inicio de sesión con campos de email y contraseña, validaciones visuales, conexión con Firebase Authentication y navegación cruzada al registro.
 - **Prompt utilizado:**
 ```text
-En base a la skill que agregue para que cumpla con las consignas, quiero agregar la pantalla de login en app/(auth)/login.tsx.
-Debe tener:
-1. Mismo estilo visual que register.tsx.
-2. Campos para Email y Contraseña.
-3. Validaciones de campos obligatorios.
-4. Conexión con signInWithEmailAndPassword de Firebase.
-5. Mensajes de error en español y botón con estado de carga.
+quiero agregar la pantalla de login, basate en la skill
 ```
-- **¿Qué devolvió la IA?:** El código completo de React Native para la pantalla de login, actualización del enrutador de Expo, y documentación correspondiente.
-- **Validación del integrante:** Se probó el acceso correcto a cuentas existentes, alertas en caso de contraseñas incorrectas o nulas.
+- **¿Qué devolvió la IA?:** El componente `LoginScreen` en React Native (`app/(auth)/login.tsx`) con estilos coherentes a la pantalla de registro, estados locales (`useState`), validaciones de campos obligatorios, integración con `signInWithEmailAndPassword` de Firebase Authentication, alertas amigables en español según códigos de error de Firebase y enlace de navegación a la pantalla de registro.
+- **Validación del integrante:** Se probó el renderizado del formulario, validación de inputs vacíos, mensajes ante credenciales incorrectas, navegación hacia la pantalla de registro y login exitoso contra Firebase.
 
 ---
 
@@ -46,4 +40,5 @@ Debe tener:
 | Integrante | Pantalla / Módulo | Herramienta | Resumen del Prompt | Resultado en la Pantalla | Validación Humana |
 |---|---|---|---|---|---|
 | Alex Mérida | Registro (`register.tsx`) | Antigravity | Crear formulario completo con selección de rol y validaciones | Pantalla interactiva con campos, selector de rol y estados de carga | Pruebas de diseño, inputs y registro en Firebase |
-| Alex Mérida | Login (`login.tsx`) | Antigravity | Crear pantalla de inicio de sesión compatible visualmente y validaciones | Formulario de login interactivo con auth en Firebase | Pruebas de credenciales correctas e incorrectas |
+| Alex Mérida | Login (`login.tsx`) | Antigravity | Agregar pantalla de login basándose en las reglas de la skill | Formulario de autenticación con Firebase, validaciones de email/password y enlace a registro | Pruebas de inputs, errores de credenciales y navegación |
+

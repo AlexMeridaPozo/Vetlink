@@ -47,7 +47,7 @@
       "expo-image",
       "expo-status-bar",
       "expo-web-browser",
-      "react-native-nfc-manager",
+
       [
         "expo-camera",
         {

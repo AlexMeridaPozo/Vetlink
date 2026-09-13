@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
@@ -12,22 +12,34 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme === 'dark' ? 'dark' : 'light'].tint,
+        tabBarActiveTintColor: '#04b639',
+        tabBarInactiveTintColor: '#6B7280',
         headerShown: false,
         tabBarButton: HapticTab,
+        tabBarStyle: {
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 6,
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="scan"
+        options={{
+          title: 'Escanear QR',
+          tabBarIcon: ({ color }) => <MaterialIcons name="qr-code-scanner" size={26} color={color} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          href: null, // Oculto de la barra para mantener limpio el MVP
         }}
       />
     </Tabs>

@@ -3,7 +3,6 @@ import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
@@ -12,24 +11,36 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme === 'dark' ? 'dark' : 'light'].tint,
+        tabBarActiveTintColor: '#04b639',
         headerShown: false,
         tabBarButton: HapticTab,
+        tabBarStyle: {
+          borderTopWidth: 1,
+          borderTopColor: colorScheme === 'dark' ? '#27272a' : '#f4f4f5',
+          backgroundColor: colorScheme === 'dark' ? '#18181b' : '#ffffff',
+        },
       }}>
       <Tabs.Screen
-        name="index"
+        name="mascotas"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Mis Mascotas',
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="pawprint.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Explorar',
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="paperplane.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
   );
 }
+

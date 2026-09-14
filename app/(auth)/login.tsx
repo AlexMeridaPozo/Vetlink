@@ -47,7 +47,7 @@ export default function LoginScreen() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       console.log('Inicio de sesión exitoso:', userCredential.user);
-      Alert.alert('Éxito', 'Has iniciado sesión correctamente.');
+      router.replace('/(tabs)/mascotas');
     } catch (error: any) {
       let errorMessage = 'Hubo un error al iniciar sesión.';
       if (

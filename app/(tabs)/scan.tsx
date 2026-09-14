@@ -1,4 +1,5 @@
 import { getPetById, type Pet } from '@/services/petService';
+import { auth } from '@/config/firebase';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
 import { useState } from 'react';
@@ -43,6 +44,12 @@ export default function ScanScreen() {
 
   // Busca la mascota en Firestore con el ID dado (QR o NFC)
   const buscarMascota = async (id: string) => {
+    // Requerir que el usuario esté autenticado antes de leer Firestore
+    if (!auth.currentUser) {
+      Alert.alert('Necesitas iniciar sesión', 'Inicia sesión para buscar mascotas en la base de datos.');
+      return;
+    }
+
     setCargando(true);
     try {
       const resultado = await getPetById(id);

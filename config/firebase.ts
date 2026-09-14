@@ -33,11 +33,10 @@ if (__DEV__) {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication
+// Initialize Firebase Authentication & Firestore
 const auth = getAuth(app);
-
-// Initialize Cloud Firestore
 const db = getFirestore(app);
 
 export { auth, db };
+
 

@@ -1,5 +1,5 @@
 import { db } from '@/config/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 // 1. Definición del modelo de datos de Mascota
 export interface Pet {
@@ -12,6 +12,10 @@ export interface Pet {
   peso: string;
   propietario: string;
   telefonoContacto?: string;
+  userId?: string;
+  ownerId?: string;
+  fotoUrl?: string;
+  descripcion?: string;
 }
 
 // 2. Función para buscar una mascota en Firestore a partir del ID del QR
@@ -36,3 +40,19 @@ export async function getPetById(petId: string): Promise<Pet | null> {
     throw error;
   }
 }
+
+// 3. Función para vincular permanentemente una mascota a un usuario en Firestore
+export async function linkPetToUser(petId: string, userId: string): Promise<void> {
+  try {
+    const cleanId = petId.trim().toUpperCase();
+    const petDocRef = doc(db, 'mascotas', cleanId);
+    await updateDoc(petDocRef, {
+      userId: userId,
+      ownerId: userId,
+    });
+  } catch (error) {
+    console.error('Error al vincular la mascota al usuario en Firestore:', error);
+    throw error;
+  }
+}
+

@@ -3,7 +3,6 @@ import React from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
@@ -20,6 +19,9 @@ export default function TabLayout() {
           height: 60,
           paddingBottom: 8,
           paddingTop: 6,
+          borderTopWidth: 1,
+          borderTopColor: colorScheme === 'dark' ? '#27272a' : '#f4f4f5',
+          backgroundColor: colorScheme === 'dark' ? '#18181b' : '#ffffff',
         },
       }}>
       <Tabs.Screen
@@ -27,6 +29,13 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="mascotas"
+        options={{
+          title: 'Mis Mascotas',
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="pawprint.fill" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -45,3 +54,4 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+

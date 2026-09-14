@@ -46,15 +46,14 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
-      console.log('Inicio de sesión exitoso:', userCredential.user);
       Alert.alert('Éxito', 'Has iniciado sesión correctamente.', [
         {
           text: 'OK',
-          onPress: () => router.replace('/(tabs)'),
+          onPress: () => router.replace('/(tabs)/mascotas'),
         },
       ]);
       if (Platform.OS === 'web') {
-        router.replace('/(tabs)');
+        router.replace('/(tabs)/mascotas');
       }
     } catch (error: any) {
       let errorMessage = 'Hubo un error al iniciar sesión.';

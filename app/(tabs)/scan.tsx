@@ -1,7 +1,8 @@
-import { getPetById, type Pet } from '@/services/petService';
 import { auth } from '@/config/firebase';
+import { getPetById, linkPetToUser, type Pet } from '@/services/petService';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -34,7 +35,44 @@ export default function ScanScreen() {
   const [esperandoNFC, setEsperandoNFC] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [mascota, setMascota] = useState<Pet | null>(null);
-  const [aviso, setAviso] = useState<string | null>(null); // mensaje visible en pantalla
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [vinculando, setVinculando] = useState(false);
+
+  // Vincula la mascota al usuario logueado en Firestore y redirige a Mis Mascotas
+  const handleVincularMascota = async () => {
+    if (!mascota) return;
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert('Sesión requerida', 'Debes iniciar sesión para vincular una mascota a tu cuenta.');
+      return;
+    }
+
+    setVinculando(true);
+    try {
+      await linkPetToUser(mascota.id, user.uid);
+      Alert.alert(
+        '¡Mascota vinculada!',
+        `${mascota.nombre} ahora está vinculada a tu cuenta de forma permanente.`,
+        [
+          {
+            text: 'Ir a Mis Mascotas',
+            onPress: () => {
+              setMascota(null);
+              router.replace('/(tabs)/mascotas');
+            },
+          },
+        ]
+      );
+      if (Platform.OS === 'web') {
+        setMascota(null);
+        router.replace('/(tabs)/mascotas');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo vincular la mascota en este momento.');
+    } finally {
+      setVinculando(false);
+    }
+  };
 
   // Muestra un mensaje en pantalla (funciona en web y en app)
   const mostrarAviso = (msg: string) => {
@@ -142,12 +180,12 @@ export default function ScanScreen() {
       }
     } finally {
       setEsperandoNFC(false);
-      NfcManager?.cancelTechnologyRequest().catch(() => {});
+      NfcManager?.cancelTechnologyRequest().catch(() => { });
     }
   };
 
   const cancelarNFC = () => {
-    NfcManager?.cancelTechnologyRequest().catch(() => {});
+    NfcManager?.cancelTechnologyRequest().catch(() => { });
     setEsperandoNFC(false);
   };
 
@@ -184,8 +222,41 @@ export default function ScanScreen() {
           <Dato label="Nacimiento" valor={mascota.fechaNacimiento} />
           <Dato label="Propietario" valor={mascota.propietario} />
           {mascota.telefonoContacto && <Dato label="Teléfono" valor={mascota.telefonoContacto} />}
-          <TouchableOpacity style={styles.botonVerde} onPress={() => setMascota(null)}>
-            <Text style={styles.textoBoton}>Escanear otra mascota</Text>
+          
+          <TouchableOpacity
+            style={[styles.botonVerde, vinculando && { opacity: 0.7 }]}
+            onPress={handleVincularMascota}
+            disabled={vinculando}
+          >
+            <Text style={styles.textoBoton}>
+              {vinculando ? 'Vinculando a tu cuenta...' : '🔗 Vincular a Mi Cuenta'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.botonSecundario}
+            onPress={() => {
+              router.push({
+                pathname: '/mascotas/[id]',
+                params: {
+                  id: mascota.id,
+                  nombre: mascota.nombre,
+                  especie: mascota.especie,
+                  raza: mascota.raza,
+                  sexo: mascota.sexo,
+                  peso: String(mascota.peso),
+                  edad: mascota.fechaNacimiento || 'No aclarado',
+                  fotoUrl: '',
+                  descripcion: `Propietario: ${mascota.propietario}${mascota.telefonoContacto ? ` - Tel: ${mascota.telefonoContacto}` : ''}`,
+                },
+              });
+            }}
+          >
+            <Text style={styles.textoBotonSecundario}>Ver Detalle Completo</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.botonSecundario, { marginTop: 6 }]} onPress={() => setMascota(null)}>
+            <Text style={styles.textoBotonSecundario}>Escanear otra mascota</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -276,7 +347,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 24,
     paddingTop: 60,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'white',
     alignItems: 'center',
   },
   titulo: {
@@ -390,10 +461,23 @@ const styles = StyleSheet.create({
     marginTop: 14,
     width: '100%',
   },
+  botonSecundario: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 8,
+    width: '100%',
+  },
   textoBoton: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  textoBotonSecundario: {
+    color: '#4B5563',
+    fontSize: 14,
+    fontWeight: '600',
   },
   botonCancelar: {
     position: 'absolute',

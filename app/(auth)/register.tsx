@@ -50,11 +50,11 @@ export default function RegisterScreen() {
       Alert.alert('Éxito', 'Cuenta creada correctamente.', [
         {
           text: 'OK',
-          onPress: () => router.replace('/(auth)/login'),
+          onPress: () => router.replace('/(tabs)/mascotas'),
         },
       ]);
       if (Platform.OS === 'web') {
-        router.replace('/(auth)/login');
+        router.replace('/(tabs)/mascotas');
       }
     } catch (error: any) { // Si el registro sale error, esto le muestra
       let errorMessage = 'Hubo un error al crear la cuenta';

@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import {
-  StyleSheet, View, Text, TouchableOpacity,
-  ScrollView, Alert, ActivityIndicator, Platform,
-} from 'react-native';
-import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { getPetById, type Pet } from '@/services/petService';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text, TouchableOpacity,
+  View,
+} from 'react-native';
 
 // Import dinámico: evita que Expo Go crashee al cargar el módulo nativo
 // En Expo Go el require falla silenciosamente; en el dev-client funciona normal
@@ -69,7 +74,14 @@ export default function ScanScreen() {
 
   const alEscanearQR = async (result: BarcodeScanningResult) => {
     setCamaraActiva(false);
-    await buscarMascota(result.data);
+    // Extraer un ID válido del texto del QR (acepta "PET-001", URLs con ?id=PET-001, o paths que terminen en PET-001)
+    const petId = parsePetIdFromQR(result.data);
+    if (!petId) {
+      Alert.alert('QR inválido', 'El código QR no contiene un identificador de mascota válido.');
+      return;
+    }
+
+    await buscarMascota(petId);
   };
 
   // ── NFC ─────────────────────────────────────────────────────────────────────
@@ -213,6 +225,33 @@ export default function ScanScreen() {
       )}
     </ScrollView>
   );
+}
+
+// Intenta extraer un ID con formato PET-123 desde el texto del QR.
+function parsePetIdFromQR(text: string): string | null {
+  if (!text) return null;
+  const t = text.trim();
+
+  // 1) Buscar patrón PET- seguido de números
+  const re = /PET-\d+/i;
+  const m = t.match(re);
+  if (m) return m[0].toUpperCase();
+
+  try {
+    // 2) Si es una URL con query param (ej: ?id=PET-001)
+    const url = new URL(t);
+    const idParam = url.searchParams.get('id') || url.searchParams.get('petId') || url.searchParams.get('pet');
+    if (idParam && idParam.match(re)) return idParam.trim().toUpperCase();
+
+    // 3) Intentar extraer el último segmento de la path
+    const segments = url.pathname.split('/').filter(Boolean);
+    const last = segments[segments.length - 1];
+    if (last && last.match(re)) return last.toUpperCase();
+  } catch {
+    // no es una URL válida, ya intentamos el patrón simple arriba
+  }
+
+  return null;
 }
 
 // Componente simple para una fila de dato (Ej: "Peso: 28 kg")

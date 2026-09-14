@@ -4,9 +4,10 @@ import { auth } from '@/config/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
-
+import { useRouter } from 'expo-router';
 
 export default function RegisterScreen() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,7 +42,9 @@ export default function RegisterScreen() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password); //permite crear la cuenta con email y contraseña
       await updateProfile(userCredential.user, { displayName: name }); //permite guardar el nombre completo del usuario
       console.log('Usuario registrado exitosamente:', userCredential.user);
-      Alert.alert('Éxito', 'Cuenta creada correctamente.');
+      Alert.alert('Éxito', 'Cuenta creada correctamente.', [
+        { text: 'Ir al Menú', onPress: () => router.replace('/(tabs)') }
+      ]);
     } catch (error: any) { // Si el registro sale error, esto le muestra
       let errorMessage = 'Hubo un error al crear la cuenta';
       if (error.code === 'auth/email-already-in-use') {
@@ -143,6 +146,16 @@ export default function RegisterScreen() {
             >
               <ThemedText style={styles.buttonText}>
                 {loading ? 'Registrando...' : 'Registrarse'}
+              </ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{ marginTop: 18, alignItems: 'center', padding: 8 }}
+              onPress={() => router.replace('/(tabs)')}
+              activeOpacity={0.7}
+            >
+              <ThemedText style={{ color: '#16a34a', fontSize: 14, fontWeight: '600' }}>
+                Entrar al Menú Principal →
               </ThemedText>
             </TouchableOpacity>
           </View>

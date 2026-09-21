@@ -172,8 +172,6 @@ export default function MascotasScreen() {
       <TouchableOpacity
         style={[
           styles.card,
-          isDark && styles.cardDark,
-          { borderColor: isDark ? '#27272a' : '#e4e4e7' },
         ]}
         activeOpacity={0.85}
         onPress={() => handlePetPress(item)}
@@ -189,8 +187,8 @@ export default function MascotasScreen() {
                 transition={300}
               />
             ) : (
-              <View style={[styles.avatarFallback, { backgroundColor: isDark ? '#27272a' : '#f0fdf4' }]}>
-                <MaterialIcons name="pets" size={32} color="#04b639" />
+              <View style={styles.avatarFallback}>
+                <MaterialIcons name="pets" size={32} color="#15803d" />
               </View>
             )}
             <View style={styles.speciesBadge}>
@@ -203,7 +201,7 @@ export default function MascotasScreen() {
           {/* Información Principal */}
           <View style={styles.petInfo}>
             <View style={styles.nameRow}>
-              <Text style={[styles.petName, isDark && styles.textDark]}>{item.nombre}</Text>
+              <Text style={styles.petName}>{item.nombre}</Text>
               <View
                 style={[
                   styles.genderBadge,
@@ -300,7 +298,7 @@ export default function MascotasScreen() {
       <View style={[styles.header, isDark && styles.headerDark]}>
         <View>
           <Text style={styles.headerBrand}>VetLink</Text>
-          <Text style={[styles.headerTitle, isDark && styles.textDark]}>Mis Mascotas</Text>
+          <Text style={styles.headerTitle}>Mis Mascotas</Text>
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity
@@ -386,10 +384,10 @@ export default function MascotasScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#ffffff',
   },
   safeAreaDark: {
-    backgroundColor: '#09090b',
+    backgroundColor: '#ffffff',
   },
   header: {
     flexDirection: 'row',
@@ -402,8 +400,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f1f5f9',
   },
   headerDark: {
-    backgroundColor: '#18181b',
-    borderBottomColor: '#27272a',
+    backgroundColor: '#f0fdf4',
+    borderBottomColor: '#f1f5f9',
   },
   headerBrand: {
     fontSize: 13,
@@ -415,7 +413,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#111827',
   },
   headerActions: {
     flexDirection: 'row',
@@ -426,7 +424,9 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#dcfce7',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -503,28 +503,30 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f0fdf4',
     borderRadius: 16,
     borderWidth: 1,
+    borderColor: '#dcfce7',
     marginBottom: 14,
     padding: 14,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: '#15803d',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.07,
         shadowRadius: 8,
       },
       android: {
         elevation: 2,
       },
       web: {
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+        boxShadow: '0 2px 8px rgba(21, 128, 61, 0.07)',
       },
     }),
   },
   cardDark: {
-    backgroundColor: '#18181b',
+    backgroundColor: '#f0fdf4',
+    borderColor: '#dcfce7',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -543,6 +545,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 16,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#dcfce7',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -575,7 +580,7 @@ const styles = StyleSheet.create({
   petName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0f172a',
+    color: '#14532d',
   },
   genderBadge: {
     flexDirection: 'row',
@@ -591,7 +596,7 @@ const styles = StyleSheet.create({
   },
   petBreed: {
     fontSize: 13,
-    color: '#64748b',
+    color: '#6b7280',
     marginBottom: 8,
   },
   metricsRow: {
@@ -601,17 +606,17 @@ const styles = StyleSheet.create({
   metricItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f0fdf4',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
     gap: 4,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: '#dcfce7',
   },
   metricItemDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
+    backgroundColor: '#f0fdf4',
+    borderColor: '#dcfce7',
   },
   metricText: {
     fontSize: 12,
@@ -631,24 +636,24 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#ecfdf5',
+    backgroundColor: '#dcfce7',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   emptyIconCircleDark: {
-    backgroundColor: '#064e3b',
+    backgroundColor: '#dcfce7',
   },
   emptyTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#111827',
     textAlign: 'center',
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#6b7280',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,

@@ -2,11 +2,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { auth } from '@/config/firebase';
 import { router } from 'expo-router';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
-
-
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
@@ -16,66 +14,69 @@ export default function RegisterScreen() {
   const [errors, setErrors] = useState({ name: '', email: '', password: '' });
 
   const handleRegister = async () => {
-
-    setErrors({ name: '', email: '', password: '' });   //Obligar a un usuario a que llene los espacios
-
+    const newErrors = { name: '', email: '', password: '' };
     let hasErrors = false;
+
     if (!name.trim()) {
-      setErrors(prev => ({ ...prev, name: 'El nombre es obligatorio' }));
+      newErrors.name = 'El nombre es obligatorio';
       hasErrors = true;
     }
+
     if (!email.trim()) {
-      setErrors(prev => ({ ...prev, email: 'El correo electrónico es obligatorio' }));
+      newErrors.email = 'El correo electrónico es obligatorio';
+      hasErrors = true;
+    } else if (!/\S+@\S+\.\S+/.test(email.trim())) {
+      newErrors.email = 'El correo electrónico no es válido';
       hasErrors = true;
     }
+
     if (!password.trim()) {
-      setErrors(prev => ({ ...prev, password: 'La contraseña es obligatoria' }));
+      newErrors.password = 'La contraseña es obligatoria';
       hasErrors = true;
     } else if (password.length < 6) {
-      setErrors(prev => ({ ...prev, password: 'La contraseña debe tener al menos 6 caracteres' }));
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
       hasErrors = true;
     }
+
+    setErrors(newErrors);
 
     if (hasErrors) {
       Alert.alert('Error', 'Por favor, revise los campos del formulario.');
       return;
     }
 
-
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password); //permite crear la cuenta con email y contraseña
-      await updateProfile(userCredential.user, { displayName: name }); //permite guardar el nombre completo del usuario
-      console.log('Usuario registrado exitosamente:', userCredential.user);
-      Alert.alert('Éxito', 'Cuenta creada correctamente.', [
+      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      await updateProfile(userCredential.user, { displayName: name.trim() });
+      
+      // Cerrar la sesión iniciada automáticamente por Firebase para que ingrese desde el login
+      await signOut(auth);
+
+      Alert.alert('Éxito', 'Cuenta creada correctamente. Por favor, inicia sesión con tus credenciales.', [
         {
           text: 'OK',
-          onPress: () => router.replace('/(tabs)/mascotas'),
+          onPress: () => router.replace('/(auth)/login'),
         },
       ]);
       if (Platform.OS === 'web') {
-        router.replace('/(tabs)/mascotas');
+        router.replace('/(auth)/login');
       }
-    } catch (error: any) { // Si el registro sale error, esto le muestra
+    } catch (error: any) {
       let errorMessage = 'Hubo un error al crear la cuenta';
       if (error.code === 'auth/email-already-in-use') {
         errorMessage = 'El correo electrónico ya está en uso.';
       } else if (error.code === 'auth/invalid-email') {
         errorMessage = 'El correo electrónico es inválido.';
       } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'La contraseña es débil.';
-      }
-      else if (password.length < 6) {  //contraseña menos de 6 caracteres
         errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Error de conexión. Verifica tu conexión a internet.';
       }
       Alert.alert('Error', errorMessage);
-
-      if (error.code === 'auth/too-many-requests') {
-        errorMessage = 'Demasiados intentos fallidos. Intente más tarde.';
-      }
-      Alert.alert('Error', errorMessage);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

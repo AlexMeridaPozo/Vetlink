@@ -92,6 +92,12 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="turnos"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

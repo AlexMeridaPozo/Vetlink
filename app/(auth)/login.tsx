@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/themed-view';
 import { auth } from '@/config/firebase';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -46,8 +46,15 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
-      console.log('Inicio de sesión exitoso:', userCredential.user);
-      Alert.alert('Éxito', 'Has iniciado sesión correctamente.');
+      Alert.alert('Éxito', 'Has iniciado sesión correctamente.', [
+        {
+          text: 'OK',
+          onPress: () => router.replace('/(tabs)/mascotas'),
+        },
+      ]);
+      if (Platform.OS === 'web') {
+        router.replace('/(tabs)/mascotas');
+      }
     } catch (error: any) {
       let errorMessage = 'Hubo un error al iniciar sesión.';
       if (

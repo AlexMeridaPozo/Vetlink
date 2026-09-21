@@ -1,11 +1,20 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router, Link } from 'expo-router';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+
+// ==============================================================================
+// NOTA DE DESARROLLO / TESTING DEL MVP:
+// Esta sección permite acceder a la Ficha Clínica con datos mock locales y
+// alternar entre rol Dueño y Veterinaria exclusivamente para probar y validar
+// la interfaz durante el desarrollo del MVP.
+// NO interfiere con el sistema real de autenticación de Firebase.
+// ==============================================================================
 
 export default function HomeScreen() {
   return (
@@ -18,9 +27,94 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">VetLink</ThemedText>
         <HelloWave />
       </ThemedView>
+
+      {/* Sección de pruebas para el MVP de Ficha Clínica */}
+      <ThemedView style={styles.clinicalSection}>
+        <View style={styles.clinicalHeaderRow}>
+          <View style={styles.clinicalTitleGroup}>
+            <MaterialIcons name="medical-services" size={24} color="#04b639" />
+            <ThemedText type="subtitle">Ficha Clínica (MVP)</ThemedText>
+          </View>
+          <View style={styles.testTag}>
+            <ThemedText style={styles.testTagText}>Testing</ThemedText>
+          </View>
+        </View>
+
+        <ThemedText style={styles.clinicalDescription}>
+          Acceso rápido para probar los dos roles en la Ficha Clínica con datos locales:
+        </ThemedText>
+
+        {/* Mascota 1: Milo */}
+        <View style={styles.petTestCard}>
+          <View style={styles.petTestHeader}>
+            <ThemedText style={{ fontSize: 20 }}>🐶</ThemedText>
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <ThemedText style={styles.petButtonTitle}>Milo (Canino)</ThemedText>
+              <ThemedText style={styles.petButtonSubtitle}>Golden Retriever • 3 consultas</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.roleActionRow}>
+            <TouchableOpacity
+              style={[styles.roleActionButton, styles.roleActionVet]}
+              onPress={() => router.push({ pathname: '/clinical-record' as any, params: { petId: 'PET-001', role: 'veterinaria' } })}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="local-hospital" size={14} color="#04b639" />
+              <ThemedText style={styles.roleActionVetText}>Probar como Veterinaria</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.roleActionButton, styles.roleActionOwner]}
+              onPress={() => router.push({ pathname: '/clinical-record' as any, params: { petId: 'PET-001', role: 'dueno' } })}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="person" size={14} color="#2563EB" />
+              <ThemedText style={styles.roleActionOwnerText}>Probar como Dueño</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Mascota 2: Luna */}
+        <View style={styles.petTestCard}>
+          <View style={styles.petTestHeader}>
+            <ThemedText style={{ fontSize: 20 }}>🐱</ThemedText>
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <ThemedText style={styles.petButtonTitle}>Luna (Felino)</ThemedText>
+              <ThemedText style={styles.petButtonSubtitle}>Siamés • 1 consulta</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.roleActionRow}>
+            <TouchableOpacity
+              style={[styles.roleActionButton, styles.roleActionVet]}
+              onPress={() => router.push({ pathname: '/clinical-record' as any, params: { petId: 'PET-002', role: 'veterinaria' } })}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="local-hospital" size={14} color="#04b639" />
+              <ThemedText style={styles.roleActionVetText}>Probar como Veterinaria</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.roleActionButton, styles.roleActionOwner]}
+              onPress={() => router.push({ pathname: '/clinical-record' as any, params: { petId: 'PET-002', role: 'dueno' } })}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="person" size={14} color="#2563EB" />
+              <ThemedText style={styles.roleActionOwnerText}>Probar como Dueño</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <ThemedText style={styles.testDisclaimer}>
+          * Los botones de selección de rol son exclusivamente para pruebas de desarrollo del MVP y no representan el sistema definitivo de permisos.
+        </ThemedText>
+      </ThemedView>
+
+
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
@@ -95,4 +189,94 @@ const styles = StyleSheet.create({
     left: 0,
     position: 'absolute',
   },
+  clinicalSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 16,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  clinicalHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  clinicalTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  clinicalDescription: {
+    fontSize: 13,
+    color: '#6B7280',
+    lineHeight: 18,
+  },
+  roleSwitchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 4,
+  },
+  roleSwitchVet: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#04b639',
+  },
+  roleSwitchOwner: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#93C5FD',
+  },
+  roleSwitchText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  roleSwitchTextVet: {
+    color: '#04b639',
+  },
+  roleSwitchTextOwner: {
+    color: '#2563EB',
+  },
+  petButtonsRow: {
+    gap: 8,
+    marginTop: 4,
+  },
+  petAccessButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 12,
+    gap: 12,
+  },
+  petButtonIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F0FDF4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  petButtonTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  petButtonSubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
 });
+

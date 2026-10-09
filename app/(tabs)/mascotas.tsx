@@ -9,8 +9,10 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Modal,
   Platform,
   RefreshControl,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -18,6 +20,7 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import QRMascotaCard from '@/components/QRMascotaCard';
 
 export interface Mascota {
   id: string;
@@ -79,6 +82,7 @@ export default function MascotasScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isUsingMock, setIsUsingMock] = useState(false);
   const [showForcedEmpty, setShowForcedEmpty] = useState(false);
+  const [qrMascota, setQrMascota] = useState<Mascota | null>(null);
 
   const loadMascotas = useCallback(async () => {
     try {
@@ -255,6 +259,16 @@ export default function MascotasScreen() {
             />
           </View>
         </View>
+
+        {/* Botón rápido de QR */}
+        <TouchableOpacity
+          style={[styles.qrQuickBtn, isDark && styles.qrQuickBtnDark]}
+          onPress={(e) => { e.stopPropagation?.(); setQrMascota(item); }}
+          activeOpacity={0.8}
+        >
+          <MaterialIcons name="qr-code" size={16} color="#04b639" />
+          <Text style={styles.qrQuickBtnText}>Ver QR / Descargar</Text>
+        </TouchableOpacity>
       </TouchableOpacity>
     );
   };
@@ -377,6 +391,45 @@ export default function MascotasScreen() {
           <Ionicons name="add" size={28} color="#ffffff" />
         </TouchableOpacity>
       )}
+
+      {/* Modal QR de mascota */}
+      <Modal
+        visible={!!qrMascota}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setQrMascota(null)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setQrMascota(null)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[styles.modalSheet, isDark && styles.modalSheetDark]}
+            onPress={() => {}} // evitar cierre al tocar el contenido
+          >
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, isDark && styles.textDark]}>
+                🐾 {qrMascota?.nombre}
+              </Text>
+              <TouchableOpacity onPress={() => setQrMascota(null)}>
+                <Ionicons name="close" size={24} color={isDark ? '#a1a1aa' : '#6b7280'} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {qrMascota && (
+                <QRMascotaCard
+                  petId={qrMascota.id}
+                  petName={qrMascota.nombre}
+                  isDark={isDark}
+                />
+              )}
+            </ScrollView>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -707,5 +760,67 @@ const styles = StyleSheet.create({
   },
   textSecondaryDark: {
     color: '#a1a1aa',
+  },
+  // QR quick button (en cada tarjeta)
+  qrQuickBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 10,
+    paddingVertical: 10,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+  },
+  qrQuickBtnDark: {
+    backgroundColor: '#14532d22',
+    borderColor: '#166534',
+  },
+  qrQuickBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#04b639',
+  },
+  // Modal bottom sheet
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    maxHeight: '90%',
+  },
+  modalSheetDark: {
+    backgroundColor: '#18181b',
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#d1d5db',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+    marginBottom: 4,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
   },
 });

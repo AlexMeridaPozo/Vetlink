@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import QRMascotaCard from '@/components/QRMascotaCard';
 
 export default function MascotaDetalleScreen() {
   const colorScheme = useColorScheme();
@@ -165,6 +166,15 @@ export default function MascotaDetalleScreen() {
             <Ionicons name="time-outline" size={20} color="#f59e0b" />
           </View>
         </View>
+
+        {/* Sección QR — generador propio sin dependencias externas */}
+        {params.id ? (
+          <QRMascotaCard
+            petId={params.id}
+            petName={params.nombre || 'Mascota'}
+            isDark={isDark}
+          />
+        ) : null}
 
         {/* Botón de volver */}
         <TouchableOpacity

@@ -1,5 +1,5 @@
 {
-  "name": "civilink",
+  "name": "vetlink",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -22,6 +22,7 @@
     "expo-haptics": "~57.0.2",
     "expo-image": "~57.0.5",
     "expo-linking": "~57.0.9",
+    "expo-notifications": "~57.0.23",
     "expo-router": "^57.0.21",
     "expo-sharing": "~57.0.22",
     "expo-splash-screen": "~57.0.9",

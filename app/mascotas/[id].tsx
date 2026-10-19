@@ -1,24 +1,29 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  StatusBar,
-} from 'react-native';
-import { Image } from 'expo-image';
-import { useLocalSearchParams, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import QRMascotaCard from '@/components/QRMascotaCard';
+import VincularNfcModal from '@/components/VincularNfcModal';
+import { useAuth } from '@/context/AuthContext';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
+import { getPetById, type Pet } from '@/services/petService';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Image } from 'expo-image';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Alert,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MascotaDetalleScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useAppTheme();
+  const { isVeterinario } = useAuth();
 
   const params = useLocalSearchParams<{
     id: string;
@@ -32,7 +37,69 @@ export default function MascotaDetalleScreen() {
     descripcion?: string;
   }>();
 
-  const isMale = params.sexo?.toLowerCase().includes('macho');
+  const [pet, setPet] = useState<Pet | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [nfcModalVisible, setNfcModalVisible] = useState(false);
+
+  // Firestore es la FUENTE DE VERDAD: Consultamos los datos actualizados del documento
+  useEffect(() => {
+    let isMounted = true;
+    if (params.id) {
+      getPetById(params.id)
+        .then((livePet) => {
+          if (isMounted && livePet) {
+            setPet(livePet);
+          }
+        })
+        .catch((err) => {
+          console.warn('[MascotaDetalleScreen] Error consultando Firestore:', err);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [params.id]);
+
+  const onRefresh = useCallback(async () => {
+    if (!params.id) return;
+    setRefreshing(true);
+    try {
+      const livePet = await getPetById(params.id);
+      if (livePet) setPet(livePet);
+    } catch (err) {
+      console.warn('[MascotaDetalleScreen] Error al refrescar:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [params.id]);
+
+  // Datos consolidados (prioriza Firestore en tiempo real, con fallback a route params)
+  const displayId = pet?.id || params.id || 'PET-001';
+  const displayNombre = pet?.nombre || params.nombre || 'Mascota';
+  const displayEspecie = pet?.especie || params.especie || 'Perro';
+  const displayRaza = pet?.raza || params.raza || 'Raza no especificada';
+  const displaySexo = pet?.sexo || params.sexo || 'N/A';
+  const displayPeso = pet?.peso !== undefined ? String(pet.peso) : params.peso || 'N/A';
+  const displayEdad = pet?.edad !== undefined ? String(pet.edad) : pet?.fechaNacimiento || params.edad || 'N/A';
+  const displayFotoUrl = pet?.fotoUrl || params.fotoUrl || '';
+  const displayDescripcion = pet?.descripcion || params.descripcion || '';
+  const displayPropietario = pet?.propietario || '';
+  const displayTelefono = pet?.telefonoContacto || '';
+  const isNfcLinked = pet?.nfcStatus === 'linked';
+
+  const isMale = displaySexo.toLowerCase().includes('macho');
+
+  const handleOpenVincularNfc = () => {
+    if (!isVeterinario) {
+      Alert.alert(
+        'Acceso Denegado (Seguridad)',
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en VetLink.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
+      );
+      return;
+    }
+    setNfcModalVisible(true);
+  };
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'bottom']}>
@@ -48,36 +115,47 @@ export default function MascotaDetalleScreen() {
           <Ionicons name="arrow-back" size={22} color={isDark ? '#fafafa' : '#0f172a'} />
         </TouchableOpacity>
         <Text style={[styles.navTitle, isDark && styles.textDark]}>
-          Detalle de {params.nombre || 'Mascota'}
+          Ficha Clínica: {displayNombre}
         </Text>
-        <TouchableOpacity
-          style={[styles.backButton, isDark && styles.buttonDark]}
-          activeOpacity={0.7}
-          onPress={() => alert('Opción de editar próximamente')}
-        >
-          <Ionicons name="create-outline" size={20} color="#04b639" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <ThemeToggleButton />
+          <TouchableOpacity
+            style={[styles.backButton, isDark && styles.buttonDark]}
+            activeOpacity={0.7}
+            onPress={onRefresh}
+            accessibilityLabel="Actualizar ficha"
+          >
+            <Ionicons name="refresh" size={20} color="#04b639" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={[{ flex: 1 }, isDark && styles.scrollViewDark]}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#04b639']} />
+        }
+      >
         {/* Banner / Foto Principal */}
         <View style={styles.imageCard}>
-          {params.fotoUrl ? (
+          {displayFotoUrl ? (
             <Image
-              source={{ uri: params.fotoUrl }}
+              source={{ uri: displayFotoUrl }}
               style={styles.petImage}
               contentFit="cover"
               transition={300}
             />
           ) : (
-            <View style={[styles.imageFallback, isDark && styles.cardDark]}>
+            <View style={[styles.imageFallback, isDark && styles.imageFallbackDark]}>
               <MaterialIcons name="pets" size={72} color="#04b639" />
             </View>
           )}
 
-          <View style={styles.speciesFloatingBadge}>
-            <Text style={styles.speciesFloatingText}>
-              {params.especie === 'Gato' ? '🐱 Gato' : '🐶 Perro'}
+          <View style={[styles.speciesFloatingBadge, isDark && styles.speciesFloatingBadgeDark]}>
+            <Text style={[styles.speciesFloatingText, isDark && styles.speciesFloatingTextDark]}>
+              {displayEspecie === 'Gato' ? '🐱 Gato' : '🐶 Perro'} • {displayId}
             </Text>
           </View>
         </View>
@@ -86,26 +164,27 @@ export default function MascotaDetalleScreen() {
         <View style={[styles.infoCard, isDark && styles.cardDark]}>
           <View style={styles.nameHeader}>
             <View>
-              <Text style={[styles.petName, isDark && styles.textDark]}>
-                {params.nombre || 'Sin nombre'}
-              </Text>
-              <Text style={styles.petBreed}>
-                {params.raza || 'Raza no especificada'}
-              </Text>
+              <Text style={[styles.petName, isDark && styles.textDark]}>{displayNombre}</Text>
+              <Text style={[styles.petBreed, isDark && styles.textSecondaryDark]}>{displayRaza}</Text>
             </View>
             <View
               style={[
                 styles.genderTag,
-                { backgroundColor: isMale ? '#dbeafe' : '#fce7f3' },
+                { backgroundColor: isMale ? (isDark ? '#1e3a8a' : '#dbeafe') : (isDark ? '#831843' : '#fce7f3') },
               ]}
             >
               <Ionicons
                 name={isMale ? 'male' : 'female'}
                 size={14}
-                color={isMale ? '#1d4ed8' : '#be185d'}
+                color={isMale ? (isDark ? '#93c5fd' : '#1d4ed8') : (isDark ? '#f472b6' : '#be185d')}
               />
-              <Text style={[styles.genderTagText, { color: isMale ? '#1d4ed8' : '#be185d' }]}>
-                {params.sexo || 'N/A'}
+              <Text
+                style={[
+                  styles.genderTagText,
+                  { color: isMale ? (isDark ? '#93c5fd' : '#1d4ed8') : (isDark ? '#f472b6' : '#be185d') },
+                ]}
+              >
+                {displaySexo}
               </Text>
             </View>
           </View>
@@ -115,66 +194,204 @@ export default function MascotaDetalleScreen() {
             <View style={[styles.statBox, isDark && styles.statBoxDark]}>
               <MaterialIcons name="scale" size={20} color="#04b639" />
               <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Peso</Text>
-              <Text style={[styles.statValue, isDark && styles.textDark]}>
-                {params.peso || 'N/A'}
-              </Text>
+              <Text style={[styles.statValue, isDark && styles.textDark]}>{displayPeso}</Text>
             </View>
 
             <View style={[styles.statBox, isDark && styles.statBoxDark]}>
               <MaterialIcons name="cake" size={20} color="#04b639" />
               <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Edad</Text>
-              <Text style={[styles.statValue, isDark && styles.textDark]}>
-                {params.edad || 'N/A'}
-              </Text>
+              <Text style={[styles.statValue, isDark && styles.textDark]}>{displayEdad}</Text>
             </View>
 
             <View style={[styles.statBox, isDark && styles.statBoxDark]}>
               <MaterialIcons name="verified" size={20} color="#04b639" />
-              <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Estado</Text>
-              <Text style={[styles.statValue, isDark && styles.textDark]}>Al día</Text>
+              <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>ID Estable</Text>
+              <Text style={[styles.statValue, isDark && styles.textDark]}>{displayId}</Text>
             </View>
           </View>
 
+          {/* Propietario / Contacto */}
+          {displayPropietario ? (
+            <View style={[styles.ownerSection, isDark && styles.ownerSectionDark]}>
+              <View style={styles.ownerRow}>
+                <Ionicons name="person" size={16} color="#04b639" />
+                <Text style={[styles.ownerLabel, isDark && styles.ownerLabelDark]}>
+                  Tutor / Propietario:{' '}
+                  <Text style={{ fontWeight: '700' }}>{displayPropietario}</Text>
+                </Text>
+              </View>
+              {displayTelefono ? (
+                <View style={[styles.ownerRow, { marginTop: 4 }]}>
+                  <Ionicons name="call" size={16} color="#04b639" />
+                  <Text style={[styles.ownerLabel, isDark && styles.ownerLabelDark]}>
+                    Teléfono:{' '}
+                    <Text style={{ fontWeight: '700' }}>{displayTelefono}</Text>
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+
           {/* Descripción / Notas */}
-          {params.descripcion ? (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isDark && styles.textDark]}>Notas</Text>
+          {displayDescripcion ? (
+            <View style={[styles.section, isDark && styles.sectionDark]}>
+              <Text style={[styles.sectionTitle, isDark && styles.textDark]}>Notas Clínicas</Text>
               <Text style={[styles.sectionBody, isDark && styles.textSecondaryDark]}>
-                {params.descripcion}
+                {displayDescripcion}
               </Text>
             </View>
           ) : null}
         </View>
 
-        {/* Secciones de Salud & Historial */}
+        {/* ── CARD DE IDENTIFICACIÓN NFC (SECCIÓN CLÍNICA) ────────────────── */}
         <View style={[styles.infoCard, isDark && styles.cardDark, { marginTop: 14 }]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textDark]}>Historial Clínico</Text>
-          <View style={styles.historyRow}>
-            <View style={styles.historyDot} />
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.historyTitle, isDark && styles.textDark]}>Vacunación antirrábica</Text>
-              <Text style={styles.historySubtitle}>Aplicada hace 3 meses • Refuerzo anual</Text>
+          <View style={styles.nfcCardHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <MaterialIcons name="nfc" size={22} color="#04b639" />
+              <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
+                Identificación NFC
+              </Text>
             </View>
-            <Ionicons name="checkmark-circle" size={20} color="#04b639" />
-          </View>
-          <View style={[styles.historyRow, { borderBottomWidth: 0 }]}>
-            <View style={styles.historyDot} />
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.historyTitle, isDark && styles.textDark]}>Control antiparasitario</Text>
-              <Text style={styles.historySubtitle}>Próxima dosis recomendada en 30 días</Text>
+
+            <View
+              style={[
+                styles.nfcStatusBadge,
+                isNfcLinked
+                  ? (isDark ? styles.nfcBadgeLinkedDark : styles.nfcBadgeLinked)
+                  : (isDark ? styles.nfcBadgeUnlinkedDark : styles.nfcBadgeUnlinked),
+              ]}
+            >
+              <Ionicons
+                name={isNfcLinked ? 'checkmark-circle' : 'alert-circle'}
+                size={14}
+                color={isNfcLinked ? (isDark ? '#4ade80' : '#15803d') : (isDark ? '#fcd34d' : '#92400e')}
+              />
+              <Text
+                style={[
+                  styles.nfcStatusBadgeText,
+                  isNfcLinked
+                    ? (isDark ? styles.nfcStatusTextLinkedDark : styles.nfcStatusTextLinked)
+                    : (isDark ? styles.nfcStatusTextUnlinkedDark : styles.nfcStatusTextUnlinked),
+                ]}
+              >
+                {isNfcLinked ? 'Vinculada' : 'No vinculada'}
+              </Text>
             </View>
-            <Ionicons name="time-outline" size={20} color="#f59e0b" />
           </View>
+
+          {isNfcLinked ? (
+            <View style={[styles.nfcDetailsBox, isDark && styles.nfcDetailsBoxDark]}>
+              <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
+                <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>ID de Etiqueta:</Text>
+                <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>{pet?.nfcTagId || 'N/A'}</Text>
+              </View>
+              <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
+                <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Enlace de Identificación:</Text>
+                <Text style={[styles.nfcDetailValue, styles.monospace, isDark && styles.textDark]}>
+                  {pet?.nfcUrl || `https://vetlink.app/pet?id=${displayId}`}
+                </Text>
+              </View>
+              {pet?.nfcLinkedAt && (
+                <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
+                  <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Fecha de vinculación:</Text>
+                  <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>
+                    {new Date(pet.nfcLinkedAt).toLocaleString('es-AR')}
+                  </Text>
+                </View>
+              )}
+              {pet?.nfcLinkedBy && (
+                <View style={[styles.nfcDetailRow, { borderBottomWidth: 0 }]}>
+                  <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Veterinario Emisor:</Text>
+                  <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>{pet.nfcLinkedBy}</Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={[styles.relinkNfcBtn, isDark && styles.relinkNfcBtnDark]}
+                onPress={handleOpenVincularNfc}
+                activeOpacity={0.8}
+              >
+                <MaterialIcons name="nfc" size={18} color="#04b639" style={{ marginRight: 6 }} />
+                <Text style={[styles.relinkNfcBtnText, isDark && styles.relinkNfcBtnTextDark]}>Reasignar o Reescribir Etiqueta NFC</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={[styles.unlinkedNfcBox, isDark && styles.unlinkedNfcBoxDark]}>
+              <Text style={[styles.unlinkedNfcDesc, isDark && styles.textSecondaryDark]}>
+                Esta mascota aún no tiene una etiqueta NFC asociada. Acerca una etiqueta compatible para vincularla a este registro oficial.
+              </Text>
+              <TouchableOpacity
+                style={styles.linkNfcPrimaryBtn}
+                onPress={handleOpenVincularNfc}
+                activeOpacity={0.8}
+              >
+                <MaterialIcons name="nfc" size={18} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text style={styles.linkNfcPrimaryBtnText}>Vincular Etiqueta NFC</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
-        {/* Sección QR — generador propio sin dependencias externas */}
-        {params.id ? (
-          <QRMascotaCard
-            petId={params.id}
-            petName={params.nombre || 'Mascota'}
-            isDark={isDark}
-          />
-        ) : null}
+        {/* Secciones de Salud & Historial Clínico */}
+        <View style={[styles.infoCard, isDark && styles.cardDark, { marginTop: 14 }]}>
+          <Text style={[styles.sectionTitle, isDark && styles.textDark]}>
+            Historial Clínico
+          </Text>
+
+          {pet?.historialClinico && pet.historialClinico.length > 0 ? (
+            pet.historialClinico.map((item, idx) => (
+              <View
+                key={item.id || idx}
+                style={[
+                  styles.historyRow,
+                  isDark && styles.historyRowDark,
+                  idx === (pet.historialClinico?.length || 1) - 1 && { borderBottomWidth: 0 },
+                ]}
+              >
+                <View style={styles.historyDot} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.historyTitle, isDark && styles.textDark]}>
+                    {item.titulo}
+                  </Text>
+                  <Text style={[styles.historySubtitle, isDark && styles.textSecondaryDark]}>
+                    {item.detalle} • {item.fecha}
+                  </Text>
+                </View>
+                <Ionicons
+                  name={item.completado ? 'checkmark-circle' : 'time-outline'}
+                  size={20}
+                  color={item.completado ? '#04b639' : '#f59e0b'}
+                />
+              </View>
+            ))
+          ) : (
+            <>
+              <View style={[styles.historyRow, isDark && styles.historyRowDark]}>
+                <View style={styles.historyDot} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.historyTitle, isDark && styles.textDark]}>Vacunación antirrábica</Text>
+                  <Text style={[styles.historySubtitle, isDark && styles.textSecondaryDark]}>Aplicada hace 3 meses • Refuerzo anual</Text>
+                </View>
+                <Ionicons name="checkmark-circle" size={20} color="#04b639" />
+              </View>
+              <View style={[styles.historyRow, isDark && styles.historyRowDark, { borderBottomWidth: 0 }]}>
+                <View style={styles.historyDot} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.historyTitle, isDark && styles.textDark]}>Control antiparasitario</Text>
+                  <Text style={[styles.historySubtitle, isDark && styles.textSecondaryDark]}>Próxima dosis recomendada en 30 días</Text>
+                </View>
+                <Ionicons name="time-outline" size={20} color="#f59e0b" />
+              </View>
+            </>
+          )}
+        </View>
+
+        {/* Sección QR — Generador nativo y Placas STL 3D */}
+        <QRMascotaCard
+          petId={displayId}
+          petName={displayNombre}
+          isDark={isDark}
+        />
 
         {/* Botón de volver */}
         <TouchableOpacity
@@ -185,6 +402,18 @@ export default function MascotaDetalleScreen() {
           <Text style={styles.backHomeBtnText}>Volver a Mis Mascotas</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Modal Vincular NFC Integrado */}
+      <VincularNfcModal
+        visible={nfcModalVisible}
+        mascota={pet || ({ ...params, id: displayId, nombre: displayNombre } as any)}
+        onClose={() => setNfcModalVisible(false)}
+        onSuccess={(updatedPet) => {
+          setPet(updatedPet);
+          setNfcModalVisible(false);
+          onRefresh();
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -267,10 +496,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 14,
     left: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   speciesFloatingText: {
     fontSize: 13,
@@ -360,6 +591,23 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     marginTop: 2,
   },
+  ownerSection: {
+    backgroundColor: '#f0fdf4',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    marginBottom: 14,
+  },
+  ownerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  ownerLabel: {
+    fontSize: 13,
+    color: '#166534',
+  },
   section: {
     marginTop: 8,
     paddingTop: 14,
@@ -377,6 +625,114 @@ const styles = StyleSheet.create({
     color: '#64748b',
     lineHeight: 20,
   },
+  // NFC Card
+  nfcCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  nfcStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  nfcBadgeLinked: {
+    backgroundColor: '#dcfce7',
+    borderWidth: 1,
+    borderColor: '#86efac',
+  },
+  nfcBadgeUnlinked: {
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+  },
+  nfcStatusBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  nfcStatusTextLinked: {
+    color: '#15803d',
+  },
+  nfcStatusTextUnlinked: {
+    color: '#92400e',
+  },
+  nfcDetailsBox: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  nfcDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  nfcDetailLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  nfcDetailValue: {
+    fontSize: 12,
+    color: '#0f172a',
+    fontWeight: '700',
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+  monospace: {
+    fontFamily: Platform.select({ ios: 'Courier', default: 'monospace' }),
+    fontSize: 11,
+  },
+  relinkNfcBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ecfdf5',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+    borderRadius: 10,
+    paddingVertical: 10,
+    marginTop: 12,
+  },
+  relinkNfcBtnText: {
+    color: '#04b639',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  unlinkedNfcBox: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    gap: 12,
+  },
+  unlinkedNfcDesc: {
+    fontSize: 13,
+    color: '#64748b',
+    lineHeight: 18,
+  },
+  linkNfcPrimaryBtn: {
+    backgroundColor: '#04b639',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    paddingVertical: 12,
+  },
+  linkNfcPrimaryBtnText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  // History
   historyRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -423,5 +779,63 @@ const styles = StyleSheet.create({
   },
   textSecondaryDark: {
     color: '#a1a1aa',
+  },
+  ownerSectionDark: {
+    backgroundColor: '#132e1f',
+    borderColor: '#166534',
+  },
+  ownerLabelDark: {
+    color: '#4ade80',
+  },
+  sectionDark: {
+    borderTopColor: '#27272a',
+  },
+  nfcBadgeLinkedDark: {
+    backgroundColor: '#132e1f',
+    borderColor: '#166534',
+  },
+  nfcBadgeUnlinkedDark: {
+    backgroundColor: '#451a03',
+    borderColor: '#78350f',
+  },
+  nfcStatusTextLinkedDark: {
+    color: '#4ade80',
+  },
+  nfcStatusTextUnlinkedDark: {
+    color: '#fcd34d',
+  },
+  nfcDetailsBoxDark: {
+    backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
+  },
+  nfcDetailRowDark: {
+    borderBottomColor: '#3f3f46',
+  },
+  relinkNfcBtnDark: {
+    backgroundColor: '#132e1f',
+    borderColor: '#166534',
+  },
+  relinkNfcBtnTextDark: {
+    color: '#4ade80',
+  },
+  unlinkedNfcBoxDark: {
+    backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
+  },
+  speciesFloatingBadgeDark: {
+    backgroundColor: 'rgba(24, 24, 27, 0.95)',
+    borderColor: '#3f3f46',
+  },
+  speciesFloatingTextDark: {
+    color: '#fafafa',
+  },
+  imageFallbackDark: {
+    backgroundColor: '#18181b',
+  },
+  historyRowDark: {
+    borderBottomColor: '#27272a',
+  },
+  scrollViewDark: {
+    backgroundColor: '#09090b',
   },
 });

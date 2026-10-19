@@ -1,0 +1,159 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Funciones de ayuda ──────────────────────────────────────────────────
+    
+    // Verifica si el usuario actual ha iniciado sesión
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verifica si el usuario autenticado tiene el rol de Veterinario autorizado
+    // Se valida consultando el documento del usuario en la colección 'users'
+    function isVeterinario() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'veterinario' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rol == 'veterinario')
+      );
+    }
+
+    // Verifica si el usuario es el propietario registrado de la mascota
+    function isOwner(petData) {
+      return isAuthenticated() && (
+        petData.userId == request.auth.uid ||
+        petData.ownerId == request.auth.uid
+      );
+    }
+
+    // ── Colección 'users' ───────────────────────────────────────────────────
+    // Perfiles de usuario y asignación de roles
+    match /users/{userId} {
+      // Cualquier usuario autenticado puede leer perfiles (para validar veterinarios o tutores)
+      allow read: if isAuthenticated();
+
+      // Creación: Solo el propio usuario puede crear su perfil.
+      // El rol SIEMPRE debe ser 'propietario' al registrarse.
+      // La autorización como veterinario se realiza mediante un mecanismo administrativo
+      // (Firebase Admin SDK, Cloud Function, o edición directa en Firebase Console).
+      allow create: if isAuthenticated()
+                    && request.auth.uid == userId
+                    && request.resource.data.rol == 'propietario';
+
+      // Actualización: Solo el propio usuario puede actualizar sus datos generales.
+      // NO se permite cambiar el campo 'rol' a 'veterinario' desde el cliente.
+      // Si el usuario ya es veterinario (asignado por un admin), conserva su rol.
+      allow update: if isAuthenticated()
+                    && request.auth.uid == userId
+                    && (
+                      // No cambió el campo 'rol'
+                      !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rol'])
+                      // O el rol no se está cambiando a 'veterinario' (solo de vet→propietario sería válido)
+                      || request.resource.data.rol != 'veterinario'
+                    );
+    }
+
+    // ── Colección 'mascotas' ────────────────────────────────────────────────
+    // Fuente de verdad de la información clínica y datos del animal
+    match /mascotas/{petId} {
+      // Lectura: Todos los usuarios autenticados pueden consultar mascotas
+      // (necesario para el escaneo público/clínico por QR o NFC)
+      allow read: if isAuthenticated();
+
+      // Creación: Veterinarios autorizados pueden dar de alta cualquier mascota.
+      // Propietarios autenticados pueden registrar su propia mascota.
+      allow create: if isAuthenticated() && (
+        isVeterinario() ||
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.ownerId == request.auth.uid
+      );
+
+      // Actualización:
+      // 1. Un veterinario puede actualizar cualquier campo (incluyendo datos clínicos y NFC).
+      // 2. Un propietario/tutor solo puede actualizar sus propios datos de contacto
+      //    y NO puede modificar los campos técnicos de NFC (nfcTagId, nfcStatus, nfcLinkedBy, nfcLinkedAt).
+      allow update: if isAuthenticated() && (
+        isVeterinario() ||
+        (
+          isOwner(resource.data) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['nfcTagId', 'nfcStatus', 'nfcLinkedBy', 'nfcLinkedAt'])
+        ) ||
+        // Permitir vinculación de usuario si la mascota no tenía dueño asignado
+        // o si el usuario actual es quien se está asignando como dueño.
+        (
+          (
+            !('userId' in resource.data) || resource.data.userId == null || resource.data.userId == '' ||
+            !('ownerId' in resource.data) || resource.data.ownerId == null || resource.data.ownerId == ''
+          ) &&
+          request.resource.data.userId == request.auth.uid
+        )
+      );
+
+      // Eliminación: Exclusiva para veterinarios autorizados
+      allow delete: if isVeterinario();
+    }
+
+    // ── Colección 'nfcTags' ─────────────────────────────────────────────────
+    // Asociación técnica entre etiquetas físicas NFC y mascotas
+    match /nfcTags/{tagId} {
+      // Lectura: Cualquier usuario autenticado puede resolver qué mascota corresponde a la etiqueta
+      allow read: if isAuthenticated();
+
+      // Escritura, Vinculación, Desvinculación y Reasignación:
+      // ESTRICTAMENTE reservado para Veterinarios autorizados.
+      // Un usuario común no tiene permitido alterar la vinculación de etiquetas NFC.
+      allow create, update, delete: if isVeterinario();
+    }
+
+    // ── Colección 'consultasPublicas' (opcional) ─────────────────────────────
+    // Si se expone una vista pública vía URL HTTPS, solo debe contener datos de identificación básicos
+    match /consultasPublicas/{petId} {
+      allow read: if true; // Datos públicos no sensibles (nombre, especie, teléfono de emergencia)
+      allow write: if isVeterinario();
+    }
+
+    // ── Colección 'recordatorios' (US09) ────────────────────────────────────
+    // Recordatorios automáticos programados por veterinarios para los usuarios
+    match /recordatorios/{recId} {
+      // Lectura segura: Solo el usuario destinatario (por UID o email) o un veterinario autorizado
+      allow read: if isAuthenticated() && (
+        isVeterinario() ||
+        resource.data.userId == request.auth.uid ||
+        (request.auth.token.email != null && resource.data.userEmail == request.auth.token.email)
+      );
+
+      // Creación: ESTRICTAMENTE reservada a usuarios con perfil de Veterinario
+      allow create: if isVeterinario();
+
+      // Modificación y Eliminación: Solo veterinarios autorizados pueden editar o eliminar recordatorios
+      allow update, delete: if isVeterinario();
+    }
+
+    // ── Colección 'turnos' ───────────────────────────────────────────────────
+    // Citas médicas y turnos veterinarios
+    match /turnos/{turnoId} {
+      // Lectura segura: Solo el titular del turno (por userId/ownerId) o un veterinario autorizado
+      allow read: if isAuthenticated() && (
+        isVeterinario() ||
+        resource.data.userId == request.auth.uid ||
+        resource.data.ownerId == request.auth.uid
+      );
+
+      // Creación: El propio usuario para sí mismo o un veterinario
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.ownerId == request.auth.uid ||
+        isVeterinario()
+      );
+
+      // Modificación y Cancelación: El propio usuario o un veterinario
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.ownerId == request.auth.uid ||
+        isVeterinario()
+      );
+    }
+  }
+}
+

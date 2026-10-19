@@ -8,7 +8,7 @@
  * — El STL se genera con el motor propio (stlGenerator.ts) y se comparte.
  */
 
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,6 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  ScrollView,
 } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -68,19 +67,16 @@ interface QRMascotaCardProps {
 }
 
 export default function QRMascotaCard({ petId, petName, isDark = false }: QRMascotaCardProps) {
-  const [matrix, setMatrix] = useState<boolean[][] | null>(null);
   const [descargandoPNG, setDescargandoPNG] = useState(false);
   const [descargandoSTL, setDescargandoSTL] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Generar la matriz QR cuando cambia el petId
-  useEffect(() => {
+  // Generar la matriz QR de forma derivada cuando cambia el petId (evita cascading renders)
+  const { matrix, error } = useMemo(() => {
     try {
       const m = generateQRMatrix(petId);
-      setMatrix(m);
-      setError(null);
+      return { matrix: m, error: null };
     } catch (e: any) {
-      setError(e?.message ?? 'Error generando QR');
+      return { matrix: null, error: e?.message ?? 'Error generando QR' };
     }
   }, [petId]);
 
@@ -241,9 +237,9 @@ export default function QRMascotaCard({ petId, petName, isDark = false }: QRMasc
           📐 El STL genera una placa {'\n'}lista para imprimir en 3D
         </Text>
         <View style={styles.dimensionsRow}>
-          <DimBadge label="Módulo" value="2mm" />
-          <DimBadge label="Relieve" value="1.5mm" />
-          <DimBadge label="Base" value="1.5mm" />
+          <DimBadge label="Módulo" value="2mm" isDark={isDark} />
+          <DimBadge label="Relieve" value="1.5mm" isDark={isDark} />
+          <DimBadge label="Base" value="1.5mm" isDark={isDark} />
         </View>
       </View>
 
@@ -290,10 +286,10 @@ export default function QRMascotaCard({ petId, petName, isDark = false }: QRMasc
 }
 
 // ── Sub-componente de dimensión ───────────────────────────────────────────────
-function DimBadge({ label, value }: { label: string; value: string }) {
+function DimBadge({ label, value, isDark }: { label: string; value: string; isDark?: boolean }) {
   return (
-    <View style={styles.dimBadge}>
-      <Text style={styles.dimLabel}>{label}</Text>
+    <View style={[styles.dimBadge, isDark && styles.dimBadgeDark]}>
+      <Text style={[styles.dimLabel, isDark && styles.dimLabelDark]}>{label}</Text>
       <Text style={styles.dimValue}>{value}</Text>
     </View>
   );
@@ -400,10 +396,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d1fae5',
   },
+  dimBadgeDark: {
+    backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
+  },
   dimLabel: {
     fontSize: 10,
     color: '#6b7280',
     fontWeight: '500',
+  },
+  dimLabelDark: {
+    color: '#a1a1aa',
   },
   dimValue: {
     fontSize: 13,

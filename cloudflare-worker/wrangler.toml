@@ -1,0 +1,13 @@
+name = "vetlink-chatbot"
+main = "src/index.ts"
+compatibility_date = "2024-04-01"
+
+# Variables de entorno públicas del Worker
+[vars]
+FIREBASE_PROJECT_ID = "vetlink-bc8e2"
+GROQ_MODEL = "openai/gpt-oss-20b"
+
+# NOTA DE SEGURIDAD:
+# GROQ_API_KEY se almacena como secreto cifrado en Cloudflare.
+# Comando para configurarlo en terminal:
+#   npx wrangler secret put GROQ_API_KEY

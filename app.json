@@ -53,6 +53,12 @@
         {
           "cameraPermission": "Permite acceder a la cámara para escanear el código QR de la mascota."
         }
+      ],
+      [
+        "react-native-nfc-manager",
+        {
+          "nfcPermission": "Permite vincular e identificar mascotas de manera inalámbrica mediante etiquetas NFC."
+        }
       ]
     ],
     "experiments": {

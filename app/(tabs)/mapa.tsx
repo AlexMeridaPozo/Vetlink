@@ -2,21 +2,27 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
 
 export default function MapaScreen() {
+  const { isDark } = useAppTheme();
+
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.titulo}>Mapa</Text>
-        <Text style={styles.subtitulo}>Veterinarias y servicios cercanos</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.titulo, isDark && styles.textDark]}>Mapa</Text>
+          <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>Veterinarias y servicios cercanos</Text>
+        </View>
+        <ThemeToggleButton />
       </View>
 
       <View style={styles.placeholderContainer}>
-        <View style={styles.iconCircle}>
-          <Ionicons name="map" size={48} color="#22c55e" />
+        <View style={[styles.iconCircle, isDark && styles.iconCircleDark]}>
+          <Ionicons name="map" size={48} color="#04b639" />
         </View>
-        <Text style={styles.placeholderTitle}>Próximamente: Mapa Interactivo</Text>
-        <Text style={styles.placeholderText}>
+        <Text style={[styles.placeholderTitle, isDark && styles.textDark]}>Próximamente: Mapa Interactivo</Text>
+        <Text style={[styles.placeholderText, isDark && styles.subtituloDark]}>
           Encontrarás clínicas veterinarias, farmacias y guarderías geolocalizadas cerca de tu ubicación.
         </Text>
       </View>
@@ -30,18 +36,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 20,
   },
+  containerDark: {
+    backgroundColor: '#09090b',
+  },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 24,
+    gap: 12,
   },
   titulo: {
     fontSize: 26,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontWeight: '800',
+    color: '#0f172a',
   },
   subtitulo: {
-    color: '#6b7280',
-    fontSize: 15,
+    color: '#64748b',
+    fontSize: 14,
     marginTop: 4,
+  },
+  subtituloDark: {
+    color: '#a1a1aa',
+  },
+  textDark: {
+    color: '#f4f4f5',
   },
   placeholderContainer: {
     flex: 1,
@@ -59,16 +78,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  iconCircleDark: {
+    backgroundColor: '#064e3b',
+  },
   placeholderTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#0f172a',
     textAlign: 'center',
     marginBottom: 8,
   },
   placeholderText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#64748b',
     textAlign: 'center',
     lineHeight: 20,
   },

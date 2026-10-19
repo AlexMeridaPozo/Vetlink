@@ -1,4 +1,6 @@
 import { auth } from '@/config/firebase';
+import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { nfcService } from '@/services/nfcService';
 import { getPetById, linkPetToUser, type Pet } from '@/services/petService';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
@@ -10,26 +12,14 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text, TouchableOpacity,
+  Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 
-// Import dinámico: evita que Expo Go crashee al cargar el módulo nativo
-// En Expo Go el require falla silenciosamente; en el dev-client funciona normal
-let NfcManager: any = null;
-let NfcTech: any = null;
-let Ndef: any = null;
-try {
-  const nfcModule = require('react-native-nfc-manager');
-  NfcManager = nfcModule.default;
-  NfcTech = nfcModule.NfcTech;
-  Ndef = nfcModule.Ndef;
-} catch {
-  // Módulo nativo no disponible (Expo Go / web)
-}
-
 // Pantalla para identificar mascotas por QR o NFC
 export default function ScanScreen() {
+  const { isDark } = useAppTheme();
   const [permission, requestPermission] = useCameraPermissions();
   const [camaraActiva, setCamaraActiva] = useState(false);
   const [esperandoNFC, setEsperandoNFC] = useState(false);
@@ -67,7 +57,7 @@ export default function ScanScreen() {
         setMascota(null);
         router.replace('/(tabs)/mascotas');
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'No se pudo vincular la mascota en este momento.');
     } finally {
       setVinculando(false);
@@ -80,11 +70,11 @@ export default function ScanScreen() {
     setTimeout(() => setAviso(null), 4000);
   };
 
-  // Busca la mascota en Firestore con el ID dado (QR o NFC)
+  // Busca la mascota en Firestore con el ID dado (QR o NFC) - Firestore es la FUENTE DE VERDAD
   const buscarMascota = async (id: string) => {
     // Requerir que el usuario esté autenticado antes de leer Firestore
     if (!auth.currentUser) {
-      Alert.alert('Necesitas iniciar sesión', 'Inicia sesión para buscar mascotas en la base de datos.');
+      Alert.alert('Necesitas iniciar sesión', 'Inicia sesión para consultar la información de la mascota.');
       return;
     }
 
@@ -94,10 +84,13 @@ export default function ScanScreen() {
       if (resultado) {
         setMascota(resultado);
       } else {
-        Alert.alert('No encontrada', `No hay mascota con el ID "${id.toUpperCase()}".`);
+        Alert.alert(
+          'Mascota no encontrada',
+          `Se leyó el ID "${id.toUpperCase()}", pero no existe ningún registro clínico asociado en el sistema.`
+        );
       }
     } catch {
-      Alert.alert('Error', 'No se pudo consultar la base de datos.');
+      Alert.alert('Error de conexión', 'No se pudo consultar la información. Por favor, verifica tu conexión a internet.');
     } finally {
       setCargando(false);
     }
@@ -119,8 +112,7 @@ export default function ScanScreen() {
 
   const alEscanearQR = async (result: BarcodeScanningResult) => {
     setCamaraActiva(false);
-    // Extraer un ID válido del texto del QR (acepta "PET-001", URLs con ?id=PET-001, o paths que terminen en PET-001)
-    const petId = parsePetIdFromQR(result.data);
+    const petId = nfcService.parsePetIdFromPayload(result.data);
     if (!petId) {
       Alert.alert('QR inválido', 'El código QR no contiene un identificador de mascota válido.');
       return;
@@ -134,107 +126,145 @@ export default function ScanScreen() {
   const leerNFC = async () => {
     // En web no hay soporte nativo
     if (Platform.OS === 'web') {
-      mostrarAviso('⚠️ NFC no disponible en web. Usá la app instalada en Android.');
+      mostrarAviso('⚠️ NFC no disponible en web. Utiliza la app instalada en Android.');
       return;
     }
 
-    // Si el módulo nativo no cargó (Expo Go), mostramos aviso y salimos
-    if (!NfcManager) {
-      mostrarAviso('⚠️ NFC requiere el development build (APK). No funciona en Expo Go.');
+    // Verificar si el módulo está disponible
+    if (!nfcService.isModuleAvailable()) {
+      mostrarAviso('⚠️ La función NFC requiere un dispositivo móvil compatible.');
       return;
     }
 
     setMascota(null);
 
     try {
-      const soportado = await NfcManager.isSupported();
+      const soportado = await nfcService.isSupported();
       if (!soportado) {
-        Alert.alert('NFC no disponible', 'Este dispositivo no soporta NFC.');
+        Alert.alert('NFC no soportado', 'Este dispositivo no cuenta con sensor NFC.');
         return;
       }
 
-      await NfcManager.start();
-
-      const activado = await NfcManager.isEnabled();
+      const activado = await nfcService.isEnabled();
       if (!activado) {
-        Alert.alert('NFC desactivado', 'Activá el NFC en los ajustes del dispositivo.');
+        Alert.alert(
+          'NFC desactivado',
+          'Por favor, activa el NFC en los ajustes del dispositivo.',
+          [
+            { text: 'Ajustes', onPress: () => nfcService.goToSettings() },
+            { text: 'Cancelar', style: 'cancel' },
+          ]
+        );
         return;
       }
 
       setEsperandoNFC(true);
-      await NfcManager.requestTechnology(NfcTech.Ndef);
+      const resultado = await nfcService.readTag();
 
-      const tag = await NfcManager.getTag();
-      if (!tag?.ndefMessage?.[0]) {
-        Alert.alert('Tag inválido', 'El tag NFC no contiene datos NDEF.');
+      if (resultado.isNdefEmpty) {
+        Alert.alert('Etiqueta vacía', 'La etiqueta NFC no contiene datos grabados.');
         return;
       }
 
-      const payload = tag.ndefMessage[0].payload;
-      const petId = Ndef.text.decodePayload(new Uint8Array(payload));
+      if (!resultado.petId) {
+        Alert.alert(
+          'Etiqueta no reconocida',
+          'La etiqueta contiene datos que no corresponden a una mascota registrada en VetLink.'
+        );
+        return;
+      }
 
-      await buscarMascota(petId);
+      // Consultar Firestore en tiempo real con el ID extraído de la etiqueta
+      await buscarMascota(resultado.petId);
     } catch (error: any) {
       if (error?.message !== 'cancelled') {
-        Alert.alert('NFC no disponible', 'No se pudo leer el tag. Probá desde la app en Android.');
+        Alert.alert('Lectura NFC', error?.message || 'No se pudo leer la etiqueta NFC.');
       }
     } finally {
       setEsperandoNFC(false);
-      NfcManager?.cancelTechnologyRequest().catch(() => { });
+      await nfcService.cancelSession();
     }
   };
 
-  const cancelarNFC = () => {
-    NfcManager?.cancelTechnologyRequest().catch(() => { });
+  const cancelarNFC = async () => {
+    await nfcService.cancelSession();
     setEsperandoNFC(false);
   };
 
   // ── RENDER ──────────────────────────────────────────────────────────────────
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.titulo}>Identificar Mascota</Text>
-      <Text style={styles.subtitulo}>Escaneá el QR o acercá el tag NFC</Text>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: isDark ? '#09090b' : '#ffffff' }}
+      contentContainerStyle={[styles.container, isDark && styles.containerDark]}
+    >
+      <View style={styles.topHeader}>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.titulo, isDark && styles.textDark]}>Identificar Mascota</Text>
+          <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>Escaneá el código QR o acercá la etiqueta NFC</Text>
+        </View>
+        <ThemeToggleButton />
+      </View>
 
       {/* Banner de aviso (reemplaza Alert en web) */}
       {aviso && (
-        <View style={styles.avisoBanner}>
-          <Text style={styles.avisoTexto}>{aviso}</Text>
+        <View style={[styles.avisoBanner, isDark && styles.avisoBannerDark]}>
+          <Text style={[styles.avisoTexto, isDark && styles.avisoTextoDark]}>{aviso}</Text>
         </View>
       )}
 
       {cargando && (
-        <View style={styles.card}>
+        <View style={[styles.card, isDark && styles.cardDark]}>
           <ActivityIndicator size="large" color="#04b639" />
-          <Text style={styles.textoCargando}>Buscando en la base de datos...</Text>
+          <Text style={[styles.textoCargando, isDark && styles.subtituloDark]}>Buscando información de la mascota...</Text>
         </View>
       )}
 
       {/* Ficha de la mascota encontrada */}
       {mascota && !cargando && (
-        <View style={styles.card}>
+        <View style={[styles.card, isDark && styles.cardDark]}>
           <Text style={styles.nombreMascota}>🐾 {mascota.nombre}</Text>
-          <Text style={styles.subtituloMascota}>{mascota.especie} — {mascota.raza}</Text>
-          <View style={styles.separador} />
-          <Dato label="ID" valor={mascota.id} />
-          <Dato label="Sexo" valor={mascota.sexo} />
-          <Dato label="Peso" valor={mascota.peso} />
-          <Dato label="Nacimiento" valor={mascota.fechaNacimiento} />
-          <Dato label="Propietario" valor={mascota.propietario} />
-          {mascota.telefonoContacto && <Dato label="Teléfono" valor={mascota.telefonoContacto} />}
+          <Text style={[styles.subtituloMascota, isDark && styles.subtituloDark]}>{mascota.especie} — {mascota.raza}</Text>
+          <View style={[styles.separador, isDark && styles.separadorDark]} />
+          <Dato label="ID" valor={mascota.id} isDark={isDark} />
+          <Dato label="Sexo" valor={mascota.sexo} isDark={isDark} />
+          <Dato label="Peso" valor={String(mascota.peso)} isDark={isDark} />
+          <Dato label="Nacimiento" valor={mascota.fechaNacimiento || 'No especificada'} isDark={isDark} />
+          <Dato label="Propietario" valor={mascota.propietario || 'No especificado'} isDark={isDark} />
+          {mascota.telefonoContacto && <Dato label="Teléfono" valor={mascota.telefonoContacto} isDark={isDark} />}
+          <Dato
+            label="Estado NFC"
+            valor={mascota.nfcStatus === 'linked' ? '📶 Etiqueta Vinculada' : 'Sin etiqueta NFC'}
+            isDark={isDark}
+          />
           
-          <TouchableOpacity
-            style={[styles.botonVerde, vinculando && { opacity: 0.7 }]}
-            onPress={handleVincularMascota}
-            disabled={vinculando}
-          >
-            <Text style={styles.textoBoton}>
-              {vinculando ? 'Vinculando a tu cuenta...' : '🔗 Vincular a Mi Cuenta'}
-            </Text>
-          </TouchableOpacity>
+          {/* Estado de vinculación al usuario */}
+          {mascota.userId === auth.currentUser?.uid || mascota.ownerId === auth.currentUser?.uid ? (
+            <View style={[styles.avisoBanner, isDark ? { backgroundColor: '#132e1f', borderColor: '#166534', borderLeftColor: '#04b639', marginTop: 12 } : { backgroundColor: '#ECFDF5', borderColor: '#10B981', borderLeftColor: '#04b639', marginTop: 12 }]}>
+              <Text style={[styles.avisoTexto, isDark ? { color: '#4ade80' } : { color: '#065F46' }]}>
+                ✅ Esta mascota ya está vinculada a tu cuenta.
+              </Text>
+            </View>
+          ) : mascota.userId || mascota.ownerId ? (
+            <View style={[styles.avisoBanner, isDark ? { backgroundColor: '#172554', borderColor: '#1e3a8a', borderLeftColor: '#2563EB', marginTop: 12 } : { backgroundColor: '#EFF6FF', borderColor: '#3B82F6', borderLeftColor: '#2563EB', marginTop: 12 }]}>
+              <Text style={[styles.avisoTexto, isDark ? { color: '#60a5fa' } : { color: '#1E40AF' }]}>
+                ℹ️ Esta mascota ya tiene un dueño asignado.
+              </Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={[styles.botonVerde, vinculando && { opacity: 0.7 }]}
+              onPress={handleVincularMascota}
+              disabled={vinculando}
+            >
+              <Text style={styles.textoBoton}>
+                {vinculando ? 'Vinculando a tu cuenta...' : '🔗 Vincular a Mi Cuenta'}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
-            style={styles.botonSecundario}
+            style={[styles.botonSecundario, isDark && styles.botonSecundarioDark]}
             onPress={() => {
               router.push({
                 pathname: '/mascotas/[id]',
@@ -252,11 +282,11 @@ export default function ScanScreen() {
               });
             }}
           >
-            <Text style={styles.textoBotonSecundario}>Ver Detalle Completo</Text>
+            <Text style={[styles.textoBotonSecundario, isDark && styles.textDark]}>Ver Detalle Completo</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.botonSecundario, { marginTop: 6 }]} onPress={() => setMascota(null)}>
-            <Text style={styles.textoBotonSecundario}>Escanear otra mascota</Text>
+          <TouchableOpacity style={[styles.botonSecundario, isDark && styles.botonSecundarioDark, { marginTop: 6 }]} onPress={() => setMascota(null)}>
+            <Text style={[styles.textoBotonSecundario, isDark && styles.textDark]}>Escanear otra mascota</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -278,9 +308,9 @@ export default function ScanScreen() {
 
       {/* Esperando que el usuario acerque el tag NFC */}
       {esperandoNFC && (
-        <View style={styles.card}>
+        <View style={[styles.card, isDark && styles.cardDark]}>
           <MaterialIcons name="nfc" size={60} color="#04b639" style={{ marginBottom: 12 }} />
-          <Text style={styles.textoNFC}>Acercá el tag NFC al dispositivo...</Text>
+          <Text style={[styles.textoNFC, isDark && styles.textDark]}>Acercá el tag NFC al dispositivo...</Text>
           <TouchableOpacity style={styles.botonCancelarInline} onPress={cancelarNFC}>
             <Text style={styles.textoCancelar}>Cancelar</Text>
           </TouchableOpacity>
@@ -290,12 +320,12 @@ export default function ScanScreen() {
       {/* Botones iniciales: QR y NFC */}
       {!camaraActiva && !esperandoNFC && !mascota && !cargando && (
         <View style={styles.filaBotones}>
-          <TouchableOpacity style={styles.tarjetaAccion} onPress={abrirCamara}>
+          <TouchableOpacity style={[styles.tarjetaAccion, isDark && styles.tarjetaAccionDark]} onPress={abrirCamara}>
             <MaterialIcons name="qr-code-scanner" size={48} color="#04b639" />
             <Text style={styles.etiquetaAccion}>Escanear QR</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tarjetaAccion} onPress={leerNFC}>
+          <TouchableOpacity style={[styles.tarjetaAccion, isDark && styles.tarjetaAccionDark]} onPress={leerNFC}>
             <MaterialIcons name="nfc" size={48} color="#04b639" />
             <Text style={styles.etiquetaAccion}>Leer NFC</Text>
           </TouchableOpacity>
@@ -305,38 +335,11 @@ export default function ScanScreen() {
   );
 }
 
-// Intenta extraer un ID con formato PET-123 desde el texto del QR.
-function parsePetIdFromQR(text: string): string | null {
-  if (!text) return null;
-  const t = text.trim();
 
-  // 1) Buscar patrón PET- seguido de números
-  const re = /PET-\d+/i;
-  const m = t.match(re);
-  if (m) return m[0].toUpperCase();
-
-  try {
-    // 2) Si es una URL con query param (ej: ?id=PET-001)
-    const url = new URL(t);
-    const idParam = url.searchParams.get('id') || url.searchParams.get('petId') || url.searchParams.get('pet');
-    if (idParam && idParam.match(re)) return idParam.trim().toUpperCase();
-
-    // 3) Intentar extraer el último segmento de la path
-    const segments = url.pathname.split('/').filter(Boolean);
-    const last = segments[segments.length - 1];
-    if (last && last.match(re)) return last.toUpperCase();
-  } catch {
-    // no es una URL válida, ya intentamos el patrón simple arriba
-  }
-
-  return null;
-}
-
-// Componente simple para una fila de dato (Ej: "Peso: 28 kg")
-function Dato({ label, valor }: { label: string; valor: string }) {
+function Dato({ label, valor, isDark }: { label: string; valor: string; isDark?: boolean }) {
   return (
-    <Text style={styles.dato}>
-      <Text style={styles.datoLabel}>{label}: </Text>{valor}
+    <Text style={[styles.dato, isDark && styles.textDark]}>
+      <Text style={[styles.datoLabel, isDark && styles.datoLabelDark]}>{label}: </Text>{valor}
     </Text>
   );
 }
@@ -346,21 +349,36 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 24,
-    paddingTop: 60,
-    backgroundColor: 'white',
+    paddingTop: 50,
+    backgroundColor: '#ffffff',
     alignItems: 'center',
+  },
+  containerDark: {
+    backgroundColor: '#09090b',
+  },
+  topHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 20,
+    gap: 12,
   },
   titulo: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 6,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 4,
   },
   subtitulo: {
     fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: 24,
+    color: '#64748b',
+  },
+  subtituloDark: {
+    color: '#a1a1aa',
+  },
+  textDark: {
+    color: '#f4f4f5',
   },
   avisoBanner: {
     width: '100%',
@@ -376,15 +394,26 @@ const styles = StyleSheet.create({
     color: '#92400E',
     fontWeight: '600',
   },
+  avisoBannerDark: {
+    backgroundColor: '#451a03',
+    borderLeftColor: '#f59e0b',
+  },
+  avisoTextoDark: {
+    color: '#fde68a',
+  },
   card: {
     width: '100%',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#e2e8f0',
     padding: 20,
     marginTop: 10,
     alignItems: 'center',
+  },
+  cardDark: {
+    backgroundColor: '#18181b',
+    borderColor: '#27272a',
   },
   textoCargando: {
     marginTop: 12,
@@ -409,6 +438,9 @@ const styles = StyleSheet.create({
     marginVertical: 14,
     width: '100%',
   },
+  separadorDark: {
+    backgroundColor: '#27272a',
+  },
   dato: {
     fontSize: 15,
     color: '#1F2937',
@@ -417,6 +449,10 @@ const styles = StyleSheet.create({
   },
   datoLabel: {
     fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  datoLabelDark: {
+    color: '#e4e4e7',
   },
   cajaCamara: {
     width: '100%',
@@ -440,34 +476,41 @@ const styles = StyleSheet.create({
   },
   tarjetaAccion: {
     flex: 1,
-    backgroundColor: '#F0FDF4',
-    borderRadius: 16,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 20,
     borderWidth: 1.5,
     borderColor: '#04b639',
     padding: 24,
     alignItems: 'center',
     gap: 8,
   },
+  tarjetaAccionDark: {
+    backgroundColor: '#132e1f',
+    borderColor: '#04b639',
+  },
   etiquetaAccion: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#04b639',
   },
   botonVerde: {
     backgroundColor: '#04b639',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 14,
     width: '100%',
   },
   botonSecundario: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
     marginTop: 8,
     width: '100%',
+  },
+  botonSecundarioDark: {
+    backgroundColor: '#27272a',
   },
   textoBoton: {
     color: '#FFFFFF',

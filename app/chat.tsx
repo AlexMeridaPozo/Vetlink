@@ -1,33 +1,38 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import {
   enviarMensajeChat,
+  limpiarTextoSinAsteriscos,
   validarMensajeUsuario,
   type ChatMessage,
 } from '@/services/chatService';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const SUGERENCIAS_INICIALES = [
-  '🥩 ¿Qué alimentos son tóxicos para perros y gatos?',
-  '🐱 ¿Cómo saber si mi mascota está deshidratada?',
-  '💉 ¿Cuáles son las vacunas esenciales en el primer año?',
-  '📅 ¿Cómo programar turnos y recordatorios en VetLink?',
+  '¿Cómo puedo registrar una nueva mascota?',
+  '¿Qué turnos tengo agendados actualmente?',
+  '¿Cómo identifico a mi mascota con código QR o NFC?',
+  '¿Cómo creo un recordatorio sanitario o de vacunación?',
 ];
+
+function generarIdMensaje(prefix: 'user' | 'assistant'): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+}
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -40,6 +45,14 @@ export default function ChatScreen() {
   const [errorMensaje, setErrorMensaje] = useState<string | null>(null);
 
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleVolver = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
 
   // Auto-scroll al final cuando se añade un mensaje o cambia el estado
   useEffect(() => {
@@ -65,7 +78,7 @@ export default function ChatScreen() {
     setInputText('');
 
     const nuevoMensajeUsuario: ChatMessage = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      id: generarIdMensaje('user'),
       role: 'user',
       content: texto,
       timestamp: new Date(),
@@ -79,9 +92,9 @@ export default function ChatScreen() {
       const respuesta = await enviarMensajeChat(nuevoHistorial);
 
       const nuevoMensajeAsistente: ChatMessage = {
-        id: `assistant-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        id: generarIdMensaje('assistant'),
         role: 'assistant',
-        content: respuesta,
+        content: limpiarTextoSinAsteriscos(respuesta),
         timestamp: new Date(),
       };
 
@@ -128,8 +141,15 @@ export default function ChatScreen() {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'bottom']}>
         <View style={[styles.topBar, isDark && styles.topBarDark]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
-            <Ionicons name="arrow-back" size={22} color={isDark ? '#fafafa' : '#0f172a'} />
+          <TouchableOpacity
+            onPress={handleVolver}
+            style={[styles.backBtn, isDark && styles.backBtnDark]}
+            activeOpacity={0.7}
+            accessibilityLabel="Regresar"
+            accessibilityRole="button"
+          >
+            <Ionicons name="arrow-back" size={18} color={isDark ? '#86efac' : '#166534'} />
+            <Text style={[styles.backBtnText, isDark && styles.backBtnTextDark]}>Regresar</Text>
           </TouchableOpacity>
           <Text style={[styles.screenTitle, isDark && styles.textDark]}>Asistente VetLink</Text>
           <ThemeToggleButton />
@@ -163,12 +183,14 @@ export default function ChatScreen() {
       {/* ── BARRA SUPERIOR ─────────────────────────────────────────────── */}
       <View style={[styles.topBar, isDark && styles.topBarDark]}>
         <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backBtn}
+          onPress={handleVolver}
+          style={[styles.backBtn, isDark && styles.backBtnDark]}
           activeOpacity={0.7}
-          accessibilityLabel="Volver"
+          accessibilityLabel="Regresar"
+          accessibilityRole="button"
         >
-          <Ionicons name="arrow-back" size={22} color={isDark ? '#fafafa' : '#0f172a'} />
+          <Ionicons name="arrow-back" size={18} color={isDark ? '#86efac' : '#166534'} />
+          <Text style={[styles.backBtnText, isDark && styles.backBtnTextDark]}>Regresar</Text>
         </TouchableOpacity>
 
         <View style={styles.headerInfo}>
@@ -225,17 +247,17 @@ export default function ChatScreen() {
             /* Estado Inicial / Bienvenida */
             <View style={styles.welcomeContainer}>
               <View style={[styles.welcomeIconCircle, isDark && styles.welcomeIconCircleDark]}>
-                <MaterialCommunityIcons name="paw" size={44} color="#04b639" />
+                <MaterialCommunityIcons name="robot" size={44} color="#04b639" />
               </View>
               <Text style={[styles.welcomeTitle, isDark && styles.textDark]}>
-                ¡Hola, {user.displayName || 'tutor'}! 🐾
+                Asistente Virtual VetLink
               </Text>
               <Text style={[styles.welcomeSubtitle, isDark && styles.subtituloDark]}>
-                Soy tu asistente virtual de VetLink. Pregúntame sobre cuidados, nutrición, prevención o cómo usar la app.
+                Estimado/a {user.displayName || 'tutor/a'}, le doy la bienvenida. Estoy a su disposición para orientarle en el registro de sus mascotas, consulta de turnos, recordatorios y el uso de las funciones de la aplicación.
               </Text>
 
               <Text style={[styles.suggestionsHeader, isDark && styles.textDark]}>
-                Consultas frecuentes:
+                Consultas frecuentes sobre la aplicación:
               </Text>
 
               <View style={styles.suggestionsGrid}>
@@ -278,8 +300,8 @@ export default function ChatScreen() {
                       isUser
                         ? styles.bubbleUser
                         : isDark
-                        ? styles.bubbleAssistantDark
-                        : styles.bubbleAssistant,
+                          ? styles.bubbleAssistantDark
+                          : styles.bubbleAssistant,
                     ]}
                   >
                     <Text
@@ -288,12 +310,12 @@ export default function ChatScreen() {
                         isUser
                           ? styles.bubbleTextUser
                           : isDark
-                          ? styles.bubbleTextAssistantDark
-                          : styles.bubbleTextAssistant,
+                            ? styles.bubbleTextAssistantDark
+                            : styles.bubbleTextAssistant,
                       ]}
                       selectable
                     >
-                      {item.content}
+                      {limpiarTextoSinAsteriscos(item.content)}
                     </Text>
 
                     <Text
@@ -302,8 +324,8 @@ export default function ChatScreen() {
                         isUser
                           ? styles.bubbleTimeUser
                           : isDark
-                          ? styles.bubbleTimeAssistantDark
-                          : styles.bubbleTimeAssistant,
+                            ? styles.bubbleTimeAssistantDark
+                            : styles.bubbleTimeAssistant,
                       ]}
                     >
                       {formatearHora(item.timestamp)}
@@ -414,8 +436,24 @@ const styles = StyleSheet.create({
     borderBottomColor: '#27272a',
   },
   backBtn: {
-    padding: 6,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: '#dcfce7',
+    gap: 4,
+  },
+  backBtnDark: {
+    backgroundColor: '#132e1f',
+  },
+  backBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#166534',
+  },
+  backBtnTextDark: {
+    color: '#86efac',
   },
   clearBtn: {
     padding: 6,

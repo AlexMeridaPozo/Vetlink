@@ -18,12 +18,12 @@ export interface MascotaResumen {
   edad?: string | number;
   sexo: string;
   peso?: string | number;
-  historialClinico?: Array<{
+  historialClinico?: {
     titulo: string;
     detalle: string;
     fecha: string;
     completado?: boolean;
-  }>;
+  }[];
 }
 
 export interface RecordatorioResumen {
@@ -250,6 +250,14 @@ export function formatearContextoParaPrompt(contexto: ContextoUsuarioVerificado)
   }
 
   lineas.push(`=================================================`);
+  lineas.push(`DIRECTIVAS OBLIGATORIAS DE COMUNICACIÓN Y REDACCIÓN:`);
+  lineas.push(`- Tono: Exclusivamente formal, profesional, empático y respetuoso. Trata al tutor de usted y mantén una ortografía y gramática impecables.`);
+  lineas.push(`- Cero asteriscos ni markdown: Queda terminantemente PROHIBIDO utilizar asteriscos (** o *), signos de numeral (#) o caracteres especiales de marcado. Escribe en texto plano pulcro y fluido.`);
+  lineas.push(`- Guía sobre el funcionamiento de VetLink:`);
+  lineas.push(`  * Para registrar una mascota: Indique al usuario dirigirse a la pestaña 'Mascotas' en el menú inferior y pulsar el botón para agregar una nueva mascota, completando los datos requeridos.`);
+  lineas.push(`  * Para consultar turnos: Informe con precisión los turnos que figuran arriba en sus datos verificados. Si no tiene turnos, explíquele cordialmente que no registra turnos activos y que puede agendarlos en la sección 'Turnos'.`);
+  lineas.push(`  * Para identificar mascotas: Explique que cada perfil de mascota incluye un código QR único escaneable por cualquier persona desde la pestaña 'Escanear QR', y que además puede vincular una placa con tecnología NFC desde el perfil de su mascota mediante la opción 'Vincular NFC'.`);
+  lineas.push(`  * Para recordatorios: Explique que puede programar avisos de vacunación, desparasitación o controles ingresando a la sección 'Recordatorios'.`);
 
   return lineas.join('\n');
 }

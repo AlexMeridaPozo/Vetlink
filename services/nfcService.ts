@@ -76,7 +76,7 @@ export const nfcService = {
    */
   async goToSettings(): Promise<void> {
     if (this.isModuleAvailable() && NfcManager.goToNfcSetting) {
-      await NfcManager.goToNfcSetting().catch(() => {});
+      await NfcManager.goToNfcSetting().catch(() => { });
     }
   },
 

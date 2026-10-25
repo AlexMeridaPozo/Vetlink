@@ -2,16 +2,18 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
+import { ChatLogo_Infferior } from '@/components/ChatLogo_Infferior';
 import { useAppTheme } from '@/context/ThemeContext';
 
 export default function TabLayout() {
   const { isDark } = useAppTheme();
 
   return (
-    <Tabs
+    <View style={{ flex: 1 }}>
+      <Tabs
       screenOptions={{
         headerShown: false,
         tabBarButton: HapticTab,
@@ -74,10 +76,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="tienda"
         options={{
-          title: 'Tienda',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'bag-handle' : 'bag-handle-outline'} size={24} color={color} />
-          ),
+          href: null,
         }}
       />
       <Tabs.Screen
@@ -90,5 +89,7 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+      <ChatLogo_Infferior />
+    </View>
   );
 }

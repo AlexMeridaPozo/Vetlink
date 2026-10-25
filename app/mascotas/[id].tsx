@@ -365,24 +365,15 @@ export default function MascotaDetalleScreen() {
               </View>
             ))
           ) : (
-            <>
-              <View style={[styles.historyRow, isDark && styles.historyRowDark]}>
-                <View style={styles.historyDot} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.historyTitle, isDark && styles.textDark]}>Vacunación antirrábica</Text>
-                  <Text style={[styles.historySubtitle, isDark && styles.textSecondaryDark]}>Aplicada hace 3 meses • Refuerzo anual</Text>
-                </View>
-                <Ionicons name="checkmark-circle" size={20} color="#04b639" />
-              </View>
-              <View style={[styles.historyRow, isDark && styles.historyRowDark, { borderBottomWidth: 0 }]}>
-                <View style={styles.historyDot} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.historyTitle, isDark && styles.textDark]}>Control antiparasitario</Text>
-                  <Text style={[styles.historySubtitle, isDark && styles.textSecondaryDark]}>Próxima dosis recomendada en 30 días</Text>
-                </View>
-                <Ionicons name="time-outline" size={20} color="#f59e0b" />
-              </View>
-            </>
+            <View style={styles.historyEmptyBox}>
+              <Ionicons name="medical-outline" size={26} color={isDark ? '#71717a' : '#9ca3af'} />
+              <Text style={[styles.historyEmptyText, isDark && styles.textDark]}>
+                Sin registros clínicos previos
+              </Text>
+              <Text style={[styles.historyEmptySubtext, isDark && styles.textSecondaryDark]}>
+                Las consultas, vacunas y observaciones registradas para esta mascota aparecerán en esta sección.
+              </Text>
+            </View>
           )}
         </View>
 
@@ -756,6 +747,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
     marginTop: 2,
+  },
+  historyEmptyBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    gap: 6,
+  },
+  historyEmptyText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  historyEmptySubtext: {
+    fontSize: 12,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 18,
   },
   backHomeBtn: {
     marginTop: 24,

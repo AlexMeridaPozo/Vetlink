@@ -1,4 +1,3 @@
-import { useState, useEffect, useCallback } from 'react';
 import { auth, db } from '@/config/firebase';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -13,6 +12,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface HistorialClinicoItem {
   id: string;
@@ -278,7 +278,7 @@ export async function unlinkNfcTagFromPet(
         status: 'unlinked',
         updatedAt: now,
         unlinkedBy: vetUid,
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     const petDocRef = doc(db, 'mascotas', cleanPetId);

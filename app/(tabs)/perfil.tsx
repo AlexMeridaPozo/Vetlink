@@ -1,16 +1,15 @@
 import { auth } from '@/config/firebase';
 import { useAuth } from '@/context/AuthContext';
-import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
-import React from 'react';
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PerfilScreen() {
   const router = useRouter();
-  const { user, isVeterinario } = useAuth();
+  const { user, profile, isVeterinario } = useAuth();
   const { isDark, toggleTheme } = useAppTheme();
 
   const handleLogout = async () => {
@@ -22,13 +21,23 @@ export default function PerfilScreen() {
     }
   };
 
+  const displayName = profile?.displayName || user?.displayName || (isVeterinario ? 'Profesional Veterinario' : 'Usuario VetLink');
+  const email = profile?.email || user?.email || 'Sin correo asociado';
+  const matricula = profile?.matricula;
+  const especialidad = profile?.especialidad;
+  const veterinaria = profile?.veterinaria;
+
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'left', 'right']}>
       {/* Header con botón de tema */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.titulo, isDark && styles.textDark]}>Mi Perfil</Text>
-          <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>Información de tu cuenta y preferencias</Text>
+          <Text style={[styles.titulo, isDark && styles.textDark]}>
+            {isVeterinario ? 'Perfil Profesional' : 'Mi Perfil'}
+          </Text>
+          <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>
+            {isVeterinario ? 'Credenciales clínicas y preferencias' : 'Información de tu cuenta y preferencias'}
+          </Text>
         </View>
         <ThemeToggleButton />
       </View>
@@ -36,25 +45,93 @@ export default function PerfilScreen() {
       {/* Tarjeta de perfil */}
       <View style={[styles.profileCard, isDark && styles.profileCardDark]}>
         <View style={[styles.avatar, isDark && styles.avatarDark]}>
-          <Ionicons name="person" size={40} color="#04b639" />
-        </View>
-        <Text style={[styles.userName, isDark && styles.textDark]}>{user?.displayName || 'Usuario VetLink'}</Text>
-        <Text style={[styles.userEmail, isDark && styles.subtituloDark]}>{user?.email || 'correo@ejemplo.com'}</Text>
-
-        <View style={[styles.roleBadge, isVeterinario ? (isDark ? styles.roleBadgeVetDark : styles.roleBadgeVet) : (isDark ? styles.roleBadgeOwnerDark : styles.roleBadgeOwner)]}>
           <Ionicons
-            name={isVeterinario ? 'shield-checkmark' : 'paw'}
-            size={14}
-            color={isVeterinario ? (isDark ? '#4ade80' : '#15803d') : (isDark ? '#60a5fa' : '#2563eb')}
+            name={isVeterinario ? 'medkit' : 'person'}
+            size={38}
+            color="#04b639"
           />
-          <Text style={[styles.roleBadgeText, isVeterinario ? (isDark ? styles.roleTextVetDark : styles.roleTextVet) : (isDark ? styles.roleTextOwnerDark : styles.roleTextOwner)]}>
-            {isVeterinario ? 'Veterinario Autorizado' : 'Propietario / Tutor'}
-          </Text>
         </View>
+        <Text style={[styles.userName, isDark && styles.textDark]}>{displayName}</Text>
+        <Text style={[styles.userEmail, isDark && styles.subtituloDark]}>{email}</Text>
+
+        {/* Badges de Rol y Verificación */}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 12 }}>
+          <View style={[styles.roleBadge, isVeterinario ? (isDark ? styles.roleBadgeVetDark : styles.roleBadgeVet) : (isDark ? styles.roleBadgeOwnerDark : styles.roleBadgeOwner), { marginTop: 0 }]}>
+            <Ionicons
+              name={isVeterinario ? 'shield-checkmark' : 'paw'}
+              size={14}
+              color={isVeterinario ? (isDark ? '#4ade80' : '#15803d') : (isDark ? '#60a5fa' : '#2563eb')}
+            />
+            <Text style={[styles.roleBadgeText, isVeterinario ? (isDark ? styles.roleTextVetDark : styles.roleTextVet) : (isDark ? styles.roleTextOwnerDark : styles.roleTextOwner)]}>
+              {isVeterinario ? 'Veterinario Autorizado' : 'Propietario / Tutor'}
+            </Text>
+          </View>
+
+          {isVeterinario && (
+            <View style={[styles.verifiedBadge, isDark && styles.verifiedBadgeDark]}>
+              <Ionicons name="checkmark-circle" size={14} color="#04b639" />
+              <Text style={[styles.verifiedBadgeText, isDark && styles.verifiedBadgeTextDark]}>
+                Profesional Habilitado
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Datos Profesionales Exclusivos (Solo si existen datos reales) */}
+        {isVeterinario && (
+          <View style={[styles.profDetailsBox, isDark && styles.profDetailsBoxDark]}>
+            <View style={styles.profDetailRow}>
+              <Text style={[styles.profDetailLabel, isDark && styles.subtituloDark]}>Matrícula:</Text>
+              <Text style={[styles.profDetailValue, isDark && styles.textDark]}>
+                {matricula ? matricula : 'No especificada en legajo'}
+              </Text>
+            </View>
+
+            {especialidad ? (
+              <View style={styles.profDetailRow}>
+                <Text style={[styles.profDetailLabel, isDark && styles.subtituloDark]}>Especialidad:</Text>
+                <Text style={[styles.profDetailValue, isDark && styles.textDark]}>{especialidad}</Text>
+              </View>
+            ) : null}
+
+            {veterinaria ? (
+              <TouchableOpacity
+                style={[styles.profDetailRow, { borderBottomWidth: 0 }]}
+                onPress={() => router.push('/veterinarias')}
+              >
+                <Text style={[styles.profDetailLabel, isDark && styles.subtituloDark]}>Clínica asociada:</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Text style={[styles.profDetailValue, { color: '#04b639' }]}>{veterinaria}</Text>
+                  <Ionicons name="chevron-forward" size={14} color="#04b639" />
+                </View>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        )}
       </View>
 
       {/* Opciones y Preferencias */}
       <View style={styles.optionsContainer}>
+        {/* Acceso a Recordatorios */}
+        <TouchableOpacity
+          style={[styles.settingRow, isDark && styles.settingRowDark]}
+          onPress={() => router.push('/recordatorios')}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Ver recordatorios sanitarios"
+        >
+          <View style={[styles.settingIconCircle, isDark && styles.settingIconCircleDark]}>
+            <Ionicons name="notifications-outline" size={20} color="#04b639" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.settingTitle, isDark && styles.textDark]}>Recordatorios y Avisos</Text>
+            <Text style={[styles.settingSubtitle, isDark && styles.subtituloDark]}>
+              {isVeterinario ? 'Gestión de alertas sanitarias para pacientes' : 'Vacunaciones y controles programados'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={isDark ? '#71717a' : '#9ca3af'} />
+        </TouchableOpacity>
+
         {/* Fila Selector Modo Oscuro / Claro */}
         <View style={[styles.settingRow, isDark && styles.settingRowDark]}>
           <View style={[styles.settingIconCircle, isDark && styles.settingIconCircleDark]}>
@@ -77,28 +154,6 @@ export default function PerfilScreen() {
             thumbColor={isDark ? '#4ade80' : '#ffffff'}
           />
         </View>
-
-        {/* Fila Asistente IA */}
-        <TouchableOpacity
-          style={[styles.settingRow, isDark && styles.settingRowDark]}
-          onPress={() => router.push('/chat' as any)}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.settingIconCircle, isDark && styles.settingIconCircleDark]}>
-            <Ionicons
-              name="sparkles"
-              size={20}
-              color="#04b639"
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.settingTitle, isDark && styles.textDark]}>Asistente Virtual VetLink</Text>
-            <Text style={[styles.settingSubtitle, isDark && styles.subtituloDark]}>
-              Consultas con IA sobre nutrición y cuidados
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-        </TouchableOpacity>
 
         {/* Botón Cerrar Sesión */}
         <TouchableOpacity
@@ -290,5 +345,60 @@ const styles = StyleSheet.create({
     color: '#ef4444',
     fontSize: 15,
     fontWeight: '700',
+  },
+  // ── Estilos Profesionales ──────────────────────────────────────────────────
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#04b639',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  verifiedBadgeDark: {
+    backgroundColor: '#18181b',
+    borderColor: '#04b639',
+  },
+  verifiedBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#04b639',
+  },
+  verifiedBadgeTextDark: {
+    color: '#4ade80',
+  },
+  profDetailsBox: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#dcfce7',
+  },
+  profDetailsBoxDark: {
+    backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
+  },
+  profDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  profDetailLabel: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  profDetailValue: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f172a',
   },
 });

@@ -16,6 +16,28 @@ export interface ChatMessage {
 const CHAT_API_URL = process.env.EXPO_PUBLIC_CHAT_API_URL;
 
 /**
+ * Limpia asteriscos, símbolos de marcado y caracteres de formato Markdown
+ * para garantizar un texto plano, profesional y legible.
+ */
+export function limpiarTextoSinAsteriscos(texto: string): string {
+  if (!texto) return '';
+  return texto
+    // Convertir viñetas con asterisco en guiones simples
+    .replace(/^(\s*)\*\s+/gm, '$1- ')
+    // Eliminar asteriscos de negrita o cursiva (***texto***, **texto**, *texto*)
+    .replace(/\*{1,3}(.*?)\*{1,3}/gs, '$1')
+    // Eliminar cualquier asterisco remanente
+    .replace(/\*/g, '')
+    // Eliminar encabezados tipo Markdown (#, ##, ###)
+    .replace(/^#{1,6}\s+/gm, '')
+    // Eliminar acentos graves / backticks de código
+    .replace(/`{1,3}(.*?)`{1,3}/gs, '$1')
+    // Normalizar saltos de línea excesivos
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
  * Valida un mensaje de usuario antes de enviarlo
  */
 export function validarMensajeUsuario(texto: string): { valido: boolean; error?: string } {
@@ -122,7 +144,7 @@ export async function enviarMensajeChat(historial: ChatMessage[]): Promise<strin
       throw new Error('El asistente no generó una respuesta válida. Intenta reformular tu consulta.');
     }
 
-    return data.reply.trim();
+    return limpiarTextoSinAsteriscos(data.reply.trim());
   } catch (err: any) {
     clearTimeout(timeoutId);
     console.warn('[ChatService - Exception]:', err);

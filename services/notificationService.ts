@@ -1,5 +1,5 @@
-import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
 
 // Configura el comportamiento de las notificaciones cuando la aplicación está en primer plano
 try {

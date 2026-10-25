@@ -1,5 +1,5 @@
 import { auth } from '@/config/firebase';
-import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { nfcService } from '@/services/nfcService';
 import { getPetById, linkPetToUser, type Pet } from '@/services/petService';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -237,7 +237,7 @@ export default function ScanScreen() {
             valor={mascota.nfcStatus === 'linked' ? '📶 Etiqueta Vinculada' : 'Sin etiqueta NFC'}
             isDark={isDark}
           />
-          
+
           {/* Estado de vinculación al usuario */}
           {mascota.userId === auth.currentUser?.uid || mascota.ownerId === auth.currentUser?.uid ? (
             <View style={[styles.avisoBanner, isDark ? { backgroundColor: '#132e1f', borderColor: '#166534', borderLeftColor: '#04b639', marginTop: 12 } : { backgroundColor: '#ECFDF5', borderColor: '#10B981', borderLeftColor: '#04b639', marginTop: 12 }]}>

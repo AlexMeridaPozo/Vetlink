@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { auth, db } from '../config/firebase';
 
 export type UserRole = 'veterinario' | 'propietario';
@@ -11,6 +11,11 @@ export interface UserProfile {
   displayName: string | null;
   rol: UserRole;
   matricula?: string;
+  especialidad?: string;
+  veterinaria?: string;
+  verificado?: boolean;
+  telefono?: string;
+  fotoUrl?: string;
   updatedAt?: string;
   createdAt?: string;
 }
@@ -30,7 +35,7 @@ const AuthContext = createContext<AuthContextType>({
   userRole: 'propietario',
   isVeterinario: false,
   isLoading: true,
-  refreshProfile: async () => {},
+  refreshProfile: async () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -58,7 +63,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const snap = await getDoc(userRef);
 
       if (snap.exists()) {
-        const data = snap.data() as UserProfile;
+        const rawData = snap.data();
+        const rolNormalizado: UserRole =
+          rawData.rol === 'veterinario' || rawData.role === 'veterinario'
+            ? 'veterinario'
+            : 'propietario';
+
+        const data: UserProfile = {
+          uid: rawData.uid || firebaseUser.uid,
+          email: rawData.email ?? firebaseUser.email,
+          displayName: rawData.displayName ?? firebaseUser.displayName,
+          rol: rolNormalizado,
+          matricula: rawData.matricula,
+          especialidad: rawData.especialidad,
+          veterinaria: rawData.veterinaria,
+          verificado: rawData.verificado,
+          telefono: rawData.telefono,
+          fotoUrl: rawData.fotoUrl,
+          updatedAt: rawData.updatedAt,
+          createdAt: rawData.createdAt,
+        };
         setProfile(data);
       } else {
         // El perfil aún no existe en Firestore (puede ocurrir durante el registro).

@@ -1,15 +1,15 @@
 import { useAuth } from '@/context/AuthContext';
-import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { usePets } from '@/services/petService';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isVeterinario } = useAuth();
   const { isDark } = useAppTheme();
   const { petCount, refresh: refreshPets } = usePets();
 
@@ -21,6 +21,137 @@ export default function HomeScreen() {
     }, [refreshPets])
   );
 
+  // ── 1. Vista de Inicio para el Profesional Veterinario ────────────────────────
+  if (isVeterinario) {
+    return (
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'left', 'right']}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Encabezado con Saludo Profesional y Botón de Tema */}
+          <View style={styles.header}>
+            <View style={{ flex: 1 }}>
+              <View style={[styles.vetBadge, isDark && styles.vetBadgeDark]}>
+                <Ionicons name="shield-checkmark" size={13} color={isDark ? '#4ade80' : '#15803d'} />
+                <Text style={[styles.vetBadgeText, isDark && styles.vetBadgeTextDark]}>
+                  Perfil Veterinario
+                </Text>
+              </View>
+              <Text style={[styles.saludo, isDark && styles.textDark]}>
+                ¡Hola, {nombreUsuario}! 🩺
+              </Text>
+              <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>
+                Panel de atención y gestión clínica
+              </Text>
+            </View>
+            <ThemeToggleButton />
+          </View>
+
+          {/* ACCESO PRINCIPAL Y DESTACADO: Escanear Mascota */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.heroCardVet,
+              isDark && styles.heroCardVetDark,
+              pressed && styles.botonPresionado,
+            ]}
+            onPress={() => router.push('/(tabs)/scan')}
+            accessibilityRole="button"
+            accessibilityLabel="Escanear mascota mediante QR o NFC"
+          >
+            <View style={styles.heroVetTop}>
+              <View style={[styles.heroIconCircle, isDark && styles.heroIconCircleDark]}>
+                <Ionicons name="qr-code" size={32} color="#04b639" />
+              </View>
+              <View style={[styles.heroActionBadge, isDark && styles.heroActionBadgeDark]}>
+                <Text style={[styles.heroActionBadgeText, isDark && styles.heroActionBadgeTextDark]}>
+                  Acción principal
+                </Text>
+              </View>
+            </View>
+
+            <Text style={[styles.heroVetTitle, isDark && styles.heroVetTitleDark]}>
+              Escanear Mascota
+            </Text>
+            <Text style={[styles.heroVetSubtitle, isDark && styles.heroVetSubtitleDark]}>
+              Identificación inmediata por código QR o etiqueta NFC para consultar la ficha clínica del paciente.
+            </Text>
+
+            <View style={[styles.heroVetFooter, isDark && styles.heroVetFooterDark]}>
+              <View style={styles.heroCtaButton}>
+                <Ionicons name="camera-outline" size={18} color="#ffffff" />
+                <Text style={styles.heroCtaText}>Abrir Escáner</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={isDark ? '#4ade80' : '#04b639'} />
+            </View>
+          </Pressable>
+
+          {/* ACCESO SECUNDARIO: Buscar Mascota */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.searchCardVet,
+              isDark && styles.searchCardVetDark,
+              pressed && styles.botonPresionado,
+            ]}
+            onPress={() => router.push('/(tabs)/mascotas')}
+            accessibilityRole="button"
+            accessibilityLabel="Buscar mascota por nombre o identificador"
+          >
+            <View style={[styles.searchIconWrapper, isDark && styles.searchIconWrapperDark]}>
+              <Ionicons name="search" size={22} color="#04b639" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.searchCardTitle, isDark && styles.textDark]}>
+                Buscar Mascota
+              </Text>
+              <Text style={[styles.searchCardSubtitle, isDark && styles.subtituloDark]}>
+                Localizar paciente por nombre o ID clínico
+              </Text>
+            </View>
+            <Ionicons name="arrow-forward" size={18} color={isDark ? '#4ade80' : '#04b639'} />
+          </Pressable>
+
+          {/* Sección de Gestión y Servicios Profesionales */}
+          <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
+            Accesos y Servicios
+          </Text>
+
+          <View style={styles.grid}>
+            <BotonMenu
+              titulo="Turnos"
+              subtitulo="Agenda de citas"
+              icono="calendar-outline"
+              onPress={() => router.push('/turnos')}
+              isDark={isDark}
+            />
+            <BotonMenu
+              titulo="Mi Perfil"
+              subtitulo="Datos profesionales"
+              icono="person-outline"
+              onPress={() => router.push('/(tabs)/perfil')}
+              isDark={isDark}
+            />
+            <BotonMenu
+              titulo="Mi Veterinaria"
+              subtitulo="Clínica asociada"
+              icono="medkit-outline"
+              onPress={() => router.push('/veterinarias')}
+              isDark={isDark}
+            />
+            <BotonMenu
+              titulo="Recordatorios"
+              subtitulo="Avisos sanitarios"
+              icono="notifications-outline"
+              onPress={() => router.push('/recordatorios')}
+              isDark={isDark}
+            />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // ── 2. Vista de Inicio para Propietarios / Tutores (Sin Tienda) ─────────────
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'left', 'right']}>
       <ScrollView
@@ -67,42 +198,10 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
-        {/* Banner Asistente IA VetLink */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.aiCard,
-            isDark && styles.aiCardDark,
-            pressed && styles.botonPresionado,
-          ]}
-          onPress={() => router.push('/chat' as any)}
-          accessibilityRole="button"
-          accessibilityLabel="Consultar al Asistente IA VetLink"
-        >
-          <View style={styles.aiCardContent}>
-            <View style={[styles.aiIconCircle, isDark && styles.aiIconCircleDark]}>
-              <Ionicons name="sparkles" size={22} color="#04b639" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={[styles.aiCardTitulo, isDark && styles.textDark]}>
-                  Asistente IA VetLink
-                </Text>
-                <View style={styles.aiBadgeNew}>
-                  <Text style={styles.aiBadgeNewText}>IA</Text>
-                </View>
-              </View>
-              <Text style={[styles.aiCardSubtitulo, isDark && styles.subtituloDark]}>
-                Consultas sobre cuidados, nutrición, prevención y orientación
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#04b639" />
-          </View>
-        </Pressable>
-
         {/* Título de accesos rápidos */}
         <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>Servicios y Accesos</Text>
 
-        {/* Grilla de 6 botones */}
+        {/* Grilla de accesos (Sin tienda) */}
         <View style={styles.grid}>
           <BotonMenu
             titulo="Escanear QR"
@@ -140,10 +239,10 @@ export default function HomeScreen() {
             isDark={isDark}
           />
           <BotonMenu
-            titulo="Tienda"
-            subtitulo="Productos para mascotas"
-            icono="bag-handle-outline"
-            onPress={() => router.push('/(tabs)/tienda')}
+            titulo="Mi Perfil"
+            subtitulo="Datos y ajustes"
+            icono="person-outline"
+            onPress={() => router.push('/(tabs)/perfil')}
             isDark={isDark}
           />
         </View>
@@ -360,60 +459,167 @@ const styles = StyleSheet.create({
     marginTop: 4,
     lineHeight: 16,
   },
-  aiCard: {
-    backgroundColor: '#f0fdf4',
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 22,
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
-    shadowColor: '#04b639',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  aiCardDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
-    shadowOpacity: 0.25,
-  },
-  aiCardContent: {
+  // ── Estilos específicos del Perfil Veterinario ──────────────────────────────
+  vetBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 5,
+    alignSelf: 'flex-start',
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginBottom: 6,
   },
-  aiIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiIconCircleDark: {
+  vetBadgeDark: {
     backgroundColor: '#064e3b',
   },
-  aiCardTitulo: {
-    fontSize: 16,
+  vetBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#15803d',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  vetBadgeTextDark: {
+    color: '#4ade80',
+  },
+  heroCardVet: {
+    backgroundColor: '#ecfdf5',
+    borderRadius: 22,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1.5,
+    borderColor: '#a7f3d0',
+    shadowColor: '#04b639',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  heroCardVetDark: {
+    backgroundColor: '#064e3b26',
+    borderColor: '#059669',
+    shadowOpacity: 0.3,
+  },
+  heroVetTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  heroIconCircle: {
+    backgroundColor: '#ffffff',
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  heroIconCircleDark: {
+    backgroundColor: '#1f2937',
+  },
+  heroActionBadge: {
+    backgroundColor: '#04b639',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  heroActionBadgeDark: {
+    backgroundColor: '#16a34a',
+  },
+  heroActionBadgeText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  heroActionBadgeTextDark: {
+    color: '#ffffff',
+  },
+  heroVetTitle: {
+    fontSize: 22,
     fontWeight: '800',
+    color: '#065f46',
+    marginBottom: 6,
+  },
+  heroVetTitleDark: {
+    color: '#6ee7b7',
+  },
+  heroVetSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#047857',
+    marginBottom: 16,
+  },
+  heroVetSubtitleDark: {
+    color: '#a7f3d0',
+  },
+  heroVetFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#a7f3d0',
+  },
+  heroVetFooterDark: {
+    borderTopColor: '#065f46',
+  },
+  heroCtaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#04b639',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+  },
+  heroCtaText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  searchCardVet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    gap: 14,
+  },
+  searchCardVetDark: {
+    backgroundColor: '#18181b',
+    borderColor: '#27272a',
+  },
+  searchIconWrapper: {
+    backgroundColor: '#dcfce7',
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchIconWrapperDark: {
+    backgroundColor: '#064e3b',
+  },
+  searchCardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
     color: '#0f172a',
   },
-  aiCardSubtitulo: {
+  searchCardSubtitle: {
     fontSize: 12,
-    color: '#166534',
+    color: '#64748b',
     marginTop: 2,
-    lineHeight: 16,
-  },
-  aiBadgeNew: {
-    backgroundColor: '#04b639',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  aiBadgeNewText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '800',
   },
 });

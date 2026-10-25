@@ -1,3 +1,7 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Image } from 'expo-image';
+import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,21 +20,17 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { router, useFocusEffect } from 'expo-router';
 
+import QRMascotaCard from '@/components/QRMascotaCard';
+import VincularNfcModal from '@/components/VincularNfcModal';
 import { useAuth } from '@/context/AuthContext';
-import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import {
   getNextSuggestedPetId,
   registerPet,
   usePets,
   type Pet,
 } from '@/services/petService';
-import QRMascotaCard from '@/components/QRMascotaCard';
-import VincularNfcModal from '@/components/VincularNfcModal';
 
 // ── 1. Componente Tarjeta de Mascota (Memoizado) ──────────────────────────────
 interface PetCardProps {
@@ -712,7 +712,7 @@ export default function MascotasScreen() {
           <TouchableOpacity
             activeOpacity={1}
             style={[styles.modalSheet, isDark && styles.modalSheetDark]}
-            onPress={() => {}}
+            onPress={() => { }}
           >
             <View style={styles.modalHandle} />
             <View style={[styles.modalHeader, isDark && styles.modalHeaderDark]}>

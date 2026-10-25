@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MapaScreen() {
   const { isDark } = useAppTheme();

@@ -63,6 +63,7 @@ function RootLayoutNav() {
           name="chat"
           options={{
             headerShown: false,
+            animation: 'slide_from_bottom',
           }}
         />
       </Stack>

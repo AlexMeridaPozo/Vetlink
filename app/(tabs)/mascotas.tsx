@@ -1,7 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -23,11 +25,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import QRMascotaCard from '@/components/QRMascotaCard';
 import VincularNfcModal from '@/components/VincularNfcModal';
+import { app } from '@/config/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import {
   getNextSuggestedPetId,
   registerPet,
+  updatePetData,
   usePets,
   type Pet,
 } from '@/services/petService';
@@ -38,6 +42,8 @@ interface PetCardProps {
   onPress: (pet: Pet) => void;
   onQrPress: (pet: Pet) => void;
   onNfcPress: (pet: Pet) => void;
+  onPhotoPress: (pet: Pet) => void;
+  isUpdatingPhoto?: boolean;
   isDark?: boolean;
 }
 
@@ -46,6 +52,8 @@ const PetCard = React.memo(function PetCard({
   onPress,
   onQrPress,
   onNfcPress,
+  onPhotoPress,
+  isUpdatingPhoto = false,
   isDark = false,
 }: PetCardProps) {
   const isMale = pet.sexo?.toLowerCase().includes('macho');
@@ -58,8 +66,14 @@ const PetCard = React.memo(function PetCard({
       onPress={() => onPress(pet)}
     >
       <View style={styles.cardHeader}>
-        {/* Foto o Avatar */}
-        <View style={styles.avatarContainer}>
+        {/* Foto o Avatar con acción interactiva para agregar o cambiar foto */}
+        <TouchableOpacity
+          style={styles.avatarContainer}
+          activeOpacity={0.8}
+          onPress={() => onPhotoPress(pet)}
+          accessibilityRole="button"
+          accessibilityLabel={`Foto de perfil de ${pet.nombre}. Toca para cambiar o agregar foto.`}
+        >
           {pet.fotoUrl ? (
             <Image
               source={{ uri: pet.fotoUrl }}
@@ -72,12 +86,23 @@ const PetCard = React.memo(function PetCard({
               <MaterialIcons name="pets" size={32} color={isDark ? '#4ade80' : '#15803d'} />
             </View>
           )}
+
+          {isUpdatingPhoto ? (
+            <View style={styles.avatarLoadingOverlay}>
+              <ActivityIndicator size="small" color="#ffffff" />
+            </View>
+          ) : (
+            <View style={[styles.avatarCameraBadge, isDark && styles.avatarCameraBadgeDark]}>
+              <Ionicons name="camera" size={11} color="#ffffff" />
+            </View>
+          )}
+
           <View style={[styles.speciesBadge, isDark && styles.speciesBadgeDark]}>
             <Text style={styles.speciesBadgeText}>
               {pet.especie === 'Gato' ? '🐱' : '🐶'}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Información Principal */}
         <View style={styles.petInfo}>
@@ -229,6 +254,7 @@ function RegistrarMascotaModal({
   const [propietario, setPropietario] = useState('');
   const [telefono, setTelefono] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [fotoUrl, setFotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleModalShow = () => {
@@ -239,7 +265,61 @@ function RegistrarMascotaModal({
     setPropietario('');
     setTelefono('');
     setDescripcion('');
+    setFotoUrl('');
     getNextSuggestedPetId().then((sug) => setPetId(sug));
+  };
+
+  const seleccionarFotoModal = () => {
+    Alert.alert(
+      'Foto de Perfil',
+      'Elige el método para la foto:',
+      [
+        {
+          text: 'Tomar foto',
+          onPress: async () => {
+            const perm = await ImagePicker.requestCameraPermissionsAsync();
+            if (!perm.granted) {
+              Alert.alert('Permiso Requerido', 'Se requiere acceso a la cámara.');
+              return;
+            }
+            const res = await ImagePicker.launchCameraAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.6,
+              base64: true,
+            });
+            if (!res.canceled && res.assets?.[0]) {
+              const a = res.assets[0];
+              setFotoUrl(a.base64 ? `data:image/jpeg;base64,${a.base64}` : a.uri);
+            }
+          },
+        },
+        {
+          text: 'Elegir de galería',
+          onPress: async () => {
+            const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!perm.granted) {
+              Alert.alert('Permiso Requerido', 'Se requiere acceso a la galería.');
+              return;
+            }
+            const res = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.6,
+              base64: true,
+            });
+            if (!res.canceled && res.assets?.[0]) {
+              const a = res.assets[0];
+              setFotoUrl(a.base64 ? `data:image/jpeg;base64,${a.base64}` : a.uri);
+            }
+          },
+        },
+        { text: 'Cancelar', style: 'cancel' },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handleSubmit = async () => {
@@ -270,6 +350,21 @@ function RegistrarMascotaModal({
 
     setLoading(true);
     try {
+      let finalFoto = fotoUrl;
+      if (fotoUrl) {
+        try {
+          const storage = getStorage(app);
+          const cleanSafeId = cleanId.replace(/[^a-zA-Z0-9_-]/g, '_');
+          const storageRef = ref(storage, `pets/${cleanSafeId}_${Date.now()}.jpg`);
+          const res = await fetch(fotoUrl);
+          const blob = await res.blob();
+          await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
+          finalFoto = await getDownloadURL(storageRef);
+        } catch {
+          finalFoto = fotoUrl;
+        }
+      }
+
       const nuevaMascota = await registerPet(
         {
           id: cleanId,
@@ -283,6 +378,7 @@ function RegistrarMascotaModal({
           propietario: propietario.trim(),
           telefonoContacto: telefono.trim() || undefined,
           descripcion: descripcion.trim() || undefined,
+          fotoUrl: finalFoto || undefined,
           userId: '',
           ownerId: '',
         },
@@ -338,6 +434,48 @@ function RegistrarMascotaModal({
           </View>
 
           <ScrollView contentContainerStyle={styles.formBody} showsVerticalScrollIndicator={false}>
+            {/* Foto de Perfil */}
+            <View style={styles.photoPickerContainer}>
+              {fotoUrl ? (
+                <View style={styles.photoPreviewWrapper}>
+                  <Image source={{ uri: fotoUrl }} style={styles.photoPreview} contentFit="cover" />
+                  <View style={styles.photoActionsRow}>
+                    <TouchableOpacity
+                      style={[styles.photoActionBtn, styles.photoChangeBtn]}
+                      onPress={seleccionarFotoModal}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="camera" size={14} color="#ffffff" style={{ marginRight: 4 }} />
+                      <Text style={styles.photoActionBtnText}>Cambiar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.photoActionBtn, styles.photoRemoveBtn, isDark && styles.photoRemoveBtnDark]}
+                      onPress={() => setFotoUrl('')}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="trash-outline" size={14} color="#ef4444" style={{ marginRight: 4 }} />
+                      <Text style={[styles.photoActionBtnText, { color: '#ef4444' }]}>Quitar</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.photoPickerBtn, isDark && styles.photoPickerBtnDark]}
+                  onPress={seleccionarFotoModal}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.photoPickerIconCircle, isDark && styles.photoPickerIconCircleDark]}>
+                    <Ionicons name="camera" size={26} color="#04b639" />
+                  </View>
+                  <Text style={[styles.photoPickerTitle, isDark && styles.textDark]}>
+                    Foto de Perfil
+                  </Text>
+                  <Text style={[styles.photoPickerSubtitle, isDark && styles.formSubtitleDark]}>
+                    📸 Tomar foto o 🖼️ elegir de galería
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
             {/* ID Estable */}
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
@@ -541,6 +679,7 @@ export default function MascotasScreen() {
   const [qrMascota, setQrMascota] = useState<Pet | null>(null);
   const [nfcMascota, setNfcMascota] = useState<Pet | null>(null);
   const [showRegistrarModal, setShowRegistrarModal] = useState<boolean>(false);
+  const [updatingPetId, setUpdatingPetId] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -584,12 +723,120 @@ export default function MascotasScreen() {
     setNfcMascota(pet);
   };
 
+  const capturarYGuardarFoto = useCallback(
+    async (pet: Pet, origen: 'camera' | 'gallery') => {
+      try {
+        let result: ImagePicker.ImagePickerResult;
+
+        if (origen === 'camera') {
+          const perm = await ImagePicker.requestCameraPermissionsAsync();
+          if (!perm.granted) {
+            Alert.alert(
+              'Permiso Requerido',
+              'Se requiere acceso a la cámara para tomar una foto de perfil.'
+            );
+            return;
+          }
+
+          result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.6,
+            base64: true,
+          });
+        } else {
+          const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!perm.granted) {
+            Alert.alert(
+              'Permiso Requerido',
+              'Se requiere acceso a la galería para seleccionar una foto de perfil.'
+            );
+            return;
+          }
+
+          result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.6,
+            base64: true,
+          });
+        }
+
+        if (result.canceled || !result.assets || result.assets.length === 0) {
+          return;
+        }
+
+        const asset = result.assets[0];
+        setUpdatingPetId(pet.id);
+
+        let finalFotoUrl = asset.base64 ? `data:image/jpeg;base64,${asset.base64}` : asset.uri;
+
+        try {
+          const storage = getStorage(app);
+          const cleanSafeId = pet.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+          const storageRef = ref(storage, `pets/${cleanSafeId}_${Date.now()}.jpg`);
+          const response = await fetch(asset.uri);
+          const blob = await response.blob();
+          await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
+          finalFotoUrl = await getDownloadURL(storageRef);
+        } catch (storageError) {
+          console.info('[MascotasScreen] Fallback a imagen base64:', storageError);
+          if (asset.base64) {
+            finalFotoUrl = `data:image/jpeg;base64,${asset.base64}`;
+          }
+        }
+
+        await updatePetData(pet.id, { fotoUrl: finalFotoUrl });
+        await refresh();
+        Alert.alert('¡Foto Actualizada!', `Se guardó la foto de perfil de ${pet.nombre}.`);
+      } catch (error: any) {
+        console.error('[MascotasScreen] Error al guardar foto de perfil:', error);
+        Alert.alert(
+          'Error al guardar foto',
+          error?.message || 'No se pudo guardar la foto de perfil de la mascota. Intenta nuevamente.'
+        );
+      } finally {
+        setUpdatingPetId(null);
+      }
+    },
+    [refresh]
+  );
+
+  const handlePhotoPress = useCallback(
+    (pet: Pet) => {
+      Alert.alert(
+        `Foto de perfil: ${pet.nombre}`,
+        'Selecciona una opción para la foto de tu mascota:',
+        [
+          {
+            text: 'Tomar foto',
+            onPress: () => capturarYGuardarFoto(pet, 'camera'),
+          },
+          {
+            text: 'Elegir de galería',
+            onPress: () => capturarYGuardarFoto(pet, 'gallery'),
+          },
+          {
+            text: 'Cancelar',
+            style: 'cancel',
+          },
+        ],
+        { cancelable: true }
+      );
+    },
+    [capturarYGuardarFoto]
+  );
+
   const renderPetCard = ({ item }: { item: Pet }) => (
     <PetCard
       pet={item}
       onPress={handlePetPress}
       onQrPress={setQrMascota}
       onNfcPress={handleVincularNfcPress}
+      onPhotoPress={handlePhotoPress}
+      isUpdatingPhoto={updatingPetId === item.id}
       isDark={isDark}
     />
   );
@@ -1430,5 +1677,126 @@ const styles = StyleSheet.create({
   },
   textDark: {
     color: '#fafafa',
+  },
+  avatarCameraBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#04b639',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.25,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+      },
+    }),
+  },
+  avatarCameraBadgeDark: {
+    borderColor: '#18181b',
+  },
+  avatarLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  photoPickerContainer: {
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  photoPickerBtn: {
+    width: '100%',
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: '#86efac',
+    backgroundColor: '#f0fdf4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoPickerBtnDark: {
+    backgroundColor: '#132e1f',
+    borderColor: '#166534',
+  },
+  photoPickerIconCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#dcfce7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  photoPickerIconCircleDark: {
+    backgroundColor: '#064e3b',
+  },
+  photoPickerTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 2,
+  },
+  photoPickerSubtitle: {
+    fontSize: 12,
+    color: '#64748b',
+    textAlign: 'center',
+  },
+  photoPreviewWrapper: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  photoPreview: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 3,
+    borderColor: '#04b639',
+    marginBottom: 10,
+  },
+  photoActionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  photoActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  photoChangeBtn: {
+    backgroundColor: '#04b639',
+  },
+  photoRemoveBtn: {
+    backgroundColor: '#fee2e2',
+  },
+  photoRemoveBtnDark: {
+    backgroundColor: '#450a0a',
+  },
+  photoActionBtnText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

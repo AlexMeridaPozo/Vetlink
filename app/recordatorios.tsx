@@ -1,28 +1,28 @@
-import CrearRecordatorioModal from '@/components/CrearRecordatorioModal';
-import { useAuth } from '@/context/AuthContext';
-import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
-import { initNotifications } from '@/services/notificationService';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  calcularTiempoRestante,
-  eliminarRecordatorio,
-  getRecordatorios,
-  sincronizarNotificacionesUsuario,
-  type Recordatorio,
-} from '@/services/reminderService';
-import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useEffect, useState } from 'react';
-import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
   ActivityIndicator,
   Alert,
   Platform,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
+import CrearRecordatorioModal from '@/components/CrearRecordatorioModal';
+import {
+  getRecordatorios,
+  eliminarRecordatorio,
+  sincronizarNotificacionesUsuario,
+  calcularTiempoRestante,
+  type Recordatorio,
+} from '@/services/reminderService';
+import { initNotifications } from '@/services/notificationService';
 
 export default function RecordatoriosScreen() {
   const { isDark } = useAppTheme();
@@ -36,7 +36,7 @@ export default function RecordatoriosScreen() {
 
   // Inicializar notificaciones al cargar
   useEffect(() => {
-    initNotifications().catch(() => { });
+    initNotifications().catch(() => {});
   }, []);
 
   const cargarDatos = useCallback(async () => {
@@ -51,7 +51,7 @@ export default function RecordatoriosScreen() {
 
       // Si el usuario es propietario, sincronizar sus avisos en este dispositivo local
       if (!isVeterinario && list.length > 0) {
-        sincronizarNotificacionesUsuario(list).catch(() => { });
+        sincronizarNotificacionesUsuario(list).catch(() => {});
       }
     } catch (e) {
       console.warn('[RecordatoriosScreen] Error cargando recordatorios:', e);
@@ -61,8 +61,33 @@ export default function RecordatoriosScreen() {
   }, [user, isVeterinario]);
 
   useEffect(() => {
-    cargarDatos();
-  }, [cargarDatos]);
+    let isMounted = true;
+
+    Promise.resolve().then(async () => {
+      if (!isMounted) return;
+      if (!user) {
+        setCargando(false);
+        return;
+      }
+
+      try {
+        const list = await getRecordatorios(user.uid, isVeterinario, user.email || undefined);
+        if (!isMounted) return;
+        setRecordatorios(list);
+        if (!isVeterinario && list.length > 0) {
+          sincronizarNotificacionesUsuario(list).catch(() => {});
+        }
+      } catch (e) {
+        console.warn('[RecordatoriosScreen] Error cargando recordatorios:', e);
+      } finally {
+        if (isMounted) setCargando(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, isVeterinario]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -255,8 +280,8 @@ export default function RecordatoriosScreen() {
                         tiempo.esVencido
                           ? styles.badgeOverdue
                           : tiempo.esHoy
-                            ? styles.badgeToday
-                            : styles.badgeUpcoming,
+                          ? styles.badgeToday
+                          : styles.badgeUpcoming,
                       ]}
                     >
                       <Text
@@ -265,8 +290,8 @@ export default function RecordatoriosScreen() {
                           tiempo.esVencido
                             ? styles.badgeOverdueText
                             : tiempo.esHoy
-                              ? styles.badgeTodayText
-                              : styles.badgeUpcomingText,
+                            ? styles.badgeTodayText
+                            : styles.badgeUpcomingText,
                         ]}
                       >
                         {tiempo.texto}

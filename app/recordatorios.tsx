@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import CrearRecordatorioModal from '@/components/CrearRecordatorioModal';
@@ -61,8 +61,33 @@ export default function RecordatoriosScreen() {
   }, [user, isVeterinario]);
 
   useEffect(() => {
-    cargarDatos();
-  }, [cargarDatos]);
+    let isMounted = true;
+
+    Promise.resolve().then(async () => {
+      if (!isMounted) return;
+      if (!user) {
+        setCargando(false);
+        return;
+      }
+
+      try {
+        const list = await getRecordatorios(user.uid, isVeterinario, user.email || undefined);
+        if (!isMounted) return;
+        setRecordatorios(list);
+        if (!isVeterinario && list.length > 0) {
+          sincronizarNotificacionesUsuario(list).catch(() => {});
+        }
+      } catch (e) {
+        console.warn('[RecordatoriosScreen] Error cargando recordatorios:', e);
+      } finally {
+        if (isMounted) setCargando(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, isVeterinario]);
 
   const onRefresh = async () => {
     setRefreshing(true);

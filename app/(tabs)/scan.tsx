@@ -4,8 +4,8 @@ import { nfcService } from '@/services/nfcService';
 import { getPetById, linkPetToUser, type Pet } from '@/services/petService';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -27,21 +27,9 @@ export default function ScanScreen() {
   const [mascota, setMascota] = useState<Pet | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [vinculando, setVinculando] = useState(false);
-  const isScanningRef = useRef(false);
-
-  // Detener la cámara y la sesión NFC cuando la pantalla pierde el foco (ahorro de batería y recursos)
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        setCamaraActiva(false);
-        setEsperandoNFC(false);
-        nfcService.cancelSession().catch(() => {});
-      };
-    }, [])
-  );
 
   // Vincula la mascota al usuario logueado en Firestore y redirige a Mis Mascotas
-  const handleVincularMascota = useCallback(async () => {
+  const handleVincularMascota = async () => {
     if (!mascota) return;
     const user = auth.currentUser;
     if (!user) {
@@ -74,16 +62,16 @@ export default function ScanScreen() {
     } finally {
       setVinculando(false);
     }
-  }, [mascota]);
+  };
 
   // Muestra un mensaje en pantalla (funciona en web y en app)
-  const mostrarAviso = useCallback((msg: string) => {
+  const mostrarAviso = (msg: string) => {
     setAviso(msg);
     setTimeout(() => setAviso(null), 4000);
-  }, []);
+  };
 
   // Busca la mascota en Firestore con el ID dado (QR o NFC) - Firestore es la FUENTE DE VERDAD
-  const buscarMascota = useCallback(async (id: string) => {
+  const buscarMascota = async (id: string) => {
     // Requerir que el usuario esté autenticado antes de leer Firestore
     if (!auth.currentUser) {
       Alert.alert('Necesitas iniciar sesión', 'Inicia sesión para consultar la información de la mascota.');
@@ -106,11 +94,11 @@ export default function ScanScreen() {
     } finally {
       setCargando(false);
     }
-  }, []);
+  };
 
   // ── QR ──────────────────────────────────────────────────────────────────────
 
-  const abrirCamara = useCallback(async () => {
+  const abrirCamara = async () => {
     if (!permission?.granted) {
       const res = await requestPermission();
       if (!res.granted) {
@@ -120,27 +108,18 @@ export default function ScanScreen() {
     }
     setMascota(null);
     setCamaraActiva(true);
-  }, [permission, requestPermission]);
+  };
 
-  const alEscanearQR = useCallback(async (result: BarcodeScanningResult) => {
-    if (isScanningRef.current) return;
-    isScanningRef.current = true;
+  const alEscanearQR = async (result: BarcodeScanningResult) => {
     setCamaraActiva(false);
-
-    try {
-      const petId = nfcService.parsePetIdFromPayload(result.data);
-      if (!petId) {
-        Alert.alert('QR inválido', 'El código QR no contiene un identificador de mascota válido.');
-        return;
-      }
-
-      await buscarMascota(petId);
-    } finally {
-      setTimeout(() => {
-        isScanningRef.current = false;
-      }, 600);
+    const petId = nfcService.parsePetIdFromPayload(result.data);
+    if (!petId) {
+      Alert.alert('QR inválido', 'El código QR no contiene un identificador de mascota válido.');
+      return;
     }
-  }, [buscarMascota]);
+
+    await buscarMascota(petId);
+  };
 
   // ── NFC ─────────────────────────────────────────────────────────────────────
 

@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-  Platform,
-  KeyboardAvoidingView,
-} from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useAppTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useAppTheme } from '@/context/ThemeContext';
 import {
   crearRecordatorio,
   getUsuariosDestinatarios,
-  type UsuarioDestinatario,
   type Recordatorio,
+  type UsuarioDestinatario,
 } from '@/services/reminderService';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 interface Props {
   visible: boolean;
@@ -37,14 +37,6 @@ const PRESET_TITULOS = [
   { icon: '🧪', label: 'Análisis de Sangre', desc: 'Venir en ayunas de 8 horas para extracción de muestra.' },
 ];
 
-const getFechaManana = () => {
-  const manana = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const yyyy = manana.getFullYear();
-  const mm = String(manana.getMonth() + 1).padStart(2, '0');
-  const dd = String(manana.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
-};
-
 export default function CrearRecordatorioModal({ visible, onClose, onSuccess }: Props) {
   const { isDark } = useAppTheme();
   const { user, profile, isVeterinario } = useAuth();
@@ -57,41 +49,40 @@ export default function CrearRecordatorioModal({ visible, onClose, onSuccess }: 
 
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [fecha, setFecha] = useState(getFechaManana);
+  const [fecha, setFecha] = useState('');
   const [hora, setHora] = useState('10:00');
   const [guardando, setGuardando] = useState(false);
 
-  const handleCerrar = () => {
-    setTitulo('');
-    setDescripcion('');
-    setFecha(getFechaManana());
-    setHora('10:00');
-    setUsuarioSeleccionado(null);
-    setBusquedaUsuario('');
-    setMostrarSelectorUsuario(false);
-    onClose();
-  };
-
+  // Inicializar fecha sugerida (mañana)
   useEffect(() => {
-    let isMounted = true;
-    if (visible && usuarios.length === 0) {
-      Promise.resolve().then(async () => {
-        if (!isMounted) return;
-        setCargandoUsuarios(true);
-        try {
-          const list = await getUsuariosDestinatarios();
-          if (isMounted) setUsuarios(list);
-        } catch {
-          // Ignorar error menor
-        } finally {
-          if (isMounted) setCargandoUsuarios(false);
-        }
-      });
+    if (visible) {
+      const manana = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const yyyy = manana.getFullYear();
+      const mm = String(manana.getMonth() + 1).padStart(2, '0');
+      const dd = String(manana.getDate()).padStart(2, '0');
+      setFecha(`${yyyy}-${mm}-${dd}`);
+      setHora('10:00');
+      setTitulo('');
+      setDescripcion('');
+      setUsuarioSeleccionado(null);
+      setBusquedaUsuario('');
+      setMostrarSelectorUsuario(false);
+
+      cargarUsuarios();
     }
-    return () => {
-      isMounted = false;
-    };
-  }, [visible, usuarios.length]);
+  }, [visible]);
+
+  const cargarUsuarios = async () => {
+    setCargandoUsuarios(true);
+    try {
+      const list = await getUsuariosDestinatarios();
+      setUsuarios(list);
+    } catch {
+      // Ignorar error menor
+    } finally {
+      setCargandoUsuarios(false);
+    }
+  };
 
   const setFechaRapida = (diasAdelante: number, horaDefecto: string = '10:00') => {
     const target = new Date(Date.now() + diasAdelante * 24 * 60 * 60 * 1000);
@@ -159,7 +150,7 @@ export default function CrearRecordatorioModal({ visible, onClose, onSuccess }: 
       );
 
       onSuccess(nuevo);
-      handleCerrar();
+      onClose();
     } catch (error: any) {
       Alert.alert('Error al Guardar', error?.message || 'No se pudo guardar el recordatorio. Intenta nuevamente.');
     } finally {
@@ -176,14 +167,14 @@ export default function CrearRecordatorioModal({ visible, onClose, onSuccess }: 
   });
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={handleCerrar}>
+    <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={[styles.container, isDark && styles.containerDark]}
       >
         {/* Barra Superior */}
         <View style={[styles.header, isDark && styles.headerDark]}>
-          <TouchableOpacity onPress={handleCerrar} style={styles.closeBtn} activeOpacity={0.7}>
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
             <Ionicons name="close" size={24} color={isDark ? '#fafafa' : '#0f172a'} />
           </TouchableOpacity>
           <View style={{ flex: 1, alignItems: 'center' }}>

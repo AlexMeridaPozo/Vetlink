@@ -22,7 +22,6 @@
         "android.permission.NFC",
         "android.permission.CAMERA"
       ],
-
       "package": "com.alexmp.CiviLink"
     },
     "web": {
@@ -47,7 +46,6 @@
       "expo-image",
       "expo-status-bar",
       "expo-web-browser",
-
       [
         "expo-camera",
         {

@@ -1,6 +1,6 @@
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { auth, db } from '../config/firebase';
 
 export type UserRole = 'veterinario' | 'propietario';
@@ -131,20 +131,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const userRole: UserRole = profile?.rol || 'propietario';
   const isVeterinario = userRole === 'veterinario';
 
-  const value = useMemo(
-    () => ({
-      user,
-      profile,
-      userRole,
-      isVeterinario,
-      isLoading,
-      refreshProfile,
-    }),
-    [user, profile, userRole, isVeterinario, isLoading, refreshProfile]
-  );
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        userRole,
+        isVeterinario,
+        isLoading,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

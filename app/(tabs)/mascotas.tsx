@@ -532,8 +532,6 @@ function RegistrarMascotaModal({
   );
 }
 
-const petKeyExtractor = (item: Pet) => item.id;
-
 // ── 3. Pantalla Principal de Mascotas ──────────────────────────────────────────
 export default function MascotasScreen() {
   const { isDark } = useAppTheme();
@@ -550,7 +548,7 @@ export default function MascotasScreen() {
     }, [refresh])
   );
 
-  const handlePetPress = useCallback((pet: Pet) => {
+  const handlePetPress = (pet: Pet) => {
     router.push({
       pathname: '/mascotas/[id]',
       params: {
@@ -565,17 +563,17 @@ export default function MascotasScreen() {
         descripcion: pet.descripcion || '',
       },
     });
-  }, []);
+  };
 
-  const handleRegisterPress = useCallback(() => {
+  const handleRegisterPress = () => {
     if (isVeterinario) {
       setShowRegistrarModal(true);
     } else {
       router.push('/(tabs)/scan');
     }
-  }, [isVeterinario]);
+  };
 
-  const handleVincularNfcPress = useCallback((pet: Pet) => {
+  const handleVincularNfcPress = (pet: Pet) => {
     if (!isVeterinario) {
       Alert.alert(
         'Acceso Denegado (Seguridad)',
@@ -584,19 +582,16 @@ export default function MascotasScreen() {
       return;
     }
     setNfcMascota(pet);
-  }, [isVeterinario]);
+  };
 
-  const renderPetCard = useCallback(
-    ({ item }: { item: Pet }) => (
-      <PetCard
-        pet={item}
-        onPress={handlePetPress}
-        onQrPress={setQrMascota}
-        onNfcPress={handleVincularNfcPress}
-        isDark={isDark}
-      />
-    ),
-    [handlePetPress, handleVincularNfcPress, isDark]
+  const renderPetCard = ({ item }: { item: Pet }) => (
+    <PetCard
+      pet={item}
+      onPress={handlePetPress}
+      onQrPress={setQrMascota}
+      onNfcPress={handleVincularNfcPress}
+      isDark={isDark}
+    />
   );
 
   const renderEmptyState = () => (
@@ -671,7 +666,7 @@ export default function MascotasScreen() {
       ) : (
         <FlatList
           data={pets}
-          keyExtractor={petKeyExtractor}
+          keyExtractor={(item) => item.id}
           renderItem={renderPetCard}
           contentContainerStyle={[
             styles.listContent,
@@ -687,10 +682,6 @@ export default function MascotasScreen() {
             />
           }
           showsVerticalScrollIndicator={false}
-          initialNumToRender={8}
-          maxToRenderPerBatch={8}
-          windowSize={5}
-          removeClippedSubviews={Platform.OS !== 'web'}
         />
       )}
 

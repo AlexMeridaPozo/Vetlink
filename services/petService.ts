@@ -12,7 +12,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface HistorialClinicoItem {
   id: string;
@@ -398,31 +398,14 @@ export function usePets(): UsePetsReturn {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const inFlightPromiseRef = useRef<Promise<void> | null>(null);
-  const isMountedRef = useRef(true);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
   const loadPets = useCallback(
     async (isManualRefresh = false) => {
       const currentUser = auth.currentUser || user;
       if (!currentUser) {
-        if (isMountedRef.current) {
-          setPets([]);
-          setLoading(false);
-          setRefreshing(false);
-        }
+        setPets([]);
+        setLoading(false);
+        setRefreshing(false);
         return;
-      }
-
-      // Reutilizar promesa en curso para evitar lecturas duplicadas a Firestore
-      if (inFlightPromiseRef.current) {
-        return inFlightPromiseRef.current;
       }
 
       if (isManualRefresh) {
@@ -432,29 +415,17 @@ export function usePets(): UsePetsReturn {
       }
       setError(null);
 
-      const fetchPromise = (async () => {
-        try {
-          const result = await fetchPetsForUser(currentUser.uid, isVeterinario);
-          if (isMountedRef.current) {
-            setPets(result);
-          }
-        } catch (err) {
-          console.error('[usePets] Error al cargar mascotas:', err);
-          if (isMountedRef.current) {
-            setError(err instanceof Error ? err : new Error(String(err)));
-            setPets([]);
-          }
-        } finally {
-          inFlightPromiseRef.current = null;
-          if (isMountedRef.current) {
-            setLoading(false);
-            setRefreshing(false);
-          }
-        }
-      })();
-
-      inFlightPromiseRef.current = fetchPromise;
-      return fetchPromise;
+      try {
+        const result = await fetchPetsForUser(currentUser.uid, isVeterinario);
+        setPets(result);
+      } catch (err) {
+        console.error('[usePets] Error al cargar mascotas:', err);
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setPets([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
     },
     [user, isVeterinario]
   );
@@ -467,15 +438,12 @@ export function usePets(): UsePetsReturn {
     await loadPets(true);
   }, [loadPets]);
 
-  return useMemo(
-    () => ({
-      pets,
-      petCount: pets.length,
-      loading,
-      refreshing,
-      error,
-      refresh,
-    }),
-    [pets, loading, refreshing, error, refresh]
-  );
+  return {
+    pets,
+    petCount: pets.length,
+    loading,
+    refreshing,
+    error,
+    refresh,
+  };
 }

@@ -65,7 +65,7 @@ export function ChatLogo_Infferior() {
 const styles = StyleSheet.create({
   squareButton: {
     position: 'absolute',
-    right: 20,
+    left: 20,
     bottom: Platform.OS === 'ios' ? 100 : 76,
     width: 58,
     height: 58,

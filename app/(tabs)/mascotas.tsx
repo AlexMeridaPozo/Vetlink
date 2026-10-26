@@ -3,7 +3,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
-import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
+import { getDownloadURL, getStorage, ref, uploadBytes, uploadString } from 'firebase/storage';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -286,11 +286,18 @@ function RegistrarMascotaModal({
               mediaTypes: ['images'],
               allowsEditing: true,
               aspect: [1, 1],
-              quality: 0.6,
+              quality: 0.2,
               base64: true,
             });
             if (!res.canceled && res.assets?.[0]) {
               const a = res.assets[0];
+              if (a.base64 && a.base64.length > 900000) {
+                Alert.alert(
+                  'Foto demasiado grande',
+                  'La imagen es muy pesada para guardarse. Por favor recórtala más de cerca.'
+                );
+                return;
+              }
               setFotoUrl(a.base64 ? `data:image/jpeg;base64,${a.base64}` : a.uri);
             }
           },
@@ -307,11 +314,18 @@ function RegistrarMascotaModal({
               mediaTypes: ['images'],
               allowsEditing: true,
               aspect: [1, 1],
-              quality: 0.6,
+              quality: 0.2,
               base64: true,
             });
             if (!res.canceled && res.assets?.[0]) {
               const a = res.assets[0];
+              if (a.base64 && a.base64.length > 900000) {
+                Alert.alert(
+                  'Foto demasiado grande',
+                  'La imagen es muy pesada para guardarse. Por favor recórtala más de cerca.'
+                );
+                return;
+              }
               setFotoUrl(a.base64 ? `data:image/jpeg;base64,${a.base64}` : a.uri);
             }
           },
@@ -352,14 +366,28 @@ function RegistrarMascotaModal({
     try {
       let finalFoto = fotoUrl;
       if (fotoUrl) {
+        if (fotoUrl.startsWith('data:') && fotoUrl.length > 900000) {
+          Alert.alert(
+            'Foto demasiado grande',
+            'La foto seleccionada supera el límite permitido (1MB). Por favor recórtala más de cerca.'
+          );
+          setLoading(false);
+          return;
+        }
         try {
           const storage = getStorage(app);
           const cleanSafeId = cleanId.replace(/[^a-zA-Z0-9_-]/g, '_');
           const storageRef = ref(storage, `pets/${cleanSafeId}_${Date.now()}.jpg`);
-          const res = await fetch(fotoUrl);
-          const blob = await res.blob();
-          await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
-          finalFoto = await getDownloadURL(storageRef);
+          if (fotoUrl.startsWith('data:image/jpeg;base64,')) {
+            const rawBase64 = fotoUrl.replace('data:image/jpeg;base64,', '');
+            await uploadString(storageRef, rawBase64, 'base64', { contentType: 'image/jpeg' });
+            finalFoto = await getDownloadURL(storageRef);
+          } else {
+            const res = await fetch(fotoUrl);
+            const blob = await res.blob();
+            await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
+            finalFoto = await getDownloadURL(storageRef);
+          }
         } catch {
           finalFoto = fotoUrl;
         }
@@ -742,7 +770,7 @@ export default function MascotasScreen() {
             mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.6,
+            quality: 0.2,
             base64: true,
           });
         } else {
@@ -759,7 +787,7 @@ export default function MascotasScreen() {
             mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.6,
+            quality: 0.2,
             base64: true,
           });
         }
@@ -777,15 +805,28 @@ export default function MascotasScreen() {
           const storage = getStorage(app);
           const cleanSafeId = pet.id.replace(/[^a-zA-Z0-9_-]/g, '_');
           const storageRef = ref(storage, `pets/${cleanSafeId}_${Date.now()}.jpg`);
-          const response = await fetch(asset.uri);
-          const blob = await response.blob();
-          await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
-          finalFotoUrl = await getDownloadURL(storageRef);
+          if (asset.base64) {
+            await uploadString(storageRef, asset.base64, 'base64', { contentType: 'image/jpeg' });
+            finalFotoUrl = await getDownloadURL(storageRef);
+          } else {
+            const response = await fetch(asset.uri);
+            const blob = await response.blob();
+            await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
+            finalFotoUrl = await getDownloadURL(storageRef);
+          }
         } catch (storageError) {
           console.info('[MascotasScreen] Fallback a imagen base64:', storageError);
           if (asset.base64) {
             finalFotoUrl = `data:image/jpeg;base64,${asset.base64}`;
           }
+        }
+
+        if (finalFotoUrl && finalFotoUrl.startsWith('data:') && finalFotoUrl.length > 900000) {
+          Alert.alert(
+            'Foto demasiado grande',
+            'La foto supera el límite permitido por la base de datos (1MB). Por favor recórtala más de cerca o toma una nueva foto.'
+          );
+          return;
         }
 
         await updatePetData(pet.id, { fotoUrl: finalFotoUrl });

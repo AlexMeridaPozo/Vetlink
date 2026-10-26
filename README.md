@@ -13,7 +13,7 @@ Aplicación móvil para la gestión, cuidado e identificación inteligente de ma
 | **Ficha de Mascota** | `app/mascotas/[id].tsx` | Vista detallada con información médica, datos de contacto del tutor y especificaciones de la mascota. |
 | **Escanear QR / NFC** | `app/(tabs)/scan.tsx` | Identificación instantánea de mascotas mediante escaneo de código QR (cámara) o lectura de tag NFC con vinculación al usuario. |
 | **Mapa Veterinario** | `app/(tabs)/mapa.tsx` | Ubicación geográfica de clínicas veterinarias, centros de urgencia y puntos de atención cercanos. |
-| **Tienda** | `app/(tabs)/tienda.tsx` | Catálogo de productos, accesorios, alimentos y promociones especiales para mascotas. |
+| **Chatbot VetLink** | `app/chat.tsx` | Asistente virtual inteligente para orientación veterinaria y consultas rápidas con IA. |
 | **Perfil** | `app/(tabs)/perfil.tsx` | Datos del usuario autenticado, rol en el sistema y opción para cerrar sesión de manera segura. |
 | **Autenticación** | `app/(auth)/login.tsx`<br>`app/(auth)/register.tsx` | Formularios de inicio de sesión y registro de usuarios con selección de rol y validaciones en tiempo real. |
 | **Turnos y Recordatorios** | `app/turnos.tsx`<br>`app/recordatorios.tsx` | Gestión de citas médicas, calendario de vacunación, desparasitación y tratamientos periódicos. |
@@ -51,24 +51,33 @@ Vetlink/
 │   │   ├── mascotas.tsx           # Pantalla de "Mis Mascotas"
 │   │   ├── scan.tsx               # Escáner de QR y lector de NFC
 │   │   ├── mapa.tsx               # Mapa de veterinarias y centros de atención
-│   │   ├── tienda.tsx             # Catálogo y productos para mascotas
 │   │   └── perfil.tsx             # Perfil de usuario y cierre de sesión
 │   ├── mascotas/
 │   │   └── [id].tsx               # Detalle / Ficha médica de la mascota
 │   ├── _layout.tsx                # Layout raíz con AuthProvider y temas
 │   ├── index.tsx                  # Redirección inicial según estado de sesión
-│   ├── modal.tsx                  # Ventana modal genérica
+│   ├── chat.tsx                   # Asistente virtual VetLink con IA
 │   ├── recordatorios.tsx          # Gestión de recordatorios y vacunas
 │   ├── turnos.tsx                 # Consulta y reserva de turnos
 │   └── veterinarias.tsx           # Directorio de clínicas veterinarias
+├── cloudflare-worker/             # Backend serverless para IA y Groq API
 ├── assets/                        # Imágenes, íconos y recursos estáticos
 ├── components/                    # Componentes modulares reutilizables
 ├── config/
 │   └── firebase.ts                # Inicialización de Firebase Auth y Firestore
 ├── context/
-│   └── AuthContext.tsx            # Estado global del usuario autenticado
+│   ├── AuthContext.tsx            # Estado global del usuario autenticado
+│   └── ThemeContext.tsx           # Modo oscuro y temas
 ├── services/
-│   └── petService.ts              # Consultas y vinculación de mascotas en Firestore
+│   ├── chatService.ts             # Comunicación segura con el worker
+│   ├── chatContextService.ts      # Contexto clínico para el asistente
+│   ├── nfcService.ts              # Lectura y vinculación NFC
+│   ├── notificationService.ts     # Notificaciones del sistema
+│   ├── petService.ts              # Consultas y vinculación de mascotas
+│   └── reminderService.ts         # Recordatorios sanitarios
+├── utils/
+│   ├── qrGenerator.ts             # Generador matricial propio de QR
+│   └── stlGenerator.ts            # Generador propio de placas 3D STL
 ├── hooks/                         # Hooks personalizados (tema, esquemas de color)
 ├── constants/                     # Paletas de colores y configuración general
 ├── .env.example                   # Plantilla de variables de entorno

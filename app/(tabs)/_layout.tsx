@@ -74,12 +74,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="tienda"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="perfil"
         options={{
           title: 'Perfil',

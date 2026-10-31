@@ -25,7 +25,7 @@
       "package": "com.alexmp.CiviLink"
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -43,8 +43,6 @@
         }
       ],
       "expo-font",
-      "expo-image",
-      "expo-status-bar",
       "expo-web-browser",
       [
         "expo-camera",

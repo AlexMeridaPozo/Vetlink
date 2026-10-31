@@ -65,8 +65,13 @@ export function ChatLogo_Infferior() {
 const styles = StyleSheet.create({
   squareButton: {
     position: 'absolute',
+<<<<<<< Updated upstream
     left: 20,
     bottom: Platform.OS === 'ios' ? 100 : 76,
+=======
+    right: 20,
+    bottom: Platform.OS === 'ios' ? 108 : 84,
+>>>>>>> Stashed changes
     width: 58,
     height: 58,
     borderRadius: 16,

@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
+import { nfcService } from '@/services/nfcService';
 import { generateQRMatrix } from '@/utils/qrGenerator';
 import { generateSTL, arrayBufferToBase64 } from '@/utils/stlGenerator';
 
@@ -70,15 +71,16 @@ export default function QRMascotaCard({ petId, petName, isDark = false }: QRMasc
   const [descargandoPNG, setDescargandoPNG] = useState(false);
   const [descargandoSTL, setDescargandoSTL] = useState(false);
 
-  // Generar la matriz QR de forma derivada cuando cambia el petId (evita cascading renders)
+  // Generar la matriz QR con la URL pública de identificación y rescate
+  const rescueUrl = nfcService.buildIdentificationUrl(petId);
   const { matrix, error } = useMemo(() => {
     try {
-      const m = generateQRMatrix(petId);
+      const m = generateQRMatrix(rescueUrl);
       return { matrix: m, error: null };
     } catch (e: any) {
       return { matrix: null, error: e?.message ?? 'Error generando QR' };
     }
-  }, [petId]);
+  }, [rescueUrl]);
 
   // ── Descarga PNG ────────────────────────────────────────────────────────────
   /**

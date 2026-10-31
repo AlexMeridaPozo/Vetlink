@@ -2,7 +2,7 @@ import QRMascotaCard from '@/components/QRMascotaCard';
 import VincularNfcModal from '@/components/VincularNfcModal';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
-import { getPetById, type Pet } from '@/services/petService';
+import { getPetById, toggleEstadoExtravio, type Pet } from '@/services/petService';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
@@ -10,6 +10,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
+  Linking,
   Platform,
   RefreshControl,
   ScrollView,
@@ -89,6 +90,33 @@ export default function MascotaDetalleScreen() {
   const isNfcLinked = pet?.nfcStatus === 'linked';
 
   const isMale = displaySexo.toLowerCase().includes('macho');
+
+  const handleToggleExtravio = async () => {
+    if (!displayId) return;
+    const nuevoEstado = !pet?.extraviada;
+    Alert.alert(
+      nuevoEstado ? '🚨 Activar Alerta de Extravío' : '✅ Marcar como En Casa',
+      nuevoEstado
+        ? `¿Confirmas que ${displayNombre} se ha extraviado? La ficha pública mostrará una alerta destacada y registrará la ubicación GPS de cualquier persona que la escanee.`
+        : `¿${displayNombre} ya está a salvo en casa? Se desactivará la alerta de extravío.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: nuevoEstado ? 'Activar Búsqueda' : 'Confirmar En Casa',
+          style: nuevoEstado ? 'destructive' : 'default',
+          onPress: async () => {
+            try {
+              await toggleEstadoExtravio(displayId, nuevoEstado);
+              setPet((prev) => (prev ? { ...prev, extraviada: nuevoEstado } : null));
+              Alert.alert('Éxito', nuevoEstado ? 'Alerta de extravío activada.' : 'Mascota marcada como a salvo.');
+            } catch (err) {
+              Alert.alert('Error', 'No se pudo actualizar el estado de extravío en el servidor.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const handleOpenVincularNfc = () => {
     if (!isVeterinario) {
@@ -241,6 +269,87 @@ export default function MascotaDetalleScreen() {
               </Text>
             </View>
           ) : null}
+        </View>
+
+        {/* ── CARD DE SEGURIDAD, EXTRAVÍO Y LOCALIZACIÓN DE RESCATE ──────── */}
+        <View style={[styles.infoCard, isDark && styles.cardDark, { marginTop: 14 }]}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons
+                name={pet?.extraviada ? 'alert-circle' : 'shield-checkmark'}
+                size={22}
+                color={pet?.extraviada ? '#ef4444' : '#04b639'}
+              />
+              <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
+                Seguridad y Rescate
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.btnToggleExtravio,
+                pet?.extraviada ? styles.btnExtraviadaActive : styles.btnExtraviadaInactive,
+              ]}
+              onPress={handleToggleExtravio}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.btnToggleExtravioText}>
+                {pet?.extraviada ? '🚨 Extraviada' : '✅ En Casa'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {pet?.extraviada && (
+            <View style={styles.lostAlertBox}>
+              <Text style={styles.lostAlertBoxTitle}>Modo de Búsqueda Activo</Text>
+              <Text style={styles.lostAlertBoxText}>
+                Cualquier persona que escanee la chapita QR o NFC verá la alerta de extravío y podrá enviarte su ubicación GPS con un toque.
+              </Text>
+            </View>
+          )}
+
+          {/* Último escaneo detectado */}
+          {pet?.ultimoEscaneo ? (
+            <View style={[styles.scanDetectedBox, isDark && styles.scanDetectedBoxDark]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="location" size={20} color="#2563eb" />
+                <Text style={[styles.scanDetectedTitle, isDark && styles.textDark]}>
+                  Último Escaneo Detectado
+                </Text>
+              </View>
+              <Text style={[styles.scanDetectedDate, isDark && styles.textSecondaryDark]}>
+                {new Date(pet.ultimoEscaneo.fecha).toLocaleString()}
+              </Text>
+              <Text style={[styles.scanDetectedCoords, isDark && styles.textSecondaryDark]}>
+                GPS: {pet.ultimoEscaneo.lat.toFixed(5)}, {pet.ultimoEscaneo.lng.toFixed(5)}
+              </Text>
+
+              <TouchableOpacity
+                style={styles.btnOpenMap}
+                onPress={() =>
+                  Linking.openURL(
+                    `https://maps.google.com/?q=${pet.ultimoEscaneo!.lat},${pet.ultimoEscaneo!.lng}`
+                  )
+                }
+              >
+                <Ionicons name="map-outline" size={16} color="#ffffff" />
+                <Text style={styles.btnOpenMapText}>Ver Ubicación en Google Maps</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text style={[styles.noScansText, isDark && styles.textSecondaryDark]}>
+              Aún no se registran escaneos de rescate para esta mascota.
+            </Text>
+          )}
+
+          {/* Enlace para probar la ficha pública */}
+          <TouchableOpacity
+            style={styles.btnPreviewPublic}
+            onPress={() => router.push({ pathname: '/pet', params: { id: displayId } } as any)}
+          >
+            <Ionicons name="open-outline" size={16} color="#04b639" />
+            <Text style={styles.btnPreviewPublicText}>Ver Ficha Pública de Rescate (Web)</Text>
+          </TouchableOpacity>
         </View>
 
         {/* ── CARD DE IDENTIFICACIÓN NFC (SECCIÓN CLÍNICA) ────────────────── */}
@@ -848,5 +957,108 @@ const styles = StyleSheet.create({
   },
   scrollViewDark: {
     backgroundColor: '#09090b',
+  },
+  btnToggleExtravio: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  btnExtraviadaActive: {
+    backgroundColor: '#fee2e2',
+    borderColor: '#fca5a5',
+  },
+  btnExtraviadaInactive: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#86efac',
+  },
+  btnToggleExtravioText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  lostAlertBox: {
+    backgroundColor: '#fee2e2',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#dc2626',
+  },
+  lostAlertBoxTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#991b1b',
+  },
+  lostAlertBoxText: {
+    fontSize: 12,
+    color: '#7f1d1d',
+    marginTop: 2,
+    lineHeight: 16,
+  },
+  scanDetectedBox: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  scanDetectedBoxDark: {
+    backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
+  },
+  scanDetectedTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  scanDetectedDate: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 4,
+  },
+  scanDetectedCoords: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  btnOpenMap: {
+    backgroundColor: '#2563eb',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 10,
+  },
+  btnOpenMapText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  noScansText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 10,
+    fontStyle: 'italic',
+  },
+  btnPreviewPublic: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  btnPreviewPublicText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#04b639',
   },
 });

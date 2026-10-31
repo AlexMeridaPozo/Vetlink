@@ -1,3 +1,8 @@
+---
+name: vetlink-development
+description: Guía de desarrollo, arquitectura, Git, Firebase, User Stories y metodología Scrum para el proyecto VetLink (Expo SDK 57 + React Native + Firebase).
+---
+
 # VetLink Development Skill
 
 ## 1. CONTEXTO DEL PROYECTO

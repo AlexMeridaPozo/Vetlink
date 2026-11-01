@@ -102,7 +102,7 @@ export default function SosScreen() {
               isDark && styles.actionCardDark,
               pressed && styles.cardPressed,
             ]}
-            onPress={() => router.push('/veterinarias')}
+            onPress={() => router.push('/(tabs)/mapa')}
           >
             <View style={[styles.actionIconCircle, { backgroundColor: '#fee2e2' }]}>
               <MaterialCommunityIcons name="hospital-box" size={24} color="#dc2626" />

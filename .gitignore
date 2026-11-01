@@ -42,3 +42,18 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Testing & QA (local only - excluded from repository)
+Testing/
+/Excel/
+/.maestro/
+/__tests__/
+/coverage/
+firestore-debug.log
+jest.config.*
+jest.setup.*
+.postman/
+postman/
+
+
+

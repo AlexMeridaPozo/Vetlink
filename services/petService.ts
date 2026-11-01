@@ -75,7 +75,7 @@ export interface NfcTagDocument {
  */
 export async function getPetById(petId: string): Promise<Pet | null> {
   try {
-    if (!petId) return null;
+    if (!petId || !petId.trim()) return null;
     const cleanId = petId.trim().toUpperCase();
 
     const petDocRef = doc(db, 'mascotas', cleanId);

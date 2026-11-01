@@ -31,6 +31,8 @@ import { buscarVeterinariasCercanas } from '@/services/veterinariasService';
 
 type FilterType =
   | 'todas'
+  | 'vetlink'
+  | 'externas'
   | 'guardia'
   | 'clinica'
   | 'hospital'
@@ -250,6 +252,8 @@ export default function MapaScreen() {
 
         // Filtro por categoría rápida
         if (!matchesText) return false;
+        if (selectedFilter === 'vetlink') return vet.enVetlink;
+        if (selectedFilter === 'externas') return !vet.enVetlink;
         if (selectedFilter === 'guardia') return vet.guardia24hs;
         if (selectedFilter === 'clinica') return vet.tipo === 'clinica';
         if (selectedFilter === 'hospital') return vet.tipo === 'hospital';
@@ -332,7 +336,7 @@ export default function MapaScreen() {
           <View style={styles.subtitleRow}>
             <View style={[styles.liveIndicator, styles.liveIndicatorActive]} />
             <Text style={[styles.headerSubtitle, isDark && styles.textMutedDark]}>
-              Pilar Centro &bull; {veterinarias.length} lugares cargados
+              Pilar Centro &bull; {veterinarias.filter((v) => v.enVetlink).length} en VetLink &bull; {veterinarias.filter((v) => !v.enVetlink).length} externas
             </Text>
           </View>
         </View>
@@ -392,6 +396,44 @@ export default function MapaScreen() {
                 isDark && styles.chipTextDark,
               ]}>
               Todos ({veterinarias.length})
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              selectedFilter === 'vetlink' && styles.chipActiveVetlink,
+              isDark && styles.chipDark,
+              isDark && selectedFilter === 'vetlink' && styles.chipActiveVetlinkDark,
+            ]}
+            onPress={() => setSelectedFilter('vetlink')}>
+            <View style={styles.vetlinkDotGreen} />
+            <Text
+              style={[
+                styles.chipText,
+                selectedFilter === 'vetlink' && styles.chipTextActiveVetlink,
+                isDark && styles.chipTextDark,
+              ]}>
+              En VetLink ({veterinarias.filter((v) => v.enVetlink).length})
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              selectedFilter === 'externas' && styles.chipActiveGray,
+              isDark && styles.chipDark,
+              isDark && selectedFilter === 'externas' && styles.chipActiveGrayDark,
+            ]}
+            onPress={() => setSelectedFilter('externas')}>
+            <View style={styles.vetlinkDotGray} />
+            <Text
+              style={[
+                styles.chipText,
+                selectedFilter === 'externas' && styles.chipTextActiveGray,
+                isDark && styles.chipTextDark,
+              ]}>
+              No adheridas ({veterinarias.filter((v) => !v.enVetlink).length})
             </Text>
           </TouchableOpacity>
 
@@ -670,7 +712,7 @@ export default function MapaScreen() {
                         <Text
                           style={[styles.suggestionSubtitle, isDark && styles.textMutedDark]}
                           numberOfLines={1}>
-                          {item.direccion} &bull; {itemConfig.shortLabel}
+                          {item.enVetlink ? '🟢 En VetLink' : '⚪ Externa'} &bull; {item.direccion}
                         </Text>
                       </View>
                       {item.distanceText && (
@@ -692,6 +734,32 @@ export default function MapaScreen() {
               <View style={styles.cardHeader}>
                 <View style={styles.cardTitleWrap}>
                   <View style={styles.badgeRow}>
+                    {/* Badge de Red VetLink: Verde vs Gris */}
+                    <View
+                      style={[
+                        styles.vetlinkStatusBadge,
+                        selectedClinic.enVetlink ? styles.vetlinkBadgeOn : styles.vetlinkBadgeOff,
+                        isDark && (selectedClinic.enVetlink ? styles.vetlinkBadgeOnDark : styles.vetlinkBadgeOffDark),
+                      ]}>
+                      <Ionicons
+                        name={selectedClinic.enVetlink ? 'checkmark-circle' : 'ellipse-outline'}
+                        size={11}
+                        color={
+                          selectedClinic.enVetlink
+                            ? (isDark ? '#4ade80' : '#15803d')
+                            : (isDark ? '#a1a1aa' : '#64748b')
+                        }
+                      />
+                      <Text
+                        style={[
+                          styles.vetlinkBadgeText,
+                          selectedClinic.enVetlink ? styles.vetlinkTextOn : styles.vetlinkTextOff,
+                          isDark && (selectedClinic.enVetlink ? styles.vetlinkTextOnDark : styles.vetlinkTextOffDark),
+                        ]}>
+                        {selectedClinic.enVetlink ? 'En Red VetLink' : 'No adherida'}
+                      </Text>
+                    </View>
+
                     {/* Badge de tipo de comercio */}
                     <View
                       style={[
@@ -1000,11 +1068,43 @@ const styles = StyleSheet.create({
   chipActiveTealDark: {
     backgroundColor: '#134e4a',
   },
+  chipActiveVetlink: {
+    backgroundColor: '#dcfce7',
+    borderWidth: 1,
+    borderColor: '#86efac',
+  },
+  chipActiveVetlinkDark: {
+    backgroundColor: '#064e3b',
+    borderColor: '#047857',
+  },
+  chipActiveGray: {
+    backgroundColor: '#e2e8f0',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+  },
+  chipActiveGrayDark: {
+    backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
+  },
   emergencyDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
     backgroundColor: '#e11d48',
+    marginRight: 6,
+  },
+  vetlinkDotGreen: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#04b639',
+    marginRight: 6,
+  },
+  vetlinkDotGray: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#64748b',
     marginRight: 6,
   },
   chipText: {
@@ -1017,6 +1117,14 @@ const styles = StyleSheet.create({
   },
   chipTextActive: {
     color: '#15803d',
+  },
+  chipTextActiveVetlink: {
+    color: '#15803d',
+    fontWeight: '700',
+  },
+  chipTextActiveGray: {
+    color: '#334155',
+    fontWeight: '700',
   },
   chipTextActiveRed: {
     color: '#be123c',
@@ -1195,6 +1303,49 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 6,
     flexWrap: 'wrap',
+  },
+  vetlinkStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  vetlinkBadgeOn: {
+    backgroundColor: '#dcfce7',
+    borderWidth: 1,
+    borderColor: '#86efac',
+  },
+  vetlinkBadgeOnDark: {
+    backgroundColor: 'rgba(4, 182, 57, 0.25)',
+    borderColor: '#059669',
+  },
+  vetlinkBadgeOff: {
+    backgroundColor: '#f1f5f9',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  vetlinkBadgeOffDark: {
+    backgroundColor: 'rgba(100, 116, 139, 0.25)',
+    borderColor: '#3f3f46',
+  },
+  vetlinkBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  vetlinkTextOn: {
+    color: '#15803d',
+  },
+  vetlinkTextOnDark: {
+    color: '#4ade80',
+  },
+  vetlinkTextOff: {
+    color: '#64748b',
+  },
+  vetlinkTextOffDark: {
+    color: '#cbd5e1',
   },
   typeBadge: {
     flexDirection: 'row',

@@ -105,7 +105,7 @@ export function generateLeafletHtml({
       100% { transform: scale(2.2); opacity: 0; }
     }
 
-    /* Marcador de veterinarias */
+    /* Marcador de veterinarias: Verde (En VetLink) vs Gris (No adherida) */
     .vet-marker {
       display: flex;
       flex-direction: column;
@@ -121,30 +121,34 @@ export function generateLeafletHtml({
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #04b639, #059669);
-      border: 2.5px solid #ffffff;
-      box-shadow: 0 4px 12px rgba(4, 182, 57, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #ffffff;
+      border: 2.5px solid #ffffff;
     }
-    .vet-marker.guardia .vet-bubble, .vet-marker.hospital .vet-bubble {
-      background: linear-gradient(135deg, #e11d48, #be123c);
-      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.4);
+    /* EN VETLINK -> VERDE VIBRANTE */
+    .vet-marker.vetlink-on .vet-bubble {
+      background: linear-gradient(135deg, #04b639, #059669) !important;
+      box-shadow: 0 4px 14px rgba(4, 182, 57, 0.5) !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
     }
-    .vet-marker.petshop .vet-bubble {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    .vet-marker.vetlink-on .vet-arrow {
+      border-top-color: #059669 !important;
     }
-    .vet-marker.publico .vet-bubble {
-      background: linear-gradient(135deg, #0284c7, #0369a1);
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+
+    /* FUERA DE VETLINK -> GRIS NEUTRO */
+    .vet-marker.vetlink-off .vet-bubble {
+      background: linear-gradient(135deg, #94a3b8, #64748b) !important;
+      box-shadow: 0 4px 10px rgba(100, 116, 139, 0.35) !important;
+      border-color: #e2e8f0 !important;
+      color: #f8fafc !important;
     }
-    .vet-marker.farmacia .vet-bubble {
-      background: linear-gradient(135deg, #0d9488, #0f766e);
-      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
+    .vet-marker.vetlink-off .vet-arrow {
+      border-top-color: #64748b !important;
     }
+
     .vet-arrow {
       width: 0;
       height: 0;
@@ -153,17 +157,43 @@ export function generateLeafletHtml({
       border-top: 7px solid #059669;
       margin-top: -1px;
     }
-    .vet-marker.guardia .vet-arrow, .vet-marker.hospital .vet-arrow {
-      border-top-color: #be123c;
+
+    /* Mini Leyenda en el mapa */
+    .map-vetlink-legend {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 1000;
+      background: ${isDark ? 'rgba(24, 24, 27, 0.92)' : 'rgba(255, 255, 255, 0.94)'};
+      backdrop-filter: blur(8px);
+      border: 1px solid ${isDark ? '#27272a' : '#e2e8f0'};
+      padding: 7px 11px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      font-size: 11px;
+      font-weight: 700;
+      color: ${isDark ? '#f4f4f5' : '#0f172a'};
+      pointer-events: none;
     }
-    .vet-marker.petshop .vet-arrow {
-      border-top-color: #d97706;
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .vet-marker.publico .vet-arrow {
-      border-top-color: #0369a1;
+    .legend-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
     }
-    .vet-marker.farmacia .vet-arrow {
-      border-top-color: #0f766e;
+    .ind-green {
+      background: #04b639;
+      box-shadow: 0 0 6px rgba(4, 182, 57, 0.6);
+    }
+    .ind-gray {
+      background: #64748b;
     }
 
     /* Popup elegante */
@@ -192,7 +222,25 @@ export function generateLeafletHtml({
       padding: 3px 8px;
       border-radius: 9999px;
       text-transform: uppercase;
-      margin-bottom: 6px;
+      margin-bottom: 0;
+    }
+    .popup-vetlink-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+    }
+    .badge-vetlink-on {
+      background: ${isDark ? 'rgba(4, 182, 57, 0.25)' : '#dcfce7'};
+      color: ${isDark ? '#4ade80' : '#15803d'};
+      border: 1px solid ${isDark ? '#059669' : '#86efac'};
+    }
+    .badge-vetlink-off {
+      background: ${isDark ? 'rgba(100, 116, 139, 0.25)' : '#f1f5f9'};
+      color: ${isDark ? '#94a3b8' : '#64748b'};
+      border: 1px solid ${isDark ? '#475569' : '#cbd5e1'};
     }
     .badge-guardia, .badge-hospital {
       background: ${isDark ? 'rgba(244, 63, 94, 0.2)' : '#ffe4e6'};
@@ -239,6 +287,16 @@ export function generateLeafletHtml({
 </head>
 <body>
   <div id="map"></div>
+  <div class="map-vetlink-legend">
+    <div class="legend-row">
+      <span class="legend-indicator ind-green"></span>
+      <span>En Red VetLink</span>
+    </div>
+    <div class="legend-row">
+      <span class="legend-indicator ind-gray"></span>
+      <span>No adherida</span>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -327,9 +385,10 @@ export function generateLeafletHtml({
             return;
           }
           var is24hs = Boolean(vet.guardia24hs);
+          var isVetlink = vet.enVetlink === true;
           var tipo = vet.tipo || (is24hs ? 'hospital' : 'clinica');
 
-          var markerClass = 'vet-marker ' + tipo + (is24hs ? ' guardia' : '');
+          var markerClass = 'vet-marker ' + (isVetlink ? 'vetlink-on' : 'vetlink-off') + ' ' + tipo + (is24hs ? ' guardia' : '');
 
           var badgeClass = 'badge-' + (is24hs ? 'guardia' : tipo);
           var badgeText = (function() {
@@ -340,6 +399,10 @@ export function generateLeafletHtml({
             if (tipo === 'farmacia') return 'Farmacia';
             return 'Clínica';
           })();
+
+          var vetlinkBadgeHtml = isVetlink
+            ? '<span class="popup-vetlink-badge badge-vetlink-on">✓ En Red VetLink</span>'
+            : '<span class="popup-vetlink-badge badge-vetlink-off">✕ No adherida</span>';
 
           var iconSvg = (function() {
             if (is24hs || tipo === 'hospital') {
@@ -372,7 +435,10 @@ export function generateLeafletHtml({
 
           var popupContent = '' +
             '<div class="popup-inner" onclick="window.selectVet(\\'' + vet.id + '\\')">' +
-              '<div class="popup-badge ' + badgeClass + '">' + badgeText + '</div>' +
+              '<div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;">' +
+                vetlinkBadgeHtml +
+                '<span class="popup-badge ' + badgeClass + '">' + badgeText + '</span>' +
+              '</div>' +
               '<h3 class="popup-title">' + (vet.nombre || 'Veterinaria') + '</h3>' +
               '<p class="popup-address">📍 ' + (vet.direccion || '') + '</p>' +
             '</div>';

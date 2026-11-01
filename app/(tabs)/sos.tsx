@@ -205,6 +205,16 @@ export default function SosScreen() {
               <View style={styles.clinicCardHeader}>
                 <View style={{ flex: 1 }}>
                   <View style={styles.clinicBadgeRow}>
+                    {vet.enVetlink ? (
+                      <View style={styles.badgeVetlinkOn}>
+                        <Ionicons name="checkmark-circle" size={11} color="#15803d" />
+                        <Text style={styles.badgeVetlinkOnText}>EN RED VETLINK</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.badgeVetlinkOff}>
+                        <Text style={styles.badgeVetlinkOffText}>EXTERNA</Text>
+                      </View>
+                    )}
                     {vet.guardia24hs && (
                       <View style={styles.badgeGuardia}>
                         <View style={styles.sosPulseDot} />
@@ -693,6 +703,39 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 6,
     flexWrap: 'wrap',
+  },
+  badgeVetlinkOn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 3,
+    borderWidth: 1,
+    borderColor: '#86efac',
+  },
+  badgeVetlinkOnText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#15803d',
+    letterSpacing: 0.3,
+  },
+  badgeVetlinkOff: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  badgeVetlinkOffText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748b',
+    letterSpacing: 0.3,
   },
   badgeGuardia: {
     flexDirection: 'row',

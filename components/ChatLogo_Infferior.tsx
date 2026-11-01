@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  Pressable,
-  View,
-  Platform,
-  Keyboard,
-} from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '@/context/ThemeContext';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  Keyboard,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 export function ChatLogo_Infferior() {
   const router = useRouter();
@@ -37,7 +37,7 @@ export function ChatLogo_Infferior() {
   }
 
   const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => { });
     router.push('/chat' as any);
   };
 

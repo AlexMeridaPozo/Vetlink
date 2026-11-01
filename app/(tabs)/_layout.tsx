@@ -5,6 +5,7 @@ import { Platform, View } from 'react-native';
 
 import { ChatLogo_Infferior } from '@/components/ChatLogo_Infferior';
 import { HapticTab } from '@/components/haptic-tab';
+import { SosIcon } from '@/components/SosIcon';
 import { useAppTheme } from '@/context/ThemeContext';
 
 export default function TabLayout() {
@@ -22,17 +23,18 @@ export default function TabLayout() {
             backgroundColor: isDark ? '#121214' : '#ffffff',
             borderTopWidth: 1,
             borderTopColor: isDark ? '#27272a' : '#f3f4f6',
-            height: Platform.OS === 'ios' ? 88 : 64,
-            paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+            // Barra elevada con mayor altura y padding para separarla del borde inferior
+            height: Platform.OS === 'ios' ? 92 : 72,
+            paddingBottom: Platform.OS === 'ios' ? 30 : 12,
             paddingTop: 8,
-            elevation: 8,
+            elevation: 10,
             shadowColor: '#000',
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: isDark ? 0.3 : 0.06,
-            shadowRadius: 6,
+            shadowOffset: { width: 0, height: -3 },
+            shadowOpacity: isDark ? 0.35 : 0.08,
+            shadowRadius: 8,
           },
           tabBarLabelStyle: {
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: '600',
           },
         }}>
@@ -57,7 +59,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="scan"
           options={{
-            title: 'Escanear QR',
+            title: 'Escanear',
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="qr-code-scanner" size={24} color={color} />
             ),
@@ -85,6 +87,22 @@ export default function TabLayout() {
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="sos"
+          options={{
+            title: 'SOS',
+            tabBarActiveTintColor: '#dc2626',
+            tabBarInactiveTintColor: '#ef4444',
+            tabBarIcon: ({ focused }) => (
+              <SosIcon focused={focused} />
+            ),
+            tabBarLabelStyle: {
+              fontSize: 11,
+              fontWeight: '800',
+              color: '#ef4444',
+            },
           }}
         />
       </Tabs>

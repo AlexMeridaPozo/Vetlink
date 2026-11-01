@@ -1,6 +1,7 @@
 import { auth, db } from '@/config/firebase';
 import { useAuth } from '@/context/AuthContext';
 import {
+  addDoc,
   collection,
   doc,
   getDoc,
@@ -48,9 +49,23 @@ export interface Pet {
   nfcStatus?: 'linked' | 'unlinked' | null;
   nfcUrl?: string | null;
 
+  // Sistema de Extravío y Geolocalización de Rescate
+  extraviada?: boolean;
+  fechaExtravio?: string;
+  ultimoEscaneo?: UltimoEscaneo;
+
   createdByVet?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface UltimoEscaneo {
+  fecha: string;
+  lat: number;
+  lng: number;
+  precision?: number;
+  direccionAprox?: string;
+  dispositivo?: string;
 }
 
 // Alias para compatibilidad de tipos en la aplicación
@@ -447,3 +462,58 @@ export function usePets(): UsePetsReturn {
     refresh,
   };
 }
+
+/**
+ * 13. Registra la ubicación geográfica del rescate de una mascota escaneada por QR o NFC.
+ * Accesible tanto por usuarios autenticados como por cualquier persona que encuentre a la mascota en la calle.
+ */
+export async function registrarEscaneoRescate(
+  petId: string,
+  coords: { lat: number; lng: number; precision?: number; direccionAprox?: string }
+): Promise<UltimoEscaneo> {
+  const cleanId = petId.trim().toUpperCase();
+  const fechaActual = new Date().toISOString();
+
+  const ultimoEscaneo: UltimoEscaneo = {
+    fecha: fechaActual,
+    lat: coords.lat,
+    lng: coords.lng,
+    precision: coords.precision,
+    direccionAprox: coords.direccionAprox,
+  };
+
+  try {
+    // 1. Guardar en el historial de escaneos
+    const escaneosRef = collection(db, 'escaneosRescate');
+    await addDoc(escaneosRef, {
+      petId: cleanId,
+      ...ultimoEscaneo,
+      createdAt: fechaActual,
+    });
+
+    // 2. Actualizar el último escaneo en el documento de la mascota
+    const petDocRef = doc(db, 'mascotas', cleanId);
+    await updateDoc(petDocRef, {
+      ultimoEscaneo,
+    });
+
+    return ultimoEscaneo;
+  } catch (error) {
+    console.error('[registrarEscaneoRescate] Error al guardar escaneo:', error);
+    throw error;
+  }
+}
+
+/**
+ * 14. Alterna el estado de extravío de una mascota (reportar como perdida o marcar como recuperada).
+ */
+export async function toggleEstadoExtravio(petId: string, extraviada: boolean): Promise<void> {
+  const cleanId = petId.trim().toUpperCase();
+  const petDocRef = doc(db, 'mascotas', cleanId);
+  await updateDoc(petDocRef, {
+    extraviada,
+    fechaExtravio: extraviada ? new Date().toISOString() : null,
+    updatedAt: new Date().toISOString(),
+  });
+}
+

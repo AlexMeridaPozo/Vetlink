@@ -57,9 +57,8 @@ service cloud.firestore {
     // ── Colección 'mascotas' ────────────────────────────────────────────────
     // Fuente de verdad de la información clínica y datos del animal
     match /mascotas/{petId} {
-      // Lectura: Todos los usuarios autenticados pueden consultar mascotas
-      // (necesario para el escaneo público/clínico por QR o NFC)
-      allow read: if isAuthenticated();
+      // Lectura: Permitida para todos (incluso sin cuenta) para posibilitar el rescate inmediato por QR o NFC
+      allow read: if true;
 
       // Creación: Veterinarios autorizados pueden dar de alta cualquier mascota.
       // Propietarios autenticados pueden registrar su propia mascota.
@@ -71,27 +70,37 @@ service cloud.firestore {
 
       // Actualización:
       // 1. Un veterinario puede actualizar cualquier campo (incluyendo datos clínicos y NFC).
-      // 2. Un propietario/tutor solo puede actualizar sus propios datos de contacto
+      // 2. Un propietario/tutor solo puede actualizar sus propios datos de contacto y estado de extravío
       //    y NO puede modificar los campos técnicos de NFC (nfcTagId, nfcStatus, nfcLinkedBy, nfcLinkedAt).
-      allow update: if isAuthenticated() && (
-        isVeterinario() ||
-        (
-          isOwner(resource.data) &&
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['nfcTagId', 'nfcStatus', 'nfcLinkedBy', 'nfcLinkedAt'])
-        ) ||
-        // Permitir vinculación de usuario si la mascota no tenía dueño asignado
-        // o si el usuario actual es quien se está asignando como dueño.
-        (
+      // 3. Un rescatista no autenticado puede actualizar ÚNICAMENTE el campo 'ultimoEscaneo' con su ubicación GPS.
+      allow update: if (
+        isAuthenticated() && (
+          isVeterinario() ||
           (
-            !('userId' in resource.data) || resource.data.userId == null || resource.data.userId == '' ||
-            !('ownerId' in resource.data) || resource.data.ownerId == null || resource.data.ownerId == ''
-          ) &&
-          request.resource.data.userId == request.auth.uid
+            isOwner(resource.data) &&
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['nfcTagId', 'nfcStatus', 'nfcLinkedBy', 'nfcLinkedAt'])
+          ) ||
+          (
+            (
+              !('userId' in resource.data) || resource.data.userId == null || resource.data.userId == '' ||
+              !('ownerId' in resource.data) || resource.data.ownerId == null || resource.data.ownerId == ''
+            ) &&
+            request.resource.data.userId == request.auth.uid
+          )
         )
+      ) || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ultimoEscaneo'])
       );
 
       // Eliminación: Exclusiva para veterinarios autorizados
       allow delete: if isVeterinario();
+    }
+
+    // ── Colección 'escaneosRescate' ──────────────────────────────────────────
+    // Registro de geolocalización y fecha de rescate generado al escanear la mascota
+    match /escaneosRescate/{scanId} {
+      allow create: if true; // Cualquier persona que encuentre a la mascota puede enviar su ubicación
+      allow read: if isAuthenticated(); // Solo usuarios registrados (dueños/veterinarios) consultan el registro
     }
 
     // ── Colección 'nfcTags' ─────────────────────────────────────────────────

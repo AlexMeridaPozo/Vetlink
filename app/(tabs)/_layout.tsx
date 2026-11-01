@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Tabs } from 'expo-router';
-import { Platform, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
 import { ChatLogo_Infferior } from '@/components/ChatLogo_Infferior';
 import { HapticTab } from '@/components/haptic-tab';
@@ -93,16 +93,20 @@ export default function TabLayout() {
           name="sos"
           options={{
             title: 'SOS',
-            tabBarActiveTintColor: '#dc2626',
-            tabBarInactiveTintColor: '#ef4444',
             tabBarIcon: ({ focused }) => (
               <SosIcon focused={focused} />
             ),
-            tabBarLabelStyle: {
-              fontSize: 11,
-              fontWeight: '800',
-              color: '#ef4444',
-            },
+            tabBarLabel: ({ focused }) => (
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontWeight: focused ? '800' : '600',
+                  color: focused ? '#dc2626' : '#ef4444',
+                }}
+              >
+                SOS
+              </Text>
+            ),
           }}
         />
       </Tabs>

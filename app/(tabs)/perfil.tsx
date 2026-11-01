@@ -112,6 +112,31 @@ export default function PerfilScreen() {
 
       {/* Opciones y Preferencias */}
       <View style={styles.optionsContainer}>
+        {/* Acceso a Centro de Emergencias y Guardia SOS */}
+        <TouchableOpacity
+          style={[styles.sosRow, isDark && styles.sosRowDark]}
+          onPress={() => router.push('/(tabs)/sos')}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Centro de emergencias veterinarias y guardia 24 horas"
+        >
+          <View style={[styles.sosIconCircle, isDark && styles.sosIconCircleDark]}>
+            <Ionicons name="alert-circle" size={22} color="#dc2626" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.sosTitle}>Emergencias y Guardia 24hs</Text>
+              <View style={styles.sosBadge}>
+                <Text style={styles.sosBadgeText}>SOS</Text>
+              </View>
+            </View>
+            <Text style={[styles.sosSubtitle, isDark && styles.sosSubtitleDark]}>
+              Hospital San Roque, guardia nocturna y llamadas directas
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#dc2626" />
+        </TouchableOpacity>
+
         {/* Acceso a Recordatorios */}
         <TouchableOpacity
           style={[styles.settingRow, isDark && styles.settingRowDark]}
@@ -290,6 +315,55 @@ const styles = StyleSheet.create({
   optionsContainer: {
     marginTop: 8,
     gap: 14,
+  },
+  sosRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: '#fef2f2',
+    borderWidth: 1.5,
+    borderColor: '#fca5a5',
+    gap: 14,
+  },
+  sosRowDark: {
+    backgroundColor: '#380a0a33',
+    borderColor: '#991b1b',
+  },
+  sosIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fee2e2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sosIconCircleDark: {
+    backgroundColor: '#501010',
+  },
+  sosTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#991b1b',
+  },
+  sosSubtitle: {
+    fontSize: 12,
+    color: '#b91c1c',
+    marginTop: 2,
+  },
+  sosSubtitleDark: {
+    color: '#fca5a5',
+  },
+  sosBadge: {
+    backgroundColor: '#dc2626',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  sosBadgeText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '900',
   },
   settingRow: {
     flexDirection: 'row',

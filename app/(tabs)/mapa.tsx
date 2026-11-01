@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 
@@ -89,7 +90,10 @@ function getTipoConfig(tipo?: TipoLugarMascota | string) {
 
 export default function MapaScreen() {
   const { isDark } = useAppTheme();
+  const params = useLocalSearchParams<{ filter?: string; focusId?: string; zoomGuardia?: string }>();
   const mapRef = useRef<LeafletMapViewRef>(null);
+  const isMapReadyRef = useRef(false);
+  const pendingFocusIdRef = useRef<string | null>(null);
 
   // Estados de ubicación
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
@@ -106,6 +110,44 @@ export default function MapaScreen() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('todas');
   const [selectedClinicId, setSelectedClinicId] = useState<string | null>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  // Auto-foco y zoom si se ingresa desde el botón Guardias 24hs de SOS o con parámetros
+  useEffect(() => {
+    if (params.filter === 'guardia' || params.zoomGuardia === 'true') {
+      setSelectedFilter('guardia');
+      const targetId = params.focusId || 'vet-2'; // Hospital San Roque Guardia 24hs
+      setSelectedClinicId(targetId);
+
+      if (isMapReadyRef.current) {
+        setTimeout(() => {
+          mapRef.current?.focusClinic(targetId);
+        }, 300);
+      } else {
+        pendingFocusIdRef.current = targetId;
+      }
+    } else if (params.focusId) {
+      const targetId = params.focusId;
+      setSelectedClinicId(targetId);
+      if (isMapReadyRef.current) {
+        setTimeout(() => {
+          mapRef.current?.focusClinic(targetId);
+        }, 300);
+      } else {
+        pendingFocusIdRef.current = targetId;
+      }
+    }
+  }, [params.filter, params.focusId, params.zoomGuardia]);
+
+  const handleMapReady = useCallback(() => {
+    isMapReadyRef.current = true;
+    if (pendingFocusIdRef.current) {
+      const targetId = pendingFocusIdRef.current;
+      pendingFocusIdRef.current = null;
+      setTimeout(() => {
+        mapRef.current?.focusClinic(targetId);
+      }, 350);
+    }
+  }, []);
 
   // Cargar veterinarias y lugares de Pilar directamente desde el servicio
   const loadVeterinarias = useCallback(async () => {
@@ -505,6 +547,7 @@ export default function MapaScreen() {
           userLocation={userLocation}
           isDark={isDark}
           onSelectClinic={handleSelectClinic}
+          onMapReady={handleMapReady}
           onMapTap={() => {
             setIsSearchFocused(false);
           }}

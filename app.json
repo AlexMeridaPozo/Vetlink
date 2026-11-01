@@ -20,7 +20,9 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.NFC",
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
       ],
       "package": "com.alexmp.CiviLink"
     },
@@ -46,6 +48,12 @@
       "expo-image",
       "expo-status-bar",
       "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "VetLink necesita tu ubicación para mostrarte las veterinarias más cercanas."
+        }
+      ],
       [
         "expo-camera",
         {

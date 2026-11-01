@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   Linking,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,7 +15,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
-import { usePets } from '@/services/petService';
+import { usePets, toggleEstadoExtravio } from '@/services/petService';
 import { SosIcon } from '@/components/SosIcon';
 
 // Teléfono de urgencias por defecto (puede ser 911 o número de guardia local)
@@ -24,6 +25,121 @@ export default function SosScreen() {
   const router = useRouter();
   const { isDark } = useAppTheme();
   const { pets } = usePets();
+  // Estado local que refleja el flag extraviada de cada mascota (id -> bool)
+  const [estadoExtravio, setEstadoExtravio] = useState<Record<string, boolean>>({});
+
+  const getExtraviada = (pet: { id: string; extraviada?: boolean }) =>
+    estadoExtravio[pet.id] !== undefined ? estadoExtravio[pet.id] : !!pet.extraviada;
+
+  const handleToggleExtravio = (pet: { id: string; nombre: string; extraviada?: boolean }) => {
+    const actual = getExtraviada(pet);
+    const nuevoEstado = !actual;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+    Alert.alert(
+      nuevoEstado ? '🚨 Activar Alerta de Extravío' : '✅ Marcar como En Casa',
+      nuevoEstado
+        ? `¿Confirmas que ${pet.nombre} se ha extraviado? Cualquier persona que escanee la chapita QR / NFC verá la alerta y enviará su ubicación GPS.`
+        : `¿${pet.nombre} ya está a salvo en casa? Se desactivará la alerta de extravío.`,
+
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: nuevoEstado ? 'Activar Búsqueda' : 'Confirmar En Casa',
+          style: nuevoEstado ? 'destructive' : 'default',
+          onPress: async () => {
+            try {
+              await toggleEstadoExtravio(pet.id, nuevoEstado);
+              setEstadoExtravio((prev) => ({ ...prev, [pet.id]: nuevoEstado }));
+              Alert.alert('Éxito', nuevoEstado ? 'Alerta de extravío activada.' : 'Mascota marcada como a salvo.');
+            } catch {
+              Alert.alert('Error', 'No se pudo actualizar el estado en el servidor.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleOpenGuardiasMap = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    Alert.alert(
+      '🏥 Guardias y Clínicas de Urgencia',
+      '¿Cómo deseas buscar atención veterinaria de emergencia?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: '🗺️ Abrir en Google Maps',
+          onPress: () => {
+            const query = encodeURIComponent('veterinarias de guardia urgencias 24 horas');
+            const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+            Linking.openURL(url).catch(() => {
+              Alert.alert('Error', 'No se pudo abrir la aplicación de mapas.');
+            });
+          },
+        },
+        {
+          text: '🐾 Ver Mapa GPS VetLink',
+          onPress: () => {
+            router.push('/(tabs)/mapa');
+          },
+        },
+      ]
+    );
+  };
+  const handleCallVetContact = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+
+    // Filtramos las mascotas que tienen teléfono de contacto cargado
+    const petsConTelefono = pets.filter((p) => p.telefonoContacto && p.telefonoContacto.trim() !== '');
+
+    if (petsConTelefono.length === 0) {
+      Alert.alert(
+        '📞 Contacto de Emergencia',
+        'No tienes un teléfono de contacto o veterinario asignado en tus mascotas.\n\nPuedes agregarlo editando la ficha de tu mascota en la pestaña "Mis Mascotas".',
+        [
+          { text: 'Entendido', style: 'cancel' },
+          { text: 'Ir a Mascotas', onPress: () => router.push('/(tabs)/mascotas') },
+        ]
+      );
+      return;
+    }
+
+    if (petsConTelefono.length === 1) {
+      const pet = petsConTelefono[0];
+      Alert.alert(
+        '📞 Llamar a Contacto',
+        `¿Deseas llamar al teléfono de contacto registrado para ${pet.nombre} (${pet.telefonoContacto})?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Llamar',
+            onPress: () => {
+              Linking.openURL(`tel:${pet.telefonoContacto}`).catch(() => {
+                Alert.alert('Error', 'No se pudo iniciar la llamada.');
+              });
+            },
+          },
+        ]
+      );
+      return;
+    }
+
+    // Si tiene más de una mascota con teléfono, le damos a elegir a cuál llamar
+    const opciones = petsConTelefono.map((pet) => ({
+      text: `${pet.nombre} (${pet.telefonoContacto})`,
+      onPress: () => {
+        Linking.openURL(`tel:${pet.telefonoContacto}`).catch(() => {
+          Alert.alert('Error', 'No se pudo iniciar la llamada.');
+        });
+      },
+    }));
+
+    Alert.alert(
+      '📞 Selecciona el Contacto',
+      '¿A qué teléfono de contacto o veterinario deseas llamar?',
+      [...opciones, { text: 'Cancelar', style: 'cancel' }]
+    );
+  };
 
   const handleCallEmergency = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
@@ -102,7 +218,7 @@ export default function SosScreen() {
               isDark && styles.actionCardDark,
               pressed && styles.cardPressed,
             ]}
-            onPress={() => router.push('/veterinarias')}
+            onPress={handleOpenGuardiasMap}
           >
             <View style={[styles.actionIconCircle, { backgroundColor: '#fee2e2' }]}>
               <MaterialCommunityIcons name="hospital-box" size={24} color="#dc2626" />
@@ -111,27 +227,27 @@ export default function SosScreen() {
               Guardias 24hs
             </Text>
             <Text style={[styles.actionCardDesc, isDark && styles.subtituloDark]}>
-              Clínicas con atención nocturna
+              Clínicas y mapa de guardias
             </Text>
           </Pressable>
 
-          {/* Triaje con Asistente IA */}
+          {/* Contacto Veterinario / Urgencia */}
           <Pressable
             style={({ pressed }) => [
               styles.actionCard,
               isDark && styles.actionCardDark,
               pressed && styles.cardPressed,
             ]}
-            onPress={() => router.push('/chat')}
+            onPress={handleCallVetContact}
           >
-            <View style={[styles.actionIconCircle, { backgroundColor: '#dbeafe' }]}>
-              <MaterialCommunityIcons name="robot" size={24} color="#2563eb" />
+            <View style={[styles.actionIconCircle, { backgroundColor: '#dcfce7' }]}>
+              <MaterialCommunityIcons name="phone-in-talk" size={24} color="#16a34a" />
             </View>
             <Text style={[styles.actionCardTitle, isDark && styles.textDark]}>
-              Triaje Asistente IA
+              Veterinario SOS
             </Text>
             <Text style={[styles.actionCardDesc, isDark && styles.subtituloDark]}>
-              Evalúa síntomas de alarma
+              Llamada directa al doctor
             </Text>
           </Pressable>
         </View>
@@ -206,6 +322,61 @@ export default function SosScreen() {
               </View>
             </View>
           ))
+        )}
+
+        {/* SECCIÓN: ESTADO DE EXTRAVÍO POR MASCOTA */}
+        {pets.length > 0 && (
+          <>
+            <View style={styles.seccionHeader}>
+              <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
+                🔍 Estado de Extravío
+              </Text>
+              <Text style={[styles.seccionSubtitulo, isDark && styles.subtituloDark]}>
+                Activá la alerta para que cualquiera que escanee el collar pueda contactarte
+              </Text>
+            </View>
+
+            {pets.map((pet) => {
+              const extraviada = getExtraviada(pet);
+              return (
+                <View
+                  key={`extravio-${pet.id}`}
+                  style={[
+                    styles.extravioCard,
+                    isDark && styles.extravioCardDark,
+                    extraviada && styles.extravioCardActive,
+                  ]}
+                >
+                  <View style={styles.extravioCardLeft}>
+                    <View style={[styles.petAvatarCircle, extraviada && { backgroundColor: '#fee2e2' }]}>
+                      <Text style={styles.petAvatarEmoji}>
+                        {pet.especie?.toLowerCase().includes('gato') ? '🐱' : '🐶'}
+                      </Text>
+                    </View>
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <Text style={[styles.petName, isDark && styles.textDark]}>{pet.nombre}</Text>
+                      <Text style={[styles.petBreed, isDark && styles.subtituloDark]}>
+                        {extraviada ? '🚨 Alerta de extravío activa' : '✅ En casa — sin alerta'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.btnToggleExtravio,
+                      extraviada ? styles.btnExtraviadaActive : styles.btnExtraviadaInactive,
+                    ]}
+                    onPress={() => handleToggleExtravio(pet)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.btnToggleExtravioText}>
+                      {extraviada ? '🚨 Extraviada' : '✅ En Casa'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </>
         )}
 
         {/* GUÍA DE PRIMEROS AUXILIOS VETERINARIOS */}
@@ -513,6 +684,56 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '700',
     fontSize: 13,
+  },
+
+  // Extravío Cards
+  extravioCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  extravioCardDark: {
+    backgroundColor: '#18181b',
+    borderColor: '#27272a',
+  },
+  extravioCardActive: {
+    borderColor: '#fca5a5',
+    borderLeftWidth: 4,
+    borderLeftColor: '#ef4444',
+  },
+  extravioCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
+  },
+  btnToggleExtravio: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  btnExtraviadaActive: {
+    backgroundColor: '#ef4444',
+  },
+  btnExtraviadaInactive: {
+    backgroundColor: '#04b639',
+  },
+  btnToggleExtravioText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 12,
   },
 
   // FAQs

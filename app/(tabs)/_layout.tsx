@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Tabs } from 'expo-router';
 import { Platform, View } from 'react-native';
 
 import { ChatLogo_Infferior } from '@/components/ChatLogo_Infferior';
 import { HapticTab } from '@/components/haptic-tab';
-import { SosIcon } from '@/components/SosIcon';
+
 import { useAppTheme } from '@/context/ThemeContext';
 
 export default function TabLayout() {
@@ -92,11 +93,11 @@ export default function TabLayout() {
         <Tabs.Screen
           name="sos"
           options={{
-            title: 'SOS',
+            title: 'Emergencia',
             tabBarActiveTintColor: '#dc2626',
             tabBarInactiveTintColor: '#ef4444',
-            tabBarIcon: ({ focused }) => (
-              <SosIcon focused={focused} />
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons name="alarm-light" size={24} color={color} />
             ),
             tabBarLabelStyle: {
               fontSize: 11,

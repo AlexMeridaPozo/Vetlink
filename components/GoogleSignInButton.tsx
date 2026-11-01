@@ -1,7 +1,7 @@
 import { useAppTheme } from '@/context/ThemeContext';
 import { signInWithGoogle } from '@/services/googleAuthService';
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { User } from 'firebase/auth';
 import React, { useState } from 'react';
 import {
@@ -19,6 +19,10 @@ interface GoogleSignInButtonProps {
   onError?: (errorMessage: string) => void;
   disabled?: boolean;
 }
+
+// Logo oficial de Google (G multicolor) en base64 de alta resolución
+const GOOGLE_OFFICIAL_LOGO_URI =
+  'https://developers.google.com/identity/images/g-logo.png';
 
 export function GoogleSignInButton({
   label = 'Continuar con Google',
@@ -80,7 +84,12 @@ export function GoogleSignInButton({
       ) : (
         <>
           <View style={styles.iconCircle}>
-            <Ionicons name="logo-google" size={19} color="#ea4335" />
+            <Image
+              source={{ uri: GOOGLE_OFFICIAL_LOGO_URI }}
+              style={styles.googleIconImage}
+              contentFit="contain"
+              transition={200}
+            />
           </View>
           <Text style={[styles.buttonText, isDark && styles.buttonTextDark]}>
             {label}
@@ -119,12 +128,16 @@ const styles = StyleSheet.create({
     opacity: 0.65,
   },
   iconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#fef2f2',
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  googleIconImage: {
+    width: 22,
+    height: 22,
   },
   buttonText: {
     fontSize: 15,

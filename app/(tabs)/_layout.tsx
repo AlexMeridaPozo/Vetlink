@@ -1,11 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Tabs } from 'expo-router';
-import { Platform, Text, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { ChatLogo_Infferior } from '@/components/ChatLogo_Infferior';
 import { HapticTab } from '@/components/haptic-tab';
-import { SosIcon } from '@/components/SosIcon';
 import { useAppTheme } from '@/context/ThemeContext';
 
 export default function TabLayout() {
@@ -57,27 +55,27 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="scan"
+          name="sos"
           options={{
-            title: 'Escanear',
-            tabBarIcon: ({ color }) => (
-              <MaterialIcons name="qr-code-scanner" size={24} color={color} />
+            title: 'SOS',
+            tabBarButton: (props) => (
+              <View style={styles.centerTabWrapper}>
+                <HapticTab {...props} style={[props.style, styles.centerTabButton]}>
+                  <View style={[styles.sosSquareButton, isDark && styles.sosSquareButtonDark]}>
+                    <Ionicons name="alert" size={24} color="#ffffff" />
+                  </View>
+                </HapticTab>
+              </View>
             ),
           }}
         />
         <Tabs.Screen
           name="mapa"
           options={{
-            title: 'Mapa',
+            title: 'Explorar',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'map' : 'map-outline'} size={24} color={color} />
+              <Ionicons name={focused ? 'compass' : 'compass-outline'} size={24} color={color} />
             ),
-          }}
-        />
-        <Tabs.Screen
-          name="tienda"
-          options={{
-            href: null,
           }}
         />
         <Tabs.Screen
@@ -90,23 +88,15 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="sos"
+          name="scan"
           options={{
-            title: 'SOS',
-            tabBarIcon: ({ focused }) => (
-              <SosIcon focused={focused} />
-            ),
-            tabBarLabel: ({ focused }) => (
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: focused ? '800' : '600',
-                  color: focused ? '#dc2626' : '#ef4444',
-                }}
-              >
-                SOS
-              </Text>
-            ),
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="tienda"
+          options={{
+            href: null,
           }}
         />
       </Tabs>
@@ -114,3 +104,37 @@ export default function TabLayout() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  centerTabWrapper: {
+    top: -14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  centerTabButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sosSquareButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#dc2626',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+    shadowColor: '#dc2626',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  sosSquareButtonDark: {
+    backgroundColor: '#dc2626',
+    borderColor: '#fee2e2',
+    shadowColor: '#000000',
+    shadowOpacity: 0.5,
+  },
+});

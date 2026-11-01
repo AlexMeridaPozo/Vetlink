@@ -138,15 +138,45 @@ export function generateLeafletHtml({
       border-top-color: #059669 !important;
     }
 
-    /* FUERA DE VETLINK -> GRIS NEUTRO */
-    .vet-marker.vetlink-off .vet-bubble {
+    /* SOLO VETERINARIAS NO ADHERIDAS -> GRIS NEUTRO */
+    .vet-marker.vetlink-off.clinica .vet-bubble {
       background: linear-gradient(135deg, #94a3b8, #64748b) !important;
       box-shadow: 0 4px 10px rgba(100, 116, 139, 0.35) !important;
       border-color: #e2e8f0 !important;
       color: #f8fafc !important;
     }
-    .vet-marker.vetlink-off .vet-arrow {
+    .vet-marker.vetlink-off.clinica .vet-arrow {
       border-top-color: #64748b !important;
+    }
+
+    /* OTRAS CATEGORÍAS MANTIENEN SU COLOR IDENTIFICATIVO */
+    .vet-marker.guardia .vet-bubble, .vet-marker.hospital .vet-bubble {
+      background: linear-gradient(135deg, #e11d48, #be123c) !important;
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.4) !important;
+    }
+    .vet-marker.guardia .vet-arrow, .vet-marker.hospital .vet-arrow {
+      border-top-color: #be123c !important;
+    }
+    .vet-marker.petshop .vet-bubble {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4) !important;
+    }
+    .vet-marker.petshop .vet-arrow {
+      border-top-color: #d97706 !important;
+    }
+    .vet-marker.publico .vet-bubble {
+      background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4) !important;
+    }
+    .vet-marker.publico .vet-arrow {
+      border-top-color: #0369a1 !important;
+    }
+    .vet-marker.farmacia .vet-bubble {
+      background: linear-gradient(135deg, #0d9488, #0f766e) !important;
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4) !important;
+    }
+    .vet-marker.farmacia .vet-arrow {
+      border-top-color: #0f766e !important;
     }
 
     .vet-arrow {
@@ -290,11 +320,11 @@ export function generateLeafletHtml({
   <div class="map-vetlink-legend">
     <div class="legend-row">
       <span class="legend-indicator ind-green"></span>
-      <span>En Red VetLink</span>
+      <span>En VetLink</span>
     </div>
     <div class="legend-row">
       <span class="legend-indicator ind-gray"></span>
-      <span>No adherida</span>
+      <span>Clínica externa</span>
     </div>
   </div>
 

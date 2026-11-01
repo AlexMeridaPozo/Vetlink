@@ -1,9 +1,9 @@
 import { auth } from '@/config/firebase';
-import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -101,7 +101,7 @@ export default function LoginScreen() {
               <View style={[styles.logoBadge, isDark && styles.logoBadgeDark]}>
                 <Ionicons name="paw" size={36} color="#04b639" />
               </View>
-              <Text style={[styles.title, isDark && styles.textDark]}>Bienvenido de nuevo</Text>
+              <Text style={[styles.title, isDark && styles.textDark]}>Bienvenido </Text>
               <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
                 Ingresa tus credenciales para acceder a VetLink
               </Text>

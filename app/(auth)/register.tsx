@@ -1,5 +1,6 @@
 import { auth, db } from '@/config/firebase';
 import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
@@ -271,6 +272,21 @@ export default function RegisterScreen() {
               )}
             </TouchableOpacity>
 
+            {/* Divisor "o regístrate con" */}
+            <View style={styles.dividerRow}>
+              <View style={[styles.dividerLine, isDark && styles.dividerLineDark]} />
+              <Text style={[styles.dividerText, isDark && styles.dividerTextDark]}>
+                o regístrate con
+              </Text>
+              <View style={[styles.dividerLine, isDark && styles.dividerLineDark]} />
+            </View>
+
+            {/* Botón oficial de Google Sign-In */}
+            <GoogleSignInButton
+              label="Registrarse con Google"
+              onSuccess={() => router.replace('/(tabs)/mascotas')}
+            />
+
             {/* Footer con enlace a Login */}
             <View style={styles.footerContainer}>
               <Text style={[styles.footerText, isDark && styles.footerTextDark]}>
@@ -447,6 +463,28 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 18,
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e2e8f0',
+  },
+  dividerLineDark: {
+    backgroundColor: '#27272a',
+  },
+  dividerText: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  dividerTextDark: {
+    color: '#a1a1aa',
   },
   footerContainer: {
     flexDirection: 'row',

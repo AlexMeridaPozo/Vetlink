@@ -1,4 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import * as Location from 'expo-location';
+import { useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,12 +16,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
-import * as Location from 'expo-location';
-import * as Haptics from 'expo-haptics';
 
-import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { LeafletMapView, LeafletMapViewRef } from '@/components/map/LeafletMapView';
 import {
   DEFAULT_COORDINATES,
@@ -27,6 +26,7 @@ import {
   calculateDistanceKm,
   formatDistance,
 } from '@/constants/veterinarias';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { buscarVeterinariasCercanas } from '@/services/veterinariasService';
 
 type FilterType =
@@ -183,8 +183,8 @@ export default function MapaScreen() {
 
           if (shouldCenter) {
             try {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-            } catch {}
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
+            } catch { }
             mapRef.current?.centerOnUser(coords.latitude, coords.longitude);
           }
         } else {
@@ -302,8 +302,8 @@ export default function MapaScreen() {
   // Seleccionar veterinaria y enfocarla en el mapa
   const handleSelectClinic = useCallback((id: string) => {
     try {
-      Haptics.selectionAsync().catch(() => {});
-    } catch {}
+      Haptics.selectionAsync().catch(() => { });
+    } catch { }
     setSelectedClinicId(id);
     setIsSearchFocused(false);
     mapRef.current?.focusClinic(id);
@@ -312,7 +312,7 @@ export default function MapaScreen() {
   // Acciones de contacto
   const handleCall = useCallback((phone: string) => {
     const cleaned = phone.replace(/[^\d+]/g, '');
-    Linking.openURL(`tel:${cleaned}`).catch(() => {});
+    Linking.openURL(`tel:${cleaned}`).catch(() => { });
   }, []);
 
   const handleDirections = useCallback((lat: number, lng: number) => {
@@ -320,7 +320,7 @@ export default function MapaScreen() {
       ios: `maps:0,0?q=${lat},${lng}`,
       default: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
     });
-    Linking.openURL(url).catch(() => {});
+    Linking.openURL(url).catch(() => { });
   }, []);
 
   return (
@@ -331,7 +331,7 @@ export default function MapaScreen() {
       <View style={[styles.header, isDark && styles.headerDark]}>
         <View style={styles.headerTitleContainer}>
           <Text style={[styles.headerTitle, isDark && styles.textDark]}>
-            Mapa de Veterinarias
+            Ubicaciones de Locales
           </Text>
           <View style={styles.subtitleRow}>
             <View style={[styles.liveIndicator, styles.liveIndicatorActive]} />
@@ -629,8 +629,8 @@ export default function MapaScreen() {
             style={[styles.fab, isDark && styles.fabDark]}
             onPress={() => {
               try {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-              } catch {}
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
+              } catch { }
               mapRef.current?.fitAll();
             }}
             activeOpacity={0.8}
@@ -646,8 +646,8 @@ export default function MapaScreen() {
             style={[styles.fab, isDark && styles.fabDark]}
             onPress={() => {
               try {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-              } catch {}
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
+              } catch { }
               mapRef.current?.centerOnUser(
                 DEFAULT_COORDINATES.latitude,
                 DEFAULT_COORDINATES.longitude

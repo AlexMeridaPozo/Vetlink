@@ -2,7 +2,7 @@ import { useAppTheme } from '@/context/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Keyboard,
@@ -24,25 +24,36 @@ export function ChatLogo_Infferior() {
   const insets = useSafeAreaInsets();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
+  // Altura dinámica de la barra de pestañas para sincronizar los límites del botón flotante
+  const safeBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 8);
+  const currentTabHeight = 60 + safeBottom + (Platform.OS === 'android' && insets.bottom > 0 ? 4 : 0);
+
   // Límites seguros dentro de la pantalla
   const minX = MARGIN;
   const maxX = Math.max(MARGIN, screenWidth - BUTTON_SIZE - MARGIN);
   const minY = Math.max(10, insets.top + 10);
   const maxY = Math.max(
     minY,
-    screenHeight - (Platform.OS === 'ios' ? 105 : 85) - BUTTON_SIZE - (insets.bottom > 0 ? insets.bottom : 0)
+    screenHeight - currentTabHeight - BUTTON_SIZE - 12
   );
 
   // Posición inicial: inferior izquierda por encima de la barra de pestañas
   const initialX = minX + 4;
   const initialY = Math.max(
     minY,
-    screenHeight - (Platform.OS === 'ios' ? 165 : 145) - BUTTON_SIZE
+    screenHeight - currentTabHeight - BUTTON_SIZE - 20
   );
 
-  const pan = useRef(new Animated.ValueXY({ x: initialX, y: initialY })).current;
+  const [pan] = useState(() => new Animated.ValueXY({ x: initialX, y: initialY }));
+  const [scale] = useState(() => new Animated.Value(1));
   const currentPos = useRef({ x: initialX, y: initialY });
-  const scale = useRef(new Animated.Value(1)).current;
+  const dragStartPos = useRef({ x: initialX, y: initialY });
+  const boundsRef = useRef({ minX, maxX, minY, maxY });
+
+  // Mantener actualizados los límites en el ref
+  useEffect(() => {
+    boundsRef.current = { minX, maxX, minY, maxY };
+  }, [minX, maxX, minY, maxY]);
 
   // Actualizar referencia de coordenadas actuales
   useEffect(() => {
@@ -53,6 +64,18 @@ export function ChatLogo_Infferior() {
       pan.removeListener(listenerId);
     };
   }, [pan]);
+
+  // Si cambian las dimensiones de pantalla o insets, asegurar que el botón permanezca visible
+  useEffect(() => {
+    const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = boundsRef.current;
+    const clampedX = Math.min(Math.max(currentPos.current.x, bMinX), bMaxX);
+    const clampedY = Math.min(Math.max(currentPos.current.y, bMinY), bMaxY);
+
+    if (clampedX !== currentPos.current.x || clampedY !== currentPos.current.y) {
+      currentPos.current = { x: clampedX, y: clampedY };
+      pan.setValue({ x: clampedX, y: clampedY });
+    }
+  }, [screenWidth, screenHeight, insets.top, insets.bottom, pan]);
 
   // Listener para ocultar cuando el teclado está activo
   useEffect(() => {
@@ -71,25 +94,60 @@ export function ChatLogo_Infferior() {
     };
   }, []);
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     } catch {}
     router.push('/chat' as any);
-  };
+  }, [router]);
 
-  const panResponder = useRef(
+  const handleGestureEnd = useCallback((gestureState?: any) => {
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: false,
+      friction: 5,
+    }).start();
+
+    const dx = gestureState?.dx ?? 0;
+    const dy = gestureState?.dy ?? 0;
+    const dragDistance = Math.hypot(dx, dy);
+
+    // Si el desplazamiento fue mínimo (< 7px), interpretar como toque y abrir el chat
+    if (dragDistance < 7) {
+      handlePress();
+      return;
+    }
+
+    // Feedback háptico al soltar tras arrastre
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    } catch {}
+
+    const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = boundsRef.current;
+    const clampedX = Math.min(Math.max(currentPos.current.x, bMinX), bMaxX);
+    const clampedY = Math.min(Math.max(currentPos.current.y, bMinY), bMaxY);
+
+    Animated.spring(pan, {
+      toValue: { x: clampedX, y: clampedY },
+      useNativeDriver: false,
+      friction: 6,
+      tension: 40,
+    }).start();
+  }, [handlePress, pan, scale]);
+
+  // eslint-disable-next-line react-hooks/refs
+  const [panResponder] = useState(() =>
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
         return Math.abs(gestureState.dx) > 3 || Math.abs(gestureState.dy) > 3;
       },
+      onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: () => {
-        pan.setOffset({
+        dragStartPos.current = {
           x: currentPos.current.x,
           y: currentPos.current.y,
-        });
-        pan.setValue({ x: 0, y: 0 });
+        };
 
         Animated.spring(scale, {
           toValue: 1.12,
@@ -97,46 +155,27 @@ export function ChatLogo_Infferior() {
           friction: 5,
         }).start();
       },
-      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
-        useNativeDriver: false,
-      }),
+      onPanResponderMove: (_, gestureState) => {
+        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = boundsRef.current;
+        const targetX = dragStartPos.current.x + gestureState.dx;
+        const targetY = dragStartPos.current.y + gestureState.dy;
+
+        // Limitar en tiempo real para que NUNCA salga de la pantalla durante el arrastre
+        // Un leve margen elástico (6px) para dar sensación orgánica sin perderse jamás
+        const elastic = 6;
+        const boundedX = Math.min(Math.max(targetX, bMinX - elastic), bMaxX + elastic);
+        const boundedY = Math.min(Math.max(targetY, bMinY - elastic), bMaxY + elastic);
+
+        pan.setValue({ x: boundedX, y: boundedY });
+      },
       onPanResponderRelease: (_, gestureState) => {
-        pan.flattenOffset();
-
-        Animated.spring(scale, {
-          toValue: 1,
-          useNativeDriver: false,
-          friction: 5,
-        }).start();
-
-        const dragDistance = Math.hypot(gestureState.dx, gestureState.dy);
-
-        // Si el desplazamiento fue mínimo (< 7px), interpretar como toque y abrir el chat
-        if (dragDistance < 7) {
-          handlePress();
-          return;
-        }
-
-        // Si fue arrastre táctil: feedback táctil y ajustar dentro de los límites de la pantalla
-        try {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-        } catch {}
-
-        const rawX = currentPos.current.x;
-        const rawY = currentPos.current.y;
-
-        const clampedX = Math.min(Math.max(rawX, minX), maxX);
-        const clampedY = Math.min(Math.max(rawY, minY), maxY);
-
-        Animated.spring(pan, {
-          toValue: { x: clampedX, y: clampedY },
-          useNativeDriver: false,
-          friction: 6,
-          tension: 40,
-        }).start();
+        handleGestureEnd(gestureState);
+      },
+      onPanResponderTerminate: (_, gestureState) => {
+        handleGestureEnd(gestureState);
       },
     })
-  ).current;
+  );
 
   if (keyboardVisible) {
     return null;

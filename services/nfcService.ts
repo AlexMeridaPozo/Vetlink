@@ -37,7 +37,7 @@ export interface NfcWriteResult {
 }
 
 /**
- * Servicio unificado para operaciones NFC en VetLink
+ * Servicio unificado para operaciones NFC en Huellapp
  */
 export const nfcService = {
   /**
@@ -112,7 +112,7 @@ export const nfcService = {
    */
   buildIdentificationUrl(petId: string): string {
     const cleanId = petId.trim().toUpperCase();
-    return `https://vetlink.app/pet?id=${cleanId}`;
+    return `https://huellapp.app/pet?id=${cleanId}`;
   },
 
   /**

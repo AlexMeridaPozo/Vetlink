@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -56,7 +55,7 @@ export default function FichaRescatePublicaScreen() {
       } catch (err) {
         console.error('[FichaRescate] Error al cargar mascota:', err);
         if (isMounted) {
-          setErrorCarga('Error al conectar con la base de datos de VetLink. Revisa tu conexión.');
+          setErrorCarga('Error al conectar con la base de datos de Huellapp. Revisa tu conexión.');
         }
       } finally {
         if (isMounted) setCargando(false);
@@ -133,7 +132,7 @@ export default function FichaRescatePublicaScreen() {
     }
     const cleanPhone = pet.telefonoContacto.replace(/[^\d]/g, '');
     const mensaje = encodeURIComponent(
-      `¡Hola! Encontré a tu mascota ${pet.nombre || ''} gracias a su chapita inteligente de VetLink. ¿Podemos coordinar para reunirte con ella?`
+      `¡Hola! Encontré a tu mascota ${pet.nombre || ''} gracias a su chapita inteligente de Huellapp. ¿Podemos coordinar para reunirte con ella?`
     );
     Linking.openURL(`https://wa.me/${cleanPhone}?text=${mensaje}`).catch(() => {
       Alert.alert('Error', 'No se pudo abrir WhatsApp.');
@@ -174,11 +173,11 @@ export default function FichaRescatePublicaScreen() {
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Cabecera VetLink */}
+        {/* Cabecera Huellapp */}
         <View style={styles.brandHeader}>
           <View style={styles.brandLogoRow}>
             <Ionicons name="paw" size={24} color="#04b639" />
-            <Text style={styles.brandTitle}>VetLink • Rescate</Text>
+            <Text style={styles.brandTitle}>Huellapp • Rescate</Text>
           </View>
           <View style={styles.badgeId}>
             <Text style={styles.badgeIdText}>{pet.id}</Text>
@@ -200,7 +199,7 @@ export default function FichaRescatePublicaScreen() {
           <View style={[styles.noticeBanner, isDark && styles.noticeBannerDark]}>
             <Ionicons name="shield-checkmark" size={22} color="#04b639" />
             <Text style={[styles.noticeText, isDark && styles.subtituloDark]}>
-              Identificación Oficial VetLink. Si has encontrado a este animalito, por favor avísale a su dueño.
+              Identificación Oficial Huellapp. Si has encontrado a este animalito, por favor avísale a su dueño.
             </Text>
           </View>
         )}
@@ -252,7 +251,7 @@ export default function FichaRescatePublicaScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.gpsSuccessTitle}>¡Ubicación enviada con éxito!</Text>
                 <Text style={styles.gpsSuccessText}>
-                  El dueño ha recibido las coordenadas de rescate en su mapa de VetLink.
+                  El dueño ha recibido las coordenadas de rescate en su mapa de Huellapp.
                 </Text>
                 {coordsEnviadas && (
                   <Pressable
@@ -360,7 +359,7 @@ export default function FichaRescatePublicaScreen() {
         {/* Pie informativo */}
         <View style={styles.footer}>
           <Text style={[styles.footerText, isDark && styles.subtituloDark]}>
-            VetLink es una plataforma de salud e identificación animal. Este perfil se muestra públicamente para coordinar el rescate seguro de la mascota.
+            Huellapp es una plataforma de salud e identificación animal. Este perfil se muestra públicamente para coordinar el rescate seguro de la mascota.
           </Text>
         </View>
       </ScrollView>

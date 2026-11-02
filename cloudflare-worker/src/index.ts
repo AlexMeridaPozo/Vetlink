@@ -1,11 +1,11 @@
 /**
- * Cloudflare Worker para VetLink Chatbot
+ * Cloudflare Worker para Huellapp Chatbot
  *
  * Funcionalidades:
  * 1. Verifica criptográficamente el token JWT de Firebase Authentication (RS256 con JWKS de Google).
  * 2. Valida la identidad del usuario (emisor, audiencia, expiración).
  * 3. Sanitiza y valida las entradas (longitud de mensajes, cantidad de turnos, tamaño de contexto).
- * 4. Inyecta el System Prompt oficial de VetLink con el contexto verificado del usuario.
+ * 4. Inyecta el System Prompt oficial de Huellapp con el contexto verificado del usuario.
  * 5. Se comunica de forma segura con la API de Groq usando el secreto env.GROQ_API_KEY.
  * 6. Configura CORS, límites de solicitudes y manejo de errores (401, 429, 502).
  */
@@ -58,7 +58,7 @@ function checkRateLimit(ip: string): boolean {
 }
 
 /**
- * Encabezados CORS seguros para la aplicación móvil VetLink
+ * Encabezados CORS seguros para la aplicación móvil Huellapp
  */
 function getCorsHeaders(request: Request): HeadersInit {
   const origin = request.headers.get('Origin') || '*';
@@ -203,21 +203,21 @@ async function verifyFirebaseIdToken(token: string, expectedProjectId: string): 
 function generarSystemPrompt(contextoVerificado?: string): string {
   const bloqueContexto = contextoVerificado && contextoVerificado.trim().length > 0
     ? `\n${contextoVerificado.trim()}\n`
-    : `\n=== DATOS VERIFICADOS DEL USUARIO EN VETLINK ===\nNo se han cargado datos específicos para esta consulta.\n=================================================\n`;
+    : `\n=== DATOS VERIFICADOS DEL USUARIO EN HUELLAPP ===\nNo se han cargado datos específicos para esta consulta.\n=================================================\n`;
 
-  return `Eres el Asistente Virtual Oficial de VetLink, una aplicación especializada en el cuidado de mascotas y gestión veterinaria integral.
-Tu función es brindar orientación general, clara, formal, empática y educativa sobre el cuidado, alimentación, higiene, vacunación preventiva y bienestar de perros y gatos, así como guiar al usuario con exactitud en el uso de la aplicación VetLink y sobre su información médica, turnos y recordatorios autorizados.
+  return `Eres el Asistente Virtual Oficial de Huellapp, una aplicación especializada en el cuidado de mascotas y gestión veterinaria integral.
+Tu función es brindar orientación general, clara, formal, empática y educativa sobre el cuidado, alimentación, higiene, vacunación preventiva y bienestar de perros y gatos, así como guiar al usuario con exactitud en el uso de la aplicación Huellapp y sobre su información médica, turnos y recordatorios autorizados.
 
 ${bloqueContexto}
 
 REGLAS FUNDAMENTALES DE CONDUCTA, ESTILO Y SEGURIDAD:
-1. La sección 'DATOS VERIFICADOS DEL USUARIO EN VETLINK' contiene la ÚNICA información real y autorizada del usuario en VetLink.
+1. La sección 'DATOS VERIFICADOS DEL USUARIO EN HUELLAPP' contiene la ÚNICA información real y autorizada del usuario en Huellapp.
 2. Si el usuario pregunta sobre sus mascotas registradas, sus turnos, citas médicas, controles o recordatorios pendientes, responde EXCLUSIVAMENTE en base a esos datos verificados.
-3. Si los datos verificados indican que NO tiene turnos agendados, o que NO tiene recordatorios o mascotas registradas, infórmale con cortesía y claridad: 'Actualmente no registra ningún turno / recordatorio / mascota en su cuenta de VetLink'.
+3. Si los datos verificados indican que NO tiene turnos agendados, o que NO tiene recordatorios o mascotas registradas, infórmale con cortesía y claridad: 'Actualmente no registra ningún turno / recordatorio / mascota en su cuenta de Huellapp'.
 4. ESTÁ ESTRICTAMENTE PROHIBIDO inventar nombres de mascotas, turnos, fechas, horarios, vacunas, clínicas veterinarias o historiales clínicos que no existan en los datos verificados.
 5. NO realices diagnósticos clínicos definitivos ni recetes medicamentos o dosis específicas bajo ninguna circunstancia. No reemplazas la evaluación presencial de un médico veterinario matriculado.
 6. Si el usuario describe síntomas de alarma (dificultad respiratoria, convulsiones, vómitos repetidos, sangre en heces u orina, decaimiento extremo, posible intoxicación o traumatismo), indícale con urgencia acudir de inmediato a una guardia veterinaria o clínica de emergencias.
-7. Guía sobre el funcionamiento de la aplicación VetLink:
+7. Guía sobre el funcionamiento de la aplicación Huellapp:
    - Registro de mascotas: Indique al usuario dirigirse a la pestaña 'Mascotas' en el menú inferior y presionar el botón '+ Nueva Mascota' para completar el formulario con los datos básicos y médicos.
    - Consulta de turnos: Informe con precisión sus citas verificadas. Para agendar un nuevo turno, indíquele acceder al apartado 'Turnos'.
    - Identificación de mascotas (QR y NFC): Explique que cada mascota registrada posee un código QR único en su ficha (escaneable en 'Escanear QR' para contactar al tutor en caso de pérdida), y que también puede vincular una placa NFC desde el perfil de la mascota con la opción 'Vincular NFC' aproximando la placa al teléfono.
@@ -243,7 +243,7 @@ export default {
       return new Response(
         JSON.stringify({
           status: 'ok',
-          service: 'VetLink Chatbot Cloudflare Worker',
+          service: 'Huellapp Chatbot Cloudflare Worker',
           model: env.GROQ_MODEL || DEFAULT_MODEL,
           timestamp: new Date().toISOString(),
         }),

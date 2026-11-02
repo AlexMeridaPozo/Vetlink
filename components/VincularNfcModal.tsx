@@ -350,7 +350,7 @@ export default function VincularNfcModal({
                     1. La app solicitará acercar la etiqueta o collar NFC.{'\n'}
                     2. Se comprobará que la etiqueta no esté asignada a otra mascota.{'\n'}
                     3. Se grabará el enlace de identificación oficial:{'\n'}
-                    <Text style={[styles.codeText, isDark && styles.codeTextDark]}>https://vetlink.app/pet?id={mascota.id}</Text>
+                    <Text style={[styles.codeText, isDark && styles.codeTextDark]}>https://huellapp.app/pet?id={mascota.id}</Text>
                     {'\n'}
                     4. Se guardará la vinculación y se actualizará la ficha médica de la mascota.
                   </Text>
@@ -511,7 +511,7 @@ export default function VincularNfcModal({
                   <View style={[styles.receiptRow, isDark && styles.receiptRowDark]}>
                     <Text style={[styles.receiptLabel, isDark && styles.headerSubtitleDark]}>Enlace de Identificación:</Text>
                     <Text style={[styles.receiptValue, styles.codeSmall, isDark && styles.textDark]}>
-                      {urlGrabada || `https://vetlink.app/pet?id=${mascota.id}`}
+                      {urlGrabada || `https://huellapp.app/pet?id=${mascota.id}`}
                     </Text>
                   </View>
                   <View style={[styles.receiptRow, isDark && styles.receiptRowDark]}>

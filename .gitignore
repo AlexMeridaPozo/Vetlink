@@ -55,5 +55,6 @@ jest.setup.*
 .postman/
 postman/
 
-
-
+# Reports & documentation drafts
+REBRANDING_REPORT.md
+*.docx

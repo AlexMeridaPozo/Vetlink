@@ -1,9 +1,7 @@
 import React from 'react';
 import {
-  ActionSheetIOS,
   Alert,
   Linking,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -205,14 +203,14 @@ export default function SosScreen() {
               <View style={styles.clinicCardHeader}>
                 <View style={{ flex: 1 }}>
                   <View style={styles.clinicBadgeRow}>
-                    {vet.enVetlink ? (
-                      <View style={styles.badgeVetlinkOn}>
+                    {(vet.enHuellapp ?? vet.enVetlink) ? (
+                      <View style={styles.badgeHuellappOn}>
                         <Ionicons name="checkmark-circle" size={11} color="#15803d" />
-                        <Text style={styles.badgeVetlinkOnText}>EN RED VETLINK</Text>
+                        <Text style={styles.badgeHuellappOnText}>EN RED HUELLAPP</Text>
                       </View>
                     ) : (
-                      <View style={styles.badgeVetlinkOff}>
-                        <Text style={styles.badgeVetlinkOffText}>EXTERNA</Text>
+                      <View style={styles.badgeHuellappOff}>
+                        <Text style={styles.badgeHuellappOffText}>EXTERNA</Text>
                       </View>
                     )}
                     {vet.guardia24hs && (
@@ -704,7 +702,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     flexWrap: 'wrap',
   },
-  badgeVetlinkOn: {
+  badgeHuellappOn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#dcfce7',
@@ -715,13 +713,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#86efac',
   },
-  badgeVetlinkOnText: {
+  badgeHuellappOnText: {
     fontSize: 10,
     fontWeight: '800',
     color: '#15803d',
     letterSpacing: 0.3,
   },
-  badgeVetlinkOff: {
+  badgeHuellappOff: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f1f5f9',
@@ -731,7 +729,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  badgeVetlinkOffText: {
+  badgeHuellappOffText: {
     fontSize: 10,
     fontWeight: '700',
     color: '#64748b',

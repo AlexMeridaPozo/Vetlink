@@ -1,14 +1,15 @@
 {
   "expo": {
-    "name": "CiviLink",
-    "slug": "CiviLink",
+    "name": "Huellapp",
+    "slug": "huellapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "civilink",
+    "scheme": "huellapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.alexmp.huellapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +25,7 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION"
       ],
-      "package": "com.alexmp.CiviLink"
+      "package": "com.alexmp.huellapp"
     },
     "web": {
       "output": "single",
@@ -49,7 +50,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "VetLink necesita tu ubicación para mostrarte las veterinarias más cercanas."
+          "locationWhenInUsePermission": "Huellapp necesita tu ubicación para mostrarte las veterinarias más cercanas."
         }
       ],
       [
@@ -61,7 +62,7 @@
       [
         "react-native-nfc-manager",
         {
-          "nfcPermission": "Permite vincular e identificar mascotas de manera inalámbrica mediante etiquetas NFC."
+          "nfcPermission": "Huellapp permite vincular e identificar mascotas de manera inalámbrica mediante etiquetas NFC."
         }
       ]
     ],

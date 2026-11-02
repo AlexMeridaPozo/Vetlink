@@ -1,6 +1,6 @@
-# VetLink — Cloudflare Worker para Chatbot con Groq API
+# Huellapp — Cloudflare Worker para Chatbot con Groq API
 
-Backend seguro serverless en **Cloudflare Workers** para el chatbot de la aplicación móvil **VetLink**.
+Backend seguro serverless en **Cloudflare Workers** para el chatbot de la aplicación móvil **Huellapp**.
 
 ---
 
@@ -54,14 +54,14 @@ npx wrangler deploy
 
 Al terminar, la terminal te mostrará la URL pública asignada, por ejemplo:
 ```text
-Published vetlink-chat-worker (1.23 sec)
-  https://vetlink-chat-worker.<tu-subdominio>.workers.dev
+Published huellapp-chat-worker (1.23 sec)
+  https://huellapp-chat-worker.<tu-subdominio>.workers.dev
 ```
 
 ### Paso 5: Conectar la aplicación móvil Expo
 Copia la URL obtenida en tu archivo `.env` de la aplicación móvil:
 ```env
-EXPO_PUBLIC_CHAT_API_URL=https://vetlink-chat-worker.<tu-subdominio>.workers.dev
+EXPO_PUBLIC_CHAT_API_URL=https://huellapp-chat-worker.<tu-subdominio>.workers.dev
 ```
 
 ---

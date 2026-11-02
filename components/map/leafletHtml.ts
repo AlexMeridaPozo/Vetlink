@@ -25,7 +25,7 @@ export function generateLeafletHtml({
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>VetLink Mapa</title>
+  <title>Huellapp Mapa</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -105,7 +105,7 @@ export function generateLeafletHtml({
       100% { transform: scale(2.2); opacity: 0; }
     }
 
-    /* Marcador de veterinarias: Verde (En VetLink) vs Gris (No adherida) */
+    /* Marcador de veterinarias: Verde (En Huellapp) vs Gris (No adherida) */
     .vet-marker {
       display: flex;
       flex-direction: column;
@@ -127,25 +127,25 @@ export function generateLeafletHtml({
       color: #ffffff;
       border: 2.5px solid #ffffff;
     }
-    /* EN VETLINK -> VERDE VIBRANTE */
-    .vet-marker.vetlink-on .vet-bubble {
+    /* EN HUELLAPP -> VERDE VIBRANTE */
+    .vet-marker.huellapp-on .vet-bubble {
       background: linear-gradient(135deg, #04b639, #059669) !important;
       box-shadow: 0 4px 14px rgba(4, 182, 57, 0.5) !important;
       border-color: #ffffff !important;
       color: #ffffff !important;
     }
-    .vet-marker.vetlink-on .vet-arrow {
+    .vet-marker.huellapp-on .vet-arrow {
       border-top-color: #059669 !important;
     }
 
     /* SOLO VETERINARIAS NO ADHERIDAS -> GRIS NEUTRO */
-    .vet-marker.vetlink-off.clinica .vet-bubble {
+    .vet-marker.huellapp-off.clinica .vet-bubble {
       background: linear-gradient(135deg, #94a3b8, #64748b) !important;
       box-shadow: 0 4px 10px rgba(100, 116, 139, 0.35) !important;
       border-color: #e2e8f0 !important;
       color: #f8fafc !important;
     }
-    .vet-marker.vetlink-off.clinica .vet-arrow {
+    .vet-marker.huellapp-off.clinica .vet-arrow {
       border-top-color: #64748b !important;
     }
 
@@ -189,7 +189,7 @@ export function generateLeafletHtml({
     }
 
     /* Mini Leyenda en el mapa */
-    .map-vetlink-legend {
+    .map-huellapp-legend {
       position: absolute;
       top: 14px;
       right: 14px;
@@ -254,7 +254,7 @@ export function generateLeafletHtml({
       text-transform: uppercase;
       margin-bottom: 0;
     }
-    .popup-vetlink-badge {
+    .popup-huellapp-badge {
       display: inline-block;
       font-size: 10px;
       font-weight: 800;
@@ -262,12 +262,12 @@ export function generateLeafletHtml({
       border-radius: 9999px;
       text-transform: uppercase;
     }
-    .badge-vetlink-on {
+    .badge-huellapp-on {
       background: ${isDark ? 'rgba(4, 182, 57, 0.25)' : '#dcfce7'};
       color: ${isDark ? '#4ade80' : '#15803d'};
       border: 1px solid ${isDark ? '#059669' : '#86efac'};
     }
-    .badge-vetlink-off {
+    .badge-huellapp-off {
       background: ${isDark ? 'rgba(100, 116, 139, 0.25)' : '#f1f5f9'};
       color: ${isDark ? '#94a3b8' : '#64748b'};
       border: 1px solid ${isDark ? '#475569' : '#cbd5e1'};
@@ -317,10 +317,10 @@ export function generateLeafletHtml({
 </head>
 <body>
   <div id="map"></div>
-  <div class="map-vetlink-legend">
+  <div class="map-huellapp-legend">
     <div class="legend-row">
       <span class="legend-indicator ind-green"></span>
-      <span>En VetLink</span>
+      <span>En Huellapp</span>
     </div>
     <div class="legend-row">
       <span class="legend-indicator ind-gray"></span>
@@ -415,10 +415,10 @@ export function generateLeafletHtml({
             return;
           }
           var is24hs = Boolean(vet.guardia24hs);
-          var isVetlink = vet.enVetlink === true;
+          var isHuellapp = (vet.enHuellapp === true || vet.enVetlink === true);
           var tipo = vet.tipo || (is24hs ? 'hospital' : 'clinica');
 
-          var markerClass = 'vet-marker ' + (isVetlink ? 'vetlink-on' : 'vetlink-off') + ' ' + tipo + (is24hs ? ' guardia' : '');
+          var markerClass = 'vet-marker ' + (isHuellapp ? 'huellapp-on' : 'huellapp-off') + ' ' + tipo + (is24hs ? ' guardia' : '');
 
           var badgeClass = 'badge-' + (is24hs ? 'guardia' : tipo);
           var badgeText = (function() {
@@ -430,9 +430,9 @@ export function generateLeafletHtml({
             return 'Clínica';
           })();
 
-          var vetlinkBadgeHtml = isVetlink
-            ? '<span class="popup-vetlink-badge badge-vetlink-on">✓ En Red VetLink</span>'
-            : '<span class="popup-vetlink-badge badge-vetlink-off">✕ No adherida</span>';
+          var huellappBadgeHtml = isHuellapp
+            ? '<span class="popup-huellapp-badge badge-huellapp-on">✓ En Red Huellapp</span>'
+            : '<span class="popup-huellapp-badge badge-huellapp-off">✕ No adherida</span>';
 
           var iconSvg = (function() {
             if (is24hs || tipo === 'hospital') {
@@ -466,7 +466,7 @@ export function generateLeafletHtml({
           var popupContent = '' +
             '<div class="popup-inner" onclick="window.selectVet(\\'' + vet.id + '\\')">' +
               '<div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;">' +
-                vetlinkBadgeHtml +
+                huellappBadgeHtml +
                 '<span class="popup-badge ' + badgeClass + '">' + badgeText + '</span>' +
               '</div>' +
               '<h3 class="popup-title">' + (vet.nombre || 'Veterinaria') + '</h3>' +

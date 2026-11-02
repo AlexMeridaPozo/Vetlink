@@ -169,7 +169,7 @@ export default function ScanScreen() {
       if (!resultado.petId) {
         Alert.alert(
           'Etiqueta no reconocida',
-          'La etiqueta contiene datos que no corresponden a una mascota registrada en VetLink.'
+          'La etiqueta contiene datos que no corresponden a una mascota registrada en Huellapp.'
         );
         return;
       }

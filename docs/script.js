@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * VETLINK OFFICIAL LANDING PAGE - JAVASCRIPT
+ * HUELLAPP OFFICIAL LANDING PAGE - JAVASCRIPT
  * Arquitectura Vanilla JS - Sin dependencias externas
  * ============================================================================
  */
@@ -12,7 +12,7 @@
 // de espera en el área del código QR.
 // Para activar una plataforma, simplemente completá el enlace real correspondiente.
 const DOWNLOAD_LINKS = {
-  android: "", // Ej: "https://github.com/AlexMeridaPozo/Vetlink/releases/latest/download/VetLink.apk" o link de Google Play
+  android: "", // Ej: "https://github.com/AlexMeridaPozo/Huellapp/releases/latest/download/Huellapp.apk" o link de Google Play
   ios: ""      // Ej: "https://testflight.apple.com/join/..." o link de App Store
 };
 

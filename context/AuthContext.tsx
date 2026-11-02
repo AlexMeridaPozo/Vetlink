@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setProfile({
           uid: firebaseUser.uid,
           email: firebaseUser.email,
-          displayName: firebaseUser.displayName || 'Usuario VetLink',
+          displayName: firebaseUser.displayName || 'Usuario Huellapp',
           rol: 'propietario', // Fallback seguro: sin permisos elevados hasta que Firestore confirme
         });
       }

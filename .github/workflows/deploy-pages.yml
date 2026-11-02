@@ -1,4 +1,4 @@
-name: Deploy VetLink Landing Page to GitHub Pages
+name: Deploy Huellapp Landing Page to GitHub Pages
 
 on:
   push:

@@ -69,7 +69,7 @@ export async function enviarMensajeChat(historial: ChatMessage[]): Promise<strin
   // 1. Verificación obligatoria de autenticación del usuario
   const currentUser = auth.currentUser;
   if (!currentUser) {
-    throw new Error('Debes iniciar sesión con tu cuenta de VetLink para utilizar el Asistente IA.');
+    throw new Error('Debes iniciar sesión con tu cuenta de Huellapp para utilizar el Asistente IA.');
   }
 
   if (!historial || historial.length === 0) {
@@ -128,7 +128,7 @@ export async function enviarMensajeChat(historial: ChatMessage[]): Promise<strin
       console.warn('[ChatService - Worker Error]:', response.status, errorJson);
 
       if (response.status === 401) {
-        throw new Error('Tu sesión ha expirado o no es válida. Por favor, vuelve a iniciar sesión en VetLink.');
+        throw new Error('Tu sesión ha expirado o no es válida. Por favor, vuelve a iniciar sesión en Huellapp.');
       }
       if (response.status === 429) {
         throw new Error('Límite de solicitudes alcanzado en el asistente. Por favor, aguarda unos instantes.');
@@ -155,9 +155,9 @@ export async function enviarMensajeChat(historial: ChatMessage[]): Promise<strin
 
     const mensajeError = err?.message || '';
     if (mensajeError.includes('Network') || mensajeError.includes('fetch')) {
-      throw new Error('No fue posible conectar con el servidor de VetLink. Revisa tu conexión a internet.');
+      throw new Error('No fue posible conectar con el servidor de Huellapp. Revisa tu conexión a internet.');
     }
 
-    throw new Error(err?.message || 'Ocurrió un error al consultar al Asistente VetLink. Intenta nuevamente.');
+    throw new Error(err?.message || 'Ocurrió un error al consultar al Asistente Huellapp. Intenta nuevamente.');
   }
 }

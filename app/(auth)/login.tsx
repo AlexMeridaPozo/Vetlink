@@ -82,7 +82,7 @@ export default function LoginScreen() {
       <View style={styles.topBar}>
         <View style={styles.brandSmallRow}>
           <Ionicons name="paw" size={20} color="#04b639" />
-          <Text style={[styles.brandSmallText, isDark && styles.textDark]}>VetLink</Text>
+          <Text style={[styles.brandSmallText, isDark && styles.textDark]}>Huellapp</Text>
         </View>
         <ThemeToggleButton />
       </View>
@@ -104,7 +104,7 @@ export default function LoginScreen() {
               </View>
               <Text style={[styles.title, isDark && styles.textDark]}>Bienvenido de nuevo</Text>
               <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
-                Ingresa tus credenciales para acceder a VetLink
+                Ingresa tus credenciales para acceder a Huellapp
               </Text>
             </View>
 

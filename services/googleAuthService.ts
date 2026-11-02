@@ -32,7 +32,7 @@ async function syncGoogleUserProfile(user: User): Promise<boolean> {
       await setDoc(userRef, {
         uid: user.uid,
         email: user.email,
-        displayName: user.displayName || 'Usuario VetLink',
+        displayName: user.displayName || 'Usuario Huellapp',
         rol: 'propietario',
         fotoUrl: user.photoURL || null,
         authProvider: 'google',

@@ -1,7 +1,7 @@
 {
-  "name": "vetlink-chat-worker",
+  "name": "huellapp-chat-worker",
   "version": "1.0.0",
-  "description": "Backend seguro en Cloudflare Workers para el chatbot de VetLink con Groq API y Firebase Auth",
+  "description": "Backend seguro en Cloudflare Workers para el chatbot de Huellapp con Groq API y Firebase Auth",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {

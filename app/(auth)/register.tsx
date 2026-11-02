@@ -114,7 +114,7 @@ export default function RegisterScreen() {
       <View style={styles.topBar}>
         <View style={styles.brandSmallRow}>
           <Ionicons name="paw" size={20} color="#04b639" />
-          <Text style={[styles.brandSmallText, isDark && styles.textDark]}>VetLink</Text>
+          <Text style={[styles.brandSmallText, isDark && styles.textDark]}>Huellapp</Text>
         </View>
         <ThemeToggleButton />
       </View>
@@ -136,7 +136,7 @@ export default function RegisterScreen() {
               </View>
               <Text style={[styles.title, isDark && styles.textDark]}>Crear Cuenta</Text>
               <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
-                Únete a VetLink para cuidar e identificar a tus mascotas
+                Únete a Huellapp para cuidar e identificar a tus mascotas
               </Text>
             </View>
 

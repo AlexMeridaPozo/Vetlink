@@ -31,7 +31,7 @@ import { buscarVeterinariasCercanas } from '@/services/veterinariasService';
 
 type FilterType =
   | 'todas'
-  | 'vetlink'
+  | 'huellapp'
   | 'externas'
   | 'guardia'
   | 'clinica'
@@ -109,27 +109,25 @@ export default function MapaScreen() {
 
   // Estados de búsqueda y filtros
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<FilterType>('todas');
-  const [selectedClinicId, setSelectedClinicId] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<FilterType>(() => {
+    if (params.filter === 'guardia' || params.zoomGuardia === 'true') return 'guardia';
+    return 'todas';
+  });
+  const [selectedClinicId, setSelectedClinicId] = useState<string | null>(() => {
+    if (params.filter === 'guardia' || params.zoomGuardia === 'true') {
+      return params.focusId || 'vet-2';
+    }
+    return params.focusId || null;
+  });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Auto-foco y zoom si se ingresa desde el botón Guardias 24hs de SOS o con parámetros
   useEffect(() => {
-    if (params.filter === 'guardia' || params.zoomGuardia === 'true') {
-      setSelectedFilter('guardia');
-      const targetId = params.focusId || 'vet-2'; // Hospital San Roque Guardia 24hs
-      setSelectedClinicId(targetId);
+    const targetId = (params.filter === 'guardia' || params.zoomGuardia === 'true')
+      ? (params.focusId || 'vet-2')
+      : params.focusId;
 
-      if (isMapReadyRef.current) {
-        setTimeout(() => {
-          mapRef.current?.focusClinic(targetId);
-        }, 300);
-      } else {
-        pendingFocusIdRef.current = targetId;
-      }
-    } else if (params.focusId) {
-      const targetId = params.focusId;
-      setSelectedClinicId(targetId);
+    if (targetId) {
       if (isMapReadyRef.current) {
         setTimeout(() => {
           mapRef.current?.focusClinic(targetId);
@@ -252,8 +250,8 @@ export default function MapaScreen() {
 
         // Filtro por categoría rápida
         if (!matchesText) return false;
-        if (selectedFilter === 'vetlink') return vet.enVetlink;
-        if (selectedFilter === 'externas') return !vet.enVetlink;
+        if (selectedFilter === 'huellapp') return (vet.enHuellapp ?? vet.enVetlink);
+        if (selectedFilter === 'externas') return !(vet.enHuellapp ?? vet.enVetlink);
         if (selectedFilter === 'guardia') return vet.guardia24hs;
         if (selectedFilter === 'clinica') return vet.tipo === 'clinica';
         if (selectedFilter === 'hospital') return vet.tipo === 'hospital';
@@ -336,7 +334,7 @@ export default function MapaScreen() {
           <View style={styles.subtitleRow}>
             <View style={[styles.liveIndicator, styles.liveIndicatorActive]} />
             <Text style={[styles.headerSubtitle, isDark && styles.textMutedDark]}>
-              Pilar Centro &bull; {veterinarias.filter((v) => v.enVetlink).length} en VetLink &bull; {veterinarias.filter((v) => !v.enVetlink).length} externas
+              Pilar Centro &bull; {veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length} en Huellapp &bull; {veterinarias.filter((v) => !(v.enHuellapp ?? v.enVetlink)).length} externas
             </Text>
           </View>
         </View>
@@ -402,19 +400,19 @@ export default function MapaScreen() {
           <TouchableOpacity
             style={[
               styles.chip,
-              selectedFilter === 'vetlink' && styles.chipActiveVetlink,
+              selectedFilter === 'huellapp' && styles.chipActiveHuellapp,
               isDark && styles.chipDark,
-              isDark && selectedFilter === 'vetlink' && styles.chipActiveVetlinkDark,
+              isDark && selectedFilter === 'huellapp' && styles.chipActiveHuellappDark,
             ]}
-            onPress={() => setSelectedFilter('vetlink')}>
-            <View style={styles.vetlinkDotGreen} />
+            onPress={() => setSelectedFilter('huellapp')}>
+            <View style={styles.huellappDotGreen} />
             <Text
               style={[
                 styles.chipText,
-                selectedFilter === 'vetlink' && styles.chipTextActiveVetlink,
+                selectedFilter === 'huellapp' && styles.chipTextActiveHuellapp,
                 isDark && styles.chipTextDark,
               ]}>
-              En VetLink ({veterinarias.filter((v) => v.enVetlink).length})
+              En Huellapp ({veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length})
             </Text>
           </TouchableOpacity>
 
@@ -426,14 +424,14 @@ export default function MapaScreen() {
               isDark && selectedFilter === 'externas' && styles.chipActiveGrayDark,
             ]}
             onPress={() => setSelectedFilter('externas')}>
-            <View style={styles.vetlinkDotGray} />
+            <View style={styles.huellappDotGray} />
             <Text
               style={[
                 styles.chipText,
                 selectedFilter === 'externas' && styles.chipTextActiveGray,
                 isDark && styles.chipTextDark,
               ]}>
-              No adheridas ({veterinarias.filter((v) => !v.enVetlink).length})
+              No adheridas ({veterinarias.filter((v) => !(v.enHuellapp ?? v.enVetlink)).length})
             </Text>
           </TouchableOpacity>
 
@@ -712,7 +710,7 @@ export default function MapaScreen() {
                         <Text
                           style={[styles.suggestionSubtitle, isDark && styles.textMutedDark]}
                           numberOfLines={1}>
-                          {item.enVetlink ? '🟢 En VetLink' : '⚪ Externa'} &bull; {item.direccion}
+                          {(item.enHuellapp ?? item.enVetlink) ? '🟢 En Huellapp' : '⚪ Externa'} &bull; {item.direccion}
                         </Text>
                       </View>
                       {item.distanceText && (
@@ -734,29 +732,29 @@ export default function MapaScreen() {
               <View style={styles.cardHeader}>
                 <View style={styles.cardTitleWrap}>
                   <View style={styles.badgeRow}>
-                    {/* Badge de Red VetLink: Verde vs Gris */}
+                    {/* Badge de Red Huellapp: Verde vs Gris */}
                     <View
                       style={[
-                        styles.vetlinkStatusBadge,
-                        selectedClinic.enVetlink ? styles.vetlinkBadgeOn : styles.vetlinkBadgeOff,
-                        isDark && (selectedClinic.enVetlink ? styles.vetlinkBadgeOnDark : styles.vetlinkBadgeOffDark),
+                        styles.huellappStatusBadge,
+                        (selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? styles.huellappBadgeOn : styles.huellappBadgeOff,
+                        isDark && ((selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? styles.huellappBadgeOnDark : styles.huellappBadgeOffDark),
                       ]}>
                       <Ionicons
-                        name={selectedClinic.enVetlink ? 'checkmark-circle' : 'ellipse-outline'}
+                        name={(selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? 'checkmark-circle' : 'ellipse-outline'}
                         size={11}
                         color={
-                          selectedClinic.enVetlink
+                          (selectedClinic.enHuellapp ?? selectedClinic.enVetlink)
                             ? (isDark ? '#4ade80' : '#15803d')
                             : (isDark ? '#a1a1aa' : '#64748b')
                         }
                       />
                       <Text
                         style={[
-                          styles.vetlinkBadgeText,
-                          selectedClinic.enVetlink ? styles.vetlinkTextOn : styles.vetlinkTextOff,
-                          isDark && (selectedClinic.enVetlink ? styles.vetlinkTextOnDark : styles.vetlinkTextOffDark),
+                          styles.huellappBadgeText,
+                          (selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? styles.huellappTextOn : styles.huellappTextOff,
+                          isDark && ((selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? styles.huellappTextOnDark : styles.huellappTextOffDark),
                         ]}>
-                        {selectedClinic.enVetlink ? 'En Red VetLink' : 'No adherida'}
+                        {(selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? 'En Red Huellapp' : 'No adherida'}
                       </Text>
                     </View>
 
@@ -1068,12 +1066,12 @@ const styles = StyleSheet.create({
   chipActiveTealDark: {
     backgroundColor: '#134e4a',
   },
-  chipActiveVetlink: {
+  chipActiveHuellapp: {
     backgroundColor: '#dcfce7',
     borderWidth: 1,
     borderColor: '#86efac',
   },
-  chipActiveVetlinkDark: {
+  chipActiveHuellappDark: {
     backgroundColor: '#064e3b',
     borderColor: '#047857',
   },
@@ -1093,14 +1091,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#e11d48',
     marginRight: 6,
   },
-  vetlinkDotGreen: {
+  huellappDotGreen: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#04b639',
     marginRight: 6,
   },
-  vetlinkDotGray: {
+  huellappDotGray: {
     width: 8,
     height: 8,
     borderRadius: 4,
@@ -1118,7 +1116,7 @@ const styles = StyleSheet.create({
   chipTextActive: {
     color: '#15803d',
   },
-  chipTextActiveVetlink: {
+  chipTextActiveHuellapp: {
     color: '#15803d',
     fontWeight: '700',
   },
@@ -1304,7 +1302,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     flexWrap: 'wrap',
   },
-  vetlinkStatusBadge: {
+  huellappStatusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -1312,39 +1310,39 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 8,
   },
-  vetlinkBadgeOn: {
+  huellappBadgeOn: {
     backgroundColor: '#dcfce7',
     borderWidth: 1,
     borderColor: '#86efac',
   },
-  vetlinkBadgeOnDark: {
+  huellappBadgeOnDark: {
     backgroundColor: 'rgba(4, 182, 57, 0.25)',
     borderColor: '#059669',
   },
-  vetlinkBadgeOff: {
+  huellappBadgeOff: {
     backgroundColor: '#f1f5f9',
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  vetlinkBadgeOffDark: {
+  huellappBadgeOffDark: {
     backgroundColor: 'rgba(100, 116, 139, 0.25)',
     borderColor: '#3f3f46',
   },
-  vetlinkBadgeText: {
+  huellappBadgeText: {
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
   },
-  vetlinkTextOn: {
+  huellappTextOn: {
     color: '#15803d',
   },
-  vetlinkTextOnDark: {
+  huellappTextOnDark: {
     color: '#4ade80',
   },
-  vetlinkTextOff: {
+  huellappTextOff: {
     color: '#64748b',
   },
-  vetlinkTextOffDark: {
+  huellappTextOffDark: {
     color: '#cbd5e1',
   },
   typeBadge: {

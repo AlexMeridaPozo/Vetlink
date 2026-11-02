@@ -555,7 +555,7 @@ export default function MascotasScreen() {
     if (!isVeterinario) {
       Alert.alert(
         'Acceso Denegado (Seguridad)',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o reasignar etiquetas NFC en VetLink.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o reasignar etiquetas NFC en Huellapp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
       );
       return;
     }
@@ -726,7 +726,7 @@ export default function MascotasScreen() {
       {/* Header Superior */}
       <View style={[styles.header, isDark && styles.headerDark]}>
         <View>
-          <Text style={styles.headerBrand}>VetLink</Text>
+          <Text style={styles.headerBrand}>Huellapp</Text>
           <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
             {isVeterinario ? 'Mascotas Clínicas' : 'Mis Mascotas'}
           </Text>

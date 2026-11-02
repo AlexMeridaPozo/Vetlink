@@ -21,7 +21,7 @@ export default function PerfilScreen() {
     }
   };
 
-  const displayName = profile?.displayName || user?.displayName || (isVeterinario ? 'Profesional Veterinario' : 'Usuario VetLink');
+  const displayName = profile?.displayName || user?.displayName || (isVeterinario ? 'Profesional Veterinario' : 'Usuario Huellapp');
   const email = profile?.email || user?.email || 'Sin correo asociado';
   const matricula = profile?.matricula;
   const especialidad = profile?.especialidad;

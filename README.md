@@ -1,16 +1,16 @@
-# 🐾 VetLink
+# 🐾 Huellapp
 
 <p align="center">
-  <a href="https://alexmeridapozo.github.io/Vetlink/" title="Hacé clic para visitar la Landing Page oficial de VetLink">
-    <img src="./assets/images/banner.png" alt="VetLink — Sitio Web Oficial y Plataforma Móvil" width="100%">
+  <a href="https://alexmeridapozo.github.io/Huellapp/" title="Hacé clic para visitar la Landing Page oficial de Huellapp">
+    <img src="./assets/images/banner.png" alt="Huellapp — Sitio Web Oficial y Plataforma Móvil" width="100%">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://alexmeridapozo.github.io/Vetlink/">
-    <img src="https://img.shields.io/badge/🌐_Sitio_Oficial-alexmeridapozo.github.io%2FVetlink-2563EB?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Sitio Web Oficial">
+  <a href="https://alexmeridapozo.github.io/Huellapp/">
+    <img src="https://img.shields.io/badge/🌐_Sitio_Oficial-alexmeridapozo.github.io%2FHuellapp-2563EB?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Sitio Web Oficial">
   </a>
-  <a href="https://alexmeridapozo.github.io/Vetlink/">
+  <a href="https://alexmeridapozo.github.io/Huellapp/">
     <img src="https://img.shields.io/badge/GitHub_Pages-Activo-04B639?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Pages">
   </a>
   <a href="https://expo.dev/">
@@ -27,7 +27,7 @@
 <p align="center">
   <strong>El cuidado de tu mascota, conectado.</strong><br>
   Plataforma integral móvil para la gestión sanitaria, libreta médica e identificación inteligente mediante códigos QR y tags NFC.<br>
-  👉 <strong><a href="https://alexmeridapozo.github.io/Vetlink/">Hacé clic aquí para ingresar a la Landing Page Oficial de VetLink</a></strong> 👈
+  👉 <strong><a href="https://alexmeridapozo.github.io/Huellapp/">Hacé clic aquí para ingresar a la Landing Page Oficial de Huellapp</a></strong> 👈
 </p>
 
 ---
@@ -63,7 +63,7 @@
 ## 📁 Estructura del Proyecto
 
 ```text
-Vetlink/
+Huellapp/
 ├── app/                  # Rutas y navegación (auth, tabs, fichas médicas)
 ├── components/           # Componentes UI reutilizables (tarjetas, modales, mapa)
 ├── services/             # Lógica de negocio e integraciones (Firebase, NFC, Chatbot)
@@ -85,7 +85,7 @@ Vetlink/
 
 ### 1. Clonar el repositorio e instalar dependencias
 ```bash
-git clone https://github.com/AlexMeridaPozo/Vetlink.git
+git clone https://github.com/AlexMeridaPozo/Huellapp.git
 cd "Aplicacion Movil"
 npm install
 ```
@@ -138,7 +138,7 @@ La aplicación utiliza la infraestructura de Google Firebase para la gestión de
 
 ## 🏷️ Identificación Inteligente (QR & NFC)
 
-VetLink incorpora dos métodos de identificación rápida para mascotas extraviadas o consultas veterinarias:
+Huellapp incorpora dos métodos de identificación rápida para mascotas extraviadas o consultas veterinarias:
 
 1. **Escaneo de Código QR:** Emplea `expo-camera` para enfocar y leer de inmediato el identificador único (ej. `PET-001`) grabado en la chapa identificatoria.
 2. **Tecnología NFC:** Permite aproximar el dispositivo móvil a un tag o placa con chip NFC mediante `react-native-nfc-manager` para recuperar la ficha médica de la mascota al instante.
@@ -182,4 +182,4 @@ npm run lint       # Analiza el código fuente en busca de errores con ESLint
 
 ## 👥 Equipo de Desarrollo
 
-Proyecto desarrollado por el equipo de **VetLink** en el marco del **Proyecto Integrador Final de Aplicaciones Móviles**.
+Proyecto desarrollado por el equipo de **Huellapp** en el marco del **Proyecto Integrador Final de Aplicaciones Móviles**.

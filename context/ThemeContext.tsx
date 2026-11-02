@@ -15,7 +15,8 @@ interface ThemeContextType {
   setTheme: (theme: ColorTheme) => void;
 }
 
-const THEME_STORAGE_KEY = '@vetlink_color_theme';
+const THEME_STORAGE_KEY = '@huellapp_color_theme';
+const LEGACY_THEME_STORAGE_KEY = '@vetlink_color_theme';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -28,7 +29,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
     let isMounted = true;
     (async () => {
       try {
-        const saved = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+        const saved = (await AsyncStorage.getItem(THEME_STORAGE_KEY)) || (await AsyncStorage.getItem(LEGACY_THEME_STORAGE_KEY));
         if (isMounted && (saved === 'light' || saved === 'dark')) {
           setThemeState(saved);
         }

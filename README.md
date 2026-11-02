@@ -1,6 +1,34 @@
 # 🐾 VetLink
 
-Aplicación móvil para la gestión, cuidado e identificación inteligente de mascotas. Desarrollada con **React Native** y **Expo**, permite a los propietarios registrar y gestionar sus mascotas, identificarlas de manera rápida y segura mediante **códigos QR** y tecnología **NFC**, acceder a servicios de turnos, recordatorios veterinarios, mapas de atención y administrar su perfil con autenticación en **Firebase**.
+<p align="center">
+  <a href="https://alexmeridapozo.github.io/Vetlink/" title="Hacé clic para visitar la Landing Page oficial de VetLink">
+    <img src="./assets/images/banner.png" alt="VetLink — Sitio Web Oficial y Plataforma Móvil" width="100%">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://alexmeridapozo.github.io/Vetlink/">
+    <img src="https://img.shields.io/badge/🌐_Sitio_Oficial-alexmeridapozo.github.io%2FVetlink-2563EB?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Sitio Web Oficial">
+  </a>
+  <a href="https://alexmeridapozo.github.io/Vetlink/">
+    <img src="https://img.shields.io/badge/GitHub_Pages-Activo-04B639?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Pages">
+  </a>
+  <a href="https://expo.dev/">
+    <img src="https://img.shields.io/badge/Expo-SDK_57-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo SDK 57">
+  </a>
+  <a href="https://reactnative.dev/">
+    <img src="https://img.shields.io/badge/React_Native-0.86-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Native 0.86">
+  </a>
+  <a href="https://firebase.google.com/">
+    <img src="https://img.shields.io/badge/Firebase-v12-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase">
+  </a>
+</p>
+
+<p align="center">
+  <strong>El cuidado de tu mascota, conectado.</strong><br>
+  Plataforma integral móvil para la gestión sanitaria, libreta médica e identificación inteligente mediante códigos QR y tags NFC.<br>
+  👉 <strong><a href="https://alexmeridapozo.github.io/Vetlink/">Hacé clic aquí para ingresar a la Landing Page Oficial de VetLink</a></strong> 👈
+</p>
 
 ---
 

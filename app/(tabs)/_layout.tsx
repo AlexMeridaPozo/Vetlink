@@ -107,12 +107,6 @@ export default function TabLayout() {
             href: null,
           }}
         />
-        <Tabs.Screen
-          name="tienda"
-          options={{
-            href: null,
-          }}
-        />
       </Tabs>
       <ChatLogo_Infferior />
     </View>

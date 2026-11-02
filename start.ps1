@@ -12,15 +12,15 @@ Set-Location $PSScriptRoot
 switch ($platform) {
     "android" {
         Write-Host "Iniciando Vetlink en Android..." -ForegroundColor Green
-        pnpm expo start --android
+        npx expo start --android
     }
     "ios" {
         Write-Host "Iniciando Vetlink en iOS..." -ForegroundColor Green
-        pnpm expo start --ios
+        npx expo start --ios
     }
     default {
         Write-Host "Iniciando Vetlink en Web (Chrome)..." -ForegroundColor Green
-        pnpm expo start --web
+        npx expo start --web
     }
 }
 

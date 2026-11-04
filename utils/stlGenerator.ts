@@ -84,7 +84,7 @@ export function generateSTL(matrix: boolean[][], options: STLOptions = {}): Arra
   const dv = new DataView(buf);
 
   // Header ASCII (80 bytes)
-  const header = 'VetLink QR Tag - generado con qrGenerator.ts';
+  const header = 'Huellapp QR Tag - generado con qrGenerator.ts';
   for (let i = 0; i < 80; i++) dv.setUint8(i, i < header.length ? header.charCodeAt(i) : 0);
 
   // Cantidad de triángulos

@@ -151,7 +151,7 @@ export default function ChatScreen() {
             <Ionicons name="arrow-back" size={18} color={isDark ? '#86efac' : '#166534'} />
             <Text style={[styles.backBtnText, isDark && styles.backBtnTextDark]}>Regresar</Text>
           </TouchableOpacity>
-          <Text style={[styles.screenTitle, isDark && styles.textDark]}>Asistente VetLink</Text>
+          <Text style={[styles.screenTitle, isDark && styles.textDark]}>Asistente Huellapp</Text>
           <ThemeToggleButton />
         </View>
 
@@ -163,7 +163,7 @@ export default function ChatScreen() {
             Inicia sesión para consultar
           </Text>
           <Text style={[styles.authRequiredDesc, isDark && styles.subtituloDark]}>
-            El Asistente Inteligente de VetLink está disponible para usuarios autenticados. Ingresa con tu cuenta para comenzar a chatear.
+            El Asistente Inteligente de Huellapp está disponible para usuarios autenticados. Ingresa con tu cuenta para comenzar a chatear.
           </Text>
           <TouchableOpacity
             style={styles.loginBtn}
@@ -199,7 +199,7 @@ export default function ChatScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.screenTitle, isDark && styles.textDark]} numberOfLines={1}>
-              Asistente VetLink
+              Asistente Huellapp
             </Text>
             <View style={styles.statusRow}>
               <View style={styles.statusDot} />
@@ -250,7 +250,7 @@ export default function ChatScreen() {
                 <MaterialCommunityIcons name="robot" size={44} color="#04b639" />
               </View>
               <Text style={[styles.welcomeTitle, isDark && styles.textDark]}>
-                Asistente Virtual VetLink
+                Asistente Virtual Huellapp
               </Text>
               <Text style={[styles.welcomeSubtitle, isDark && styles.subtituloDark]}>
                 Estimado/a {user.displayName || 'tutor/a'}, le doy la bienvenida. Estoy a su disposición para orientarle en el registro de sus mascotas, consulta de turnos, recordatorios y el uso de las funciones de la aplicación.
@@ -345,7 +345,7 @@ export default function ChatScreen() {
               <View style={[styles.bubble, isDark ? styles.bubbleAssistantDark : styles.bubbleAssistant, styles.typingBubble]}>
                 <ActivityIndicator size="small" color="#04b639" style={{ marginRight: 8 }} />
                 <Text style={[styles.typingText, isDark && styles.subtituloDark]}>
-                  VetLink está escribiendo...
+                  Huellapp está escribiendo...
                 </Text>
               </View>
             </View>

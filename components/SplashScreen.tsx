@@ -101,9 +101,9 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <View style={styles.centerContent}>
-        {/* Nombre / Logo Vetlink */}
+        {/* Nombre / Logo Huellapp */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>Vetlink</Text>
+          <Text style={styles.logoText}>Huellapp</Text>
         </View>
 
         {/* Fila de carga: Indicador circular + Barra de progreso + Porcentaje */}

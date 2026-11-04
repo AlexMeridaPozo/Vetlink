@@ -6,6 +6,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SosIcon } from '@/components/SosIcon';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -118,6 +119,14 @@ export default function HomeScreen() {
 
           <View style={styles.grid}>
             <BotonMenu
+              titulo="Atención SOS"
+              subtitulo="Guardias de turno"
+              icono="alert-circle-outline"
+              onPress={() => router.push('/(tabs)/sos')}
+              isDark={isDark}
+              isAlert={true}
+            />
+            <BotonMenu
               titulo="Turnos"
               subtitulo="Agenda de citas"
               icono="calendar-outline"
@@ -145,6 +154,13 @@ export default function HomeScreen() {
               onPress={() => router.push('/recordatorios')}
               isDark={isDark}
             />
+            <BotonMenu
+              titulo="Mapa Pilar"
+              subtitulo="Clínicas y guardias"
+              icono="map-outline"
+              onPress={() => router.push('/(tabs)/mapa')}
+              isDark={isDark}
+            />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -166,6 +182,44 @@ export default function HomeScreen() {
           </View>
           <ThemeToggleButton />
         </View>
+
+        {/* BOTÓN GRANDE CUADRADO PROTAGONISTA DE EMERGENCIA SOS */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.sosHeroCard,
+            isDark && styles.sosHeroCardDark,
+            pressed && styles.botonPresionado,
+          ]}
+          onPress={() => router.push('/(tabs)/sos')}
+          accessibilityRole="button"
+          accessibilityLabel="Atención urgente SOS y guardia 24 horas"
+        >
+          <View style={styles.sosHeroHeader}>
+            <View style={styles.sosHeroIconCircle}>
+              <SosIcon size={26} focused variant="custom" />
+            </View>
+            <View style={styles.sosLiveBadge}>
+              <View style={styles.sosPulseDot} />
+              <Text style={styles.sosLiveBadgeText}>GUARDIA 24HS ACTIVA</Text>
+            </View>
+          </View>
+
+          <Text style={styles.sosHeroTitle}>EMERGENCIAS SOS</Text>
+          <Text style={[styles.sosHeroSubtitle, isDark && styles.sosHeroSubtitleDark]}>
+            Línea directa y veterinarias con guardia nocturna en Pilar Centro
+          </Text>
+
+          <View style={styles.sosHeroFooter}>
+            <View style={styles.sosActionChip}>
+              <Ionicons name="call" size={13} color="#ffffff" />
+              <Text style={styles.sosActionChipText}>Atención Inmediata</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Text style={styles.sosVerGuardiaText}>Ver guardia</Text>
+              <Ionicons name="chevron-forward" size={16} color="#dc2626" />
+            </View>
+          </View>
+        </Pressable>
 
         {/* Tarjeta de mascotas / perfiles */}
         <Pressable
@@ -204,10 +258,25 @@ export default function HomeScreen() {
         {/* Grilla de accesos (Sin tienda) */}
         <View style={styles.grid}>
           <BotonMenu
+            titulo="SOS Urgencias"
+            subtitulo="Guardia 24hs"
+            icono="alert-circle-outline"
+            onPress={() => router.push('/(tabs)/sos')}
+            isDark={isDark}
+            isAlert={true}
+          />
+          <BotonMenu
             titulo="Escanear QR"
             subtitulo="Identificar o vincular"
             icono="qr-code-outline"
             onPress={() => router.push('/(tabs)/scan')}
+            isDark={isDark}
+          />
+          <BotonMenu
+            titulo="Mapa Pilar"
+            subtitulo="15 lugares reales"
+            icono="map-outline"
+            onPress={() => router.push('/(tabs)/mapa')}
             isDark={isDark}
           />
           <BotonMenu
@@ -232,13 +301,6 @@ export default function HomeScreen() {
             isDark={isDark}
           />
           <BotonMenu
-            titulo="Mapa"
-            subtitulo="Ubicación y clínicas"
-            icono="map-outline"
-            onPress={() => router.push('/(tabs)/mapa')}
-            isDark={isDark}
-          />
-          <BotonMenu
             titulo="Mi Perfil"
             subtitulo="Datos y ajustes"
             icono="person-outline"
@@ -257,29 +319,42 @@ function BotonMenu({
   icono,
   onPress,
   isDark,
+  isAlert,
 }: {
   titulo: string;
   subtitulo: string;
   icono: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
   isDark?: boolean;
+  isAlert?: boolean;
 }) {
   return (
     <Pressable
       style={({ pressed }) => [
         styles.boton,
         isDark && styles.botonDark,
+        isAlert && (isDark ? styles.botonAlertDark : styles.botonAlert),
         pressed && styles.botonPresionado,
       ]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={titulo}
     >
-      <View style={[styles.botonIconoContainer, isDark && styles.botonIconoContainerDark]}>
-        <Ionicons name={icono} size={22} color="#04b639" />
+      <View
+        style={[
+          styles.botonIconoContainer,
+          isDark && styles.botonIconoContainerDark,
+          isAlert && (isDark ? styles.botonAlertIconoContainerDark : styles.botonAlertIconoContainer),
+        ]}
+      >
+        <Ionicons name={icono} size={22} color={isAlert ? '#dc2626' : '#04b639'} />
       </View>
-      <Text style={[styles.botonTitulo, isDark && styles.textDark]}>{titulo}</Text>
-      <Text style={[styles.botonSubtitulo, isDark && styles.subtituloDark]}>{subtitulo}</Text>
+      <Text style={[styles.botonTitulo, isDark && styles.textDark, isAlert && styles.botonAlertTitulo]}>
+        {titulo}
+      </Text>
+      <Text style={[styles.botonSubtitulo, isDark && styles.subtituloDark, isAlert && styles.botonAlertSubtitulo]}>
+        {subtitulo}
+      </Text>
     </Pressable>
   );
 }
@@ -291,6 +366,125 @@ const styles = StyleSheet.create({
   },
   containerDark: {
     backgroundColor: '#09090b',
+  },
+  // ── Tarjeta de Emergencia SOS Destacada ─────────────────────────
+  sosHeroCard: {
+    backgroundColor: '#fef2f2',
+    borderRadius: 22,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#fca5a5',
+    shadowColor: '#dc2626',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  sosHeroCardDark: {
+    backgroundColor: '#450a0a33',
+    borderColor: '#b91c1c',
+    shadowOpacity: 0.35,
+  },
+  sosHeroHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sosHeroIconCircle: {
+    backgroundColor: '#fee2e2',
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sosLiveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#fca5a5',
+  },
+  sosPulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#dc2626',
+  },
+  sosLiveBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#b91c1c',
+    letterSpacing: 0.5,
+  },
+  sosHeroTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#991b1b',
+    letterSpacing: 0.3,
+    marginBottom: 4,
+  },
+  sosHeroSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#b91c1c',
+    marginBottom: 14,
+  },
+  sosHeroSubtitleDark: {
+    color: '#fca5a5',
+  },
+  sosHeroFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#fecaca',
+  },
+  sosActionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#dc2626',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  sosActionChipText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  sosVerGuardiaText: {
+    color: '#dc2626',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  botonAlert: {
+    borderColor: '#fca5a5',
+    backgroundColor: '#fff5f5',
+  },
+  botonAlertDark: {
+    borderColor: '#991b1b',
+    backgroundColor: '#450a0a22',
+  },
+  botonAlertIconoContainer: {
+    backgroundColor: '#fee2e2',
+  },
+  botonAlertIconoContainerDark: {
+    backgroundColor: '#7f1d1d',
+  },
+  botonAlertTitulo: {
+    color: '#b91c1c',
+  },
+  botonAlertSubtitulo: {
+    color: '#dc2626',
   },
   scrollContent: {
     padding: 20,

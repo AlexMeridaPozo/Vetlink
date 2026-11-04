@@ -90,7 +90,7 @@ export interface NfcTagDocument {
  */
 export async function getPetById(petId: string): Promise<Pet | null> {
   try {
-    if (!petId) return null;
+    if (!petId || !petId.trim()) return null;
     const cleanId = petId.trim().toUpperCase();
 
     const petDocRef = doc(db, 'mascotas', cleanId);
@@ -194,7 +194,7 @@ export async function registerPet(
         {
           id: 'initial-check',
           titulo: 'Alta médica inicial',
-          detalle: 'Registro de datos clínicos y ficha médica inicial en VetLink.',
+          detalle: 'Registro de datos clínicos y ficha médica inicial en Huellapp.',
           fecha: new Date().toLocaleDateString('es-AR'),
           veterinario: vetUid,
           completado: true,

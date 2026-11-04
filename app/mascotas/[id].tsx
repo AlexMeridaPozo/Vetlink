@@ -109,7 +109,7 @@ export default function MascotaDetalleScreen() {
               await toggleEstadoExtravio(displayId, nuevoEstado);
               setPet((prev) => (prev ? { ...prev, extraviada: nuevoEstado } : null));
               Alert.alert('Éxito', nuevoEstado ? 'Alerta de extravío activada.' : 'Mascota marcada como a salvo.');
-            } catch (err) {
+            } catch {
               Alert.alert('Error', 'No se pudo actualizar el estado de extravío en el servidor.');
             }
           },
@@ -122,7 +122,7 @@ export default function MascotaDetalleScreen() {
     if (!isVeterinario) {
       Alert.alert(
         'Acceso Denegado (Seguridad)',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en VetLink.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en Huellapp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
       );
       return;
     }
@@ -397,7 +397,7 @@ export default function MascotaDetalleScreen() {
               <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
                 <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Enlace de Identificación:</Text>
                 <Text style={[styles.nfcDetailValue, styles.monospace, isDark && styles.textDark]}>
-                  {pet?.nfcUrl || `https://vetlink.app/pet?id=${displayId}`}
+                  {pet?.nfcUrl || `https://huellapp.app/pet?id=${displayId}`}
                 </Text>
               </View>
               {pet?.nfcLinkedAt && (

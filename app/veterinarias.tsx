@@ -27,7 +27,7 @@ export default function VeterinariasScreen() {
             </View>
             <Text style={[styles.clinicTitle, isDark && styles.textDark]}>{clinicaAsociada}</Text>
             <Text style={[styles.clinicSubtitle, isDark && styles.subtituloDark]}>
-              Clínica veterinaria vinculada a tu perfil profesional en VetLink.
+              Clínica veterinaria vinculada a tu perfil profesional en Huellapp.
             </Text>
           </View>
         </View>

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huellapp — El cuidado de tu mascota, conectado | App Oficial</title>
+
+  <!-- SEO y Metadatos -->
+  <meta name="description" content="Gestioná la información de tus mascotas, consultá su historial clínico y conectate con veterinarias desde un solo lugar. Identificación inteligente con QR y NFC.">
+  <meta name="keywords" content="Huellapp, mascotas, cuidado animal, veterinaria, libreta sanitaria, historial clinico, QR mascotas, NFC mascotas, Pilar">
+  <meta name="author" content="Equipo Huellapp">
+  <meta name="theme-color" content="#2563EB">
+
+  <!-- Open Graph / Redes Sociales -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alexmeridapozo.github.io/Huellapp/">
+  <meta property="og:title" content="Huellapp — El cuidado de tu mascota, conectado">
+  <meta property="og:description" content="Gestioná la información de tus mascotas, consultá su historial clínico y conectate con veterinarias desde un solo lugar.">
+  <meta property="og:image" content="./assets/logo.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Huellapp — El cuidado de tu mascota, conectado">
+  <meta name="twitter:description" content="Gestioná la información de tus mascotas, consultá su historial clínico y conectate con veterinarias desde un solo lugar.">
+  <meta name="twitter:image" content="./assets/logo.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="./assets/favicon.png">
+  <link rel="apple-touch-icon" href="./assets/logo.png">
+
+  <!-- Fuentes Tipográficas Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Hojas de Estilo -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+  <!-- ==================== HEADER / NAVBAR ==================== -->
+  <header class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#inicio" class="nav-brand" aria-label="Ir al inicio de Huellapp">
+        <img src="./assets/logo.png" alt="Logotipo de Huellapp" class="nav-logo" width="40" height="40">
+        <span class="nav-brand-text">Huellapp</span>
+      </a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Navegación principal">
+        <a href="#inicio" class="nav-link active">Inicio</a>
+        <a href="#funcionalidades" class="nav-link">Funcionalidades</a>
+        <a href="#como-funciona" class="nav-link">Cómo Funciona</a>
+        <a href="#sobre-huellapp" class="nav-link">Sobre Huellapp</a>
+        <a href="#descargar" class="nav-link">Descargas</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="#descargar" class="btn btn-sm btn-primary">Descargar App</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="mobileMenu">
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Menú móvil desplegable -->
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+      <nav class="mobile-nav-links">
+        <a href="#inicio" class="mobile-nav-link">Inicio</a>
+        <a href="#funcionalidades" class="mobile-nav-link">Funcionalidades</a>
+        <a href="#como-funciona" class="mobile-nav-link">Cómo Funciona</a>
+        <a href="#sobre-huellapp" class="mobile-nav-link">Sobre Huellapp</a>
+        <a href="#descargar" class="mobile-nav-link">Descargas</a>
+        <a href="#descargar" class="btn btn-primary btn-block">Descargar Aplicación</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="hero-section" id="inicio">
+      <div class="hero-background-glow" aria-hidden="true"></div>
+      <div class="container hero-container">
+        
+        <div class="hero-content">
+          <div class="badge-pill">
+            <span class="badge-dot"></span>
+            <span>Plataforma Móvil para el Cuidado Animal</span>
+          </div>
+
+          <h1 class="hero-title">
+            El cuidado de tu mascota, <span class="text-gradient">conectado.</span>
+          </h1>
+
+          <p class="hero-description">
+            Gestioná la información de tus mascotas, consultá su historial clínico y conectate con veterinarias desde un solo lugar.
+          </p>
+
+          <div class="hero-cta-group">
+            <a href="#descargar" class="btn btn-primary btn-lg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Descargar aplicación</span>
+            </a>
+            <a href="#funcionalidades" class="btn btn-outline btn-lg">
+              <span>Conocer funcionalidades</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </a>
+          </div>
+
+          <div class="hero-highlights">
+            <div class="highlight-item">
+              <span class="highlight-icon">🏷️</span>
+              <span>Identificación QR y NFC</span>
+            </div>
+            <div class="highlight-item">
+              <span class="highlight-icon">📋</span>
+              <span>Historial médico seguro</span>
+            </div>
+            <div class="highlight-item">
+              <span class="highlight-icon">🏥</span>
+              <span>Guardias y veterinarias 24hs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Smartphone Mockup con capturas reales de la App -->
+        <div class="hero-visual">
+          <div class="phone-mockup-wrapper">
+            <!-- Tarjetas flotantes micro-UI -->
+            <div class="floating-badge badge-top-left" aria-hidden="true">
+              <div class="badge-icon">🐶</div>
+              <div class="badge-text">
+                <strong>Ficha al día</strong>
+                <span>Vacunas y controles</span>
+              </div>
+            </div>
+
+            <div class="floating-badge badge-bottom-right" aria-hidden="true">
+              <div class="badge-icon">⚡</div>
+              <div class="badge-text">
+                <strong>Tag NFC & QR</strong>
+                <span>Identificación activa</span>
+              </div>
+            </div>
+
+            <!-- Estructura del Celular -->
+            <div class="smartphone-frame">
+              <div class="phone-notch">
+                <span class="speaker"></span>
+                <span class="camera"></span>
+              </div>
+              <div class="phone-screen">
+                <img 
+                  id="phoneScreenImg"
+                  src="./assets/screenshots/inicio.png" 
+                  alt="Captura real de pantalla de Huellapp en la vista de Inicio" 
+                  class="phone-screen-img"
+                  loading="eager"
+                  width="360"
+                  height="780"
+                >
+              </div>
+              <div class="phone-home-indicator"></div>
+            </div>
+          </div>
+
+          <!-- Selector de pantallas interactivas reales -->
+          <div class="mockup-screen-selector" aria-label="Cambiar captura de la aplicación">
+            <button class="screen-tab active" data-img="./assets/screenshots/inicio.png" data-alt="Vista de Inicio de Huellapp">
+              Dashboard
+            </button>
+            <button class="screen-tab" data-img="./assets/screenshots/mascotas.png" data-alt="Vista de Mis Mascotas en Huellapp">
+              Mascotas
+            </button>
+            <button class="screen-tab" data-img="./assets/screenshots/escanear.png" data-alt="Escáner QR y NFC en Huellapp">
+              Escáner QR
+            </button>
+            <button class="screen-tab" data-img="./assets/screenshots/chatbot.png" data-alt="Asistente IA en Huellapp">
+              Asistente IA
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== FEATURES SECTION ==================== -->
+    <section class="section features-section" id="funcionalidades">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-badge">FUNCIONALIDADES PRINCIPALES</span>
+          <h2 class="section-title">Tecnología conectada para el cuidado de tus mascotas</h2>
+          <p class="section-subtitle">
+            Cada módulo de Huellapp fue diseñado para resolver necesidades reales de los tutores y facilitar la coordinación con profesionales veterinarios.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <!-- Card 1: Mis Mascotas -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper icon-blue">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 2a4 4 0 0 0-4 4c0 1.5.8 2.8 2 3.4V11a2 2 0 0 0 2 2 2 2 0 0 0 2-2V9.4c1.2-.6 2-1.9 2-3.4a4 4 0 0 0-4-4Z"/>
+                <path d="M18 10a3 3 0 0 1 3 3c0 2-1.5 3-3 4-1.5-1-3-2-3-4a3 3 0 0 1 3-3Z"/>
+                <path d="M6 10a3 3 0 0 0-3 3c0 2 1.5 3 3 4 1.5-1 3-2 3-4a3 3 0 0 0-3-3Z"/>
+                <path d="M12 14c-4 0-7 2.5-7 5.5V21h14v-1.5c0-3-3-5.5-7-5.5Z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Mis Mascotas</h3>
+            <p class="feature-text">
+              Perfiles individuales detallados con especie, raza, peso, fecha de nacimiento, fotos y observaciones clave. Información organizada y siempre accesible desde cualquier lugar.
+            </p>
+            <span class="feature-tag tag-available">Disponible en la App</span>
+          </article>
+
+          <!-- Card 2: Identificación QR & NFC -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper icon-emerald">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+                <path d="M14 14h3v3h-3z"></path>
+                <path d="M17 17h4v4h-4z"></path>
+                <path d="M14 20h3"></path>
+                <path d="M20 14v3"></path>
+              </svg>
+            </div>
+            <h3 class="feature-title">Identificación QR y NFC</h3>
+            <p class="feature-text">
+              Identificación inmediata mediante escáner nativo de cámara (QR) y lectura inalámbrica de etiquetas NFC. En caso de extravío, quien la encuentre puede contactarte sin demoras.
+            </p>
+            <span class="feature-tag tag-available">Hardware Integrado</span>
+          </article>
+
+          <!-- Card 3: Historial Clínico -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper icon-indigo">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <h3 class="feature-title">Historial Clínico Digital</h3>
+            <p class="feature-text">
+              Libreta sanitaria completa en la nube: registro de vacunas aplicadas, antiparasitarios administrados, tratamientos médicos y legajos clínicos avalados por profesionales.
+            </p>
+            <span class="feature-tag tag-available">Sincronizado en la Nube</span>
+          </article>
+
+          <!-- Card 4: Veterinarias y Guardias -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper icon-sky">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+            <h3 class="feature-title">Veterinarias Cercanas</h3>
+            <p class="feature-text">
+              Mapa interactivo con geolocalización de clínicas veterinarias, hospitales de guardia 24 horas, centros municipales de zoonosis y pet shops, con acceso directo a llamada telefónica.
+            </p>
+            <span class="feature-tag tag-available">Geolocalización Activa</span>
+          </article>
+
+          <!-- Card 5: Información Centralizada -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper icon-purple">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </div>
+            <h3 class="feature-title">Información Centralizada</h3>
+            <p class="feature-text">
+              Turnos programados, alertas sanitarias y recordatorios periódicos. Mantené toda la información relevante de tus mascotas ordenada sin depender de libretas de papel.
+            </p>
+            <span class="feature-tag tag-available">Gestión Integral</span>
+          </article>
+
+          <!-- Card 6: Asistente VetBot -->
+          <article class="feature-card">
+            <div class="feature-icon-wrapper icon-amber">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                <circle cx="12" cy="5" r="2"></circle>
+                <path d="M12 7v4"></path>
+                <line x1="8" y1="16" x2="8" y2="16"></line>
+                <line x1="16" y1="16" x2="16" y2="16"></line>
+              </svg>
+            </div>
+            <h3 class="feature-title">Asistente Virtual VetBot</h3>
+            <p class="feature-text">
+              Chatbot inteligente para responder consultas iniciales frecuentes sobre nutrición, cuidados preventivos y primeros auxilios, complementando la atención médica veterinaria.
+            </p>
+            <span class="feature-tag tag-available">Orientación Preliminar</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== HOW IT WORKS ==================== -->
+    <section class="section steps-section" id="como-funciona">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-badge">PASO A PASO</span>
+          <h2 class="section-title">Cómo funciona Huellapp</h2>
+          <p class="section-subtitle">
+            Empezar a cuidar a tus mascotas de forma conectada es simple, rápido e intuitivo.
+          </p>
+        </div>
+
+        <div class="steps-grid">
+          <!-- Paso 1 -->
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-icon">📲</div>
+            <h3 class="step-title">Descargá Huellapp</h3>
+            <p class="step-text">
+              Instalá la aplicación en tu teléfono Android o iOS para tener siempre a mano la libreta sanitaria digital.
+            </p>
+          </div>
+
+          <!-- Paso 2 -->
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-icon">👤</div>
+            <h3 class="step-title">Accedé a tu cuenta</h3>
+            <p class="step-text">
+              Registrate como tutor de mascotas o profesional veterinario con autenticación segura en Firebase.
+            </p>
+          </div>
+
+          <!-- Paso 3 -->
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-icon">🐾</div>
+            <h3 class="step-title">Conectá y gestioná</h3>
+            <p class="step-text">
+              Cargá el perfil de tus animales, vinculá chapitas inteligentes QR/NFC y accedé al mapa de atención inmediata.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== DOWNLOAD SECTION ==================== -->
+    <section class="section download-section" id="descargar">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-badge">DESCARGA OFICIAL</span>
+          <h2 class="section-title">Descargá la aplicación Huellapp</h2>
+          <p class="section-subtitle">
+            Elegí tu sistema operativo móvil o escaneá el código QR desde tu celular para acceder a la app.
+          </p>
+        </div>
+
+        <div class="download-cards-container">
+          
+          <!-- TARJETA ANDROID -->
+          <div class="download-card" id="cardAndroid">
+            <div class="card-platform-header">
+              <div class="platform-icon-circle platform-android">
+                <!-- Android SVG Icon -->
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5516.4482-1.0003.9993-1.0003.5516 0 1.0002.4487 1.0002 1.0003 0 .5516-.4486 1.0002-1.0002 1.0002m-11.046 0c-.5516 0-1.0002-.4486-1.0002-1.0002 0-.5516.4486-1.0003 1.0002-1.0003.5511 0 .9993.4487.9993 1.0003 0 .5516-.4482 1.0002-.9993 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.8533 8.082 12 8.082s-3.5902.329-5.1368.8677L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="platform-name">Android</h3>
+                <span class="platform-req">Android 8.0 (Oreo) o superior</span>
+              </div>
+            </div>
+
+            <!-- Contenedor del Código QR -->
+            <div class="qr-box" id="androidQrContainer">
+              <div class="qr-placeholder" id="androidQrPlaceholder">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                  <path d="M14 14h3v3h-3z"></path>
+                  <path d="M17 17h4v4h-4z"></path>
+                </svg>
+                <span class="qr-placeholder-text">Código QR disponible al activar el enlace oficial</span>
+              </div>
+              <div class="qr-code-target" id="androidQrTarget" style="display: none;"></div>
+            </div>
+
+            <div class="card-status-wrapper">
+              <span class="status-badge" id="androidStatusBadge">Próximamente en Google Play / APK</span>
+            </div>
+
+            <!-- Botón de Descarga -->
+            <a href="#" class="btn btn-download btn-disabled" id="btnDownloadAndroid" role="button" aria-disabled="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span id="androidBtnText">Descargar APK Android</span>
+            </a>
+          </div>
+
+          <!-- TARJETA IOS -->
+          <div class="download-card" id="cardIos">
+            <div class="card-platform-header">
+              <div class="platform-icon-circle platform-ios">
+                <!-- Apple SVG Icon -->
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 1.01-2.87-.96.04-2.07.64-2.73 1.39-.56.63-1.07 1.7-1.02 2.75 1.07.08 2.15-.55 2.74-1.27z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="platform-name">iOS (Apple)</h3>
+                <span class="platform-req">iOS 15.0 o superior</span>
+              </div>
+            </div>
+
+            <!-- Contenedor del Código QR -->
+            <div class="qr-box" id="iosQrContainer">
+              <div class="qr-placeholder" id="iosQrPlaceholder">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                  <path d="M14 14h3v3h-3z"></path>
+                  <path d="M17 17h4v4h-4z"></path>
+                </svg>
+                <span class="qr-placeholder-text">Código QR disponible al activar el enlace oficial</span>
+              </div>
+              <div class="qr-code-target" id="iosQrTarget" style="display: none;"></div>
+            </div>
+
+            <div class="card-status-wrapper">
+              <span class="status-badge" id="iosStatusBadge">Próximamente en App Store / TestFlight</span>
+            </div>
+
+            <!-- Botón de Descarga -->
+            <a href="#" class="btn btn-download btn-disabled" id="btnDownloadIos" role="button" aria-disabled="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span id="iosBtnText">Descargar en App Store</span>
+            </a>
+          </div>
+
+        </div>
+
+        <!-- Nota explicativa institucional -->
+        <div class="download-note">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <p>
+            <strong>Nota sobre disponibilidad:</strong> Huellapp es una aplicación móvil desarrollada en React Native y Expo SDK 57. La disponibilidad de descarga pública y sus canales de distribución (APK directo, Google Play Store o Apple TestFlight) se activan conforme se completen las fases de compilación y publicación. Los códigos QR reflejarán automáticamente los enlaces reales una vez provistos.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== ABOUT SECTION ==================== -->
+    <section class="section about-section" id="sobre-huellapp">
+      <div class="container">
+        <div class="about-card">
+          <div class="about-content">
+            <span class="section-badge">SOBRE HUELLAPP</span>
+            <h2 class="section-title">El ecosistema digital que conecta salud y cuidado animal</h2>
+            <p class="about-text">
+              Huellapp es una aplicación móvil desarrollada como <strong>Proyecto Integrador Final</strong> para la cátedra de Aplicaciones Móviles. Su propósito es erradicar el extravío de información médica en libretas de papel, facilitando la identificación de mascotas y acortando los tiempos de respuesta ante emergencias de salud.
+            </p>
+            <div class="tech-pills">
+              <span class="tech-pill">⚛️ React Native 0.86</span>
+              <span class="tech-pill">🚀 Expo SDK 57</span>
+              <span class="tech-pill">🔥 Firebase Auth & Firestore</span>
+              <span class="tech-pill">📷 Expo Camera & QR</span>
+              <span class="tech-pill">📡 NFC Tag Manager</span>
+              <span class="tech-pill">🗺️ OpenStreetMap & Leaflet</span>
+            </div>
+          </div>
+          <div class="about-stats-box">
+            <div class="about-stat-item">
+              <span class="stat-number">100%</span>
+              <span class="stat-label">Código Abierto y Transparente</span>
+            </div>
+            <div class="about-stat-item">
+              <span class="stat-number">Edge-to-Edge</span>
+              <span class="stat-label">UI Nativa Fluida para Android & iOS</span>
+            </div>
+            <div class="about-stat-item">
+              <span class="stat-number">NFC + QR</span>
+              <span class="stat-label">Doble Identificación Segura</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-brand-col">
+        <div class="footer-logo-row">
+          <img src="./assets/logo.png" alt="Logo de Huellapp" class="footer-logo" width="36" height="36">
+          <span class="footer-brand-title">Huellapp</span>
+        </div>
+        <p class="footer-tagline">
+          El cuidado de tu mascota, conectado. Identificación inteligente, historial médico y mapa de guardias veterinarias.
+        </p>
+      </div>
+
+      <div class="footer-links-col">
+        <h4 class="footer-heading">Navegación</h4>
+        <ul class="footer-links-list">
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#funcionalidades">Funcionalidades</a></li>
+          <li><a href="#como-funciona">Cómo Funciona</a></li>
+          <li><a href="#descargar">Descargas</a></li>
+          <li><a href="#sobre-huellapp">Sobre Huellapp</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links-col">
+        <h4 class="footer-heading">Proyecto & Código</h4>
+        <ul class="footer-links-list">
+          <li>
+            <a href="https://github.com/AlexMeridaPozo/Huellapp" target="_blank" rel="noopener noreferrer" class="github-footer-link">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+              </svg>
+              <span>Repositorio en GitHub</span>
+            </a>
+          </li>
+          <li><span>Licencia Académica</span></li>
+          <li><span>Versión v1.0.0</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-container">
+        <p class="copyright-text">
+          &copy; <span id="year">2026</span> Huellapp. Desarrollado para el Proyecto Integrador de Aplicaciones Móviles.
+        </p>
+        <p class="footer-author-text">
+          Repositorio oficial: <a href="https://github.com/AlexMeridaPozo/Huellapp" target="_blank" rel="noopener noreferrer">github.com/AlexMeridaPozo/Huellapp</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="./script.js"></script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 import { auth } from '@/config/firebase';
-import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
+import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
+
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -81,7 +83,7 @@ export default function LoginScreen() {
       <View style={styles.topBar}>
         <View style={styles.brandSmallRow}>
           <Ionicons name="paw" size={20} color="#04b639" />
-          <Text style={[styles.brandSmallText, isDark && styles.textDark]}>VetLink</Text>
+          <Text style={[styles.brandSmallText, isDark && styles.textDark]}>Huellapp</Text>
         </View>
         <ThemeToggleButton />
       </View>
@@ -103,7 +105,7 @@ export default function LoginScreen() {
               </View>
               <Text style={[styles.title, isDark && styles.textDark]}>Bienvenido </Text>
               <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
-                Ingresa tus credenciales para acceder a VetLink
+                Ingresa tus credenciales para acceder a Huellapp
               </Text>
             </View>
 
@@ -204,6 +206,21 @@ export default function LoginScreen() {
                 </>
               )}
             </TouchableOpacity>
+
+            {/* Divisor "o continúa con" */}
+            <View style={styles.dividerRow}>
+              <View style={[styles.dividerLine, isDark && styles.dividerLineDark]} />
+              <Text style={[styles.dividerText, isDark && styles.dividerTextDark]}>
+                o continúa con
+              </Text>
+              <View style={[styles.dividerLine, isDark && styles.dividerLineDark]} />
+            </View>
+
+            {/* Botón oficial de Google Sign-In */}
+            <GoogleSignInButton
+              label="Continuar con Google"
+              onSuccess={() => router.replace('/(tabs)/mascotas')}
+            />
 
             {/* Footer con enlace a Registro */}
             <View style={styles.footerContainer}>
@@ -381,6 +398,28 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 18,
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e2e8f0',
+  },
+  dividerLineDark: {
+    backgroundColor: '#27272a',
+  },
+  dividerText: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  dividerTextDark: {
+    color: '#a1a1aa',
   },
   footerContainer: {
     flexDirection: 'row',

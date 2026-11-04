@@ -1,22 +1,49 @@
-# 🐾 VetLink
+# 🐾 Huellapp
 
-Aplicación móvil para la gestión, cuidado e identificación inteligente de mascotas. Desarrollada con **React Native** y **Expo**, permite a los propietarios registrar y gestionar sus mascotas, identificarlas de manera rápida y segura mediante **códigos QR** y tecnología **NFC**, acceder a servicios de turnos, recordatorios veterinarios, mapas de atención y administrar su perfil con autenticación en **Firebase**.
+<p align="center">
+  <a href="https://alexmeridapozo.github.io/Huellapp/" title="Hacé clic para visitar la Landing Page oficial de Huellapp">
+    <img src="./assets/images/banner.png" alt="Huellapp — Sitio Web Oficial y Plataforma Móvil" width="100%">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://alexmeridapozo.github.io/Huellapp/">
+    <img src="https://img.shields.io/badge/🌐_Sitio_Oficial-alexmeridapozo.github.io%2FHuellapp-2563EB?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Sitio Web Oficial">
+  </a>
+  <a href="https://alexmeridapozo.github.io/Huellapp/">
+    <img src="https://img.shields.io/badge/GitHub_Pages-Activo-04B639?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Pages">
+  </a>
+  <a href="https://expo.dev/">
+    <img src="https://img.shields.io/badge/Expo-SDK_57-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo SDK 57">
+  </a>
+  <a href="https://reactnative.dev/">
+    <img src="https://img.shields.io/badge/React_Native-0.86-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Native 0.86">
+  </a>
+  <a href="https://firebase.google.com/">
+    <img src="https://img.shields.io/badge/Firebase-v12-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase">
+  </a>
+</p>
+
+<p align="center">
+  <strong>El cuidado de tu mascota, conectado.</strong><br>
+  Plataforma integral móvil para la gestión sanitaria, libreta médica e identificación inteligente mediante códigos QR y tags NFC.<br>
+  👉 <strong><a href="https://alexmeridapozo.github.io/Huellapp/">Hacé clic aquí para ingresar a la Landing Page Oficial de Huellapp</a></strong> 👈
+</p>
 
 ---
 
-## 📸 Pantallas y Módulos
+## 📸 Pantallas Principales
 
-| Pantalla | Módulo / Ruta | Descripción |
+| Módulo | Ruta | Funcionalidad |
 |---|---|---|
-| **Inicio** | `app/(tabs)/index.tsx` | Dashboard principal con bienvenida personalizada, métricas rápidas y accesos directos a todos los servicios. |
-| **Mis Mascotas** | `app/(tabs)/mascotas.tsx` | Listado y administración de mascotas del usuario conectado con Firestore, fotos, características y estado de salud. |
-| **Ficha de Mascota** | `app/mascotas/[id].tsx` | Vista detallada con información médica, datos de contacto del tutor y especificaciones de la mascota. |
-| **Escanear QR / NFC** | `app/(tabs)/scan.tsx` | Identificación instantánea de mascotas mediante escaneo de código QR (cámara) o lectura de tag NFC con vinculación al usuario. |
-| **Mapa Veterinario** | `app/(tabs)/mapa.tsx` | Ubicación geográfica de clínicas veterinarias, centros de urgencia y puntos de atención cercanos. |
-| **Tienda** | `app/(tabs)/tienda.tsx` | Catálogo de productos, accesorios, alimentos y promociones especiales para mascotas. |
-| **Perfil** | `app/(tabs)/perfil.tsx` | Datos del usuario autenticado, rol en el sistema y opción para cerrar sesión de manera segura. |
-| **Autenticación** | `app/(auth)/login.tsx`<br>`app/(auth)/register.tsx` | Formularios de inicio de sesión y registro de usuarios con selección de rol y validaciones en tiempo real. |
-| **Turnos y Recordatorios** | `app/turnos.tsx`<br>`app/recordatorios.tsx` | Gestión de citas médicas, calendario de vacunación, desparasitación y tratamientos periódicos. |
+| **Dashboard** | `app/(tabs)/index.tsx` | Inicio personalizado con accesos directos y métricas de salud. |
+| **Mis Mascotas** | `app/(tabs)/mascotas.tsx` | Fichas clínicas, características y estado de cada mascota. |
+| **Emergencias SOS** | `app/(tabs)/sos.tsx` | Botón central de urgencias, guardias 24hs y llamadas directas. |
+| **Mapa & Clínicas** | `app/(tabs)/mapa.tsx` | Geolocalización de veterinarias, hospitales y zoonosis en Pilar. |
+| **Escáner QR & NFC** | `app/(tabs)/scan.tsx` | Identificación de chapitas inteligentes y vinculación de tags. |
+| **Ficha de Rescate** | `app/pet.tsx` | Vista pública con contacto del tutor y envío de coordenadas GPS. |
+| **Perfil & Ajustes** | `app/(tabs)/perfil.tsx` | Gestión de cuenta, modo oscuro/claro y credenciales clínicas. |
+| **Autenticación** | `app/(auth)/` | Login y registro con Email y Google Sign-In con roles de usuario. |
 
 ---
 
@@ -24,57 +51,26 @@ Aplicación móvil para la gestión, cuidado e identificación inteligente de ma
 
 | Herramienta | Versión | Uso |
 |---|---|---|
-| [Expo](https://expo.dev/) | `~57.0.0` | Framework principal para el ecosistema móvil |
-| [React Native](https://reactnative.dev/) | `0.86.3` | Biblioteca base para UI nativa multiplataforma |
-| [expo-router](https://expo.github.io/router) | `^57.0.21` | Navegación basada en el sistema de archivos (*file-based routing*) |
-| [Firebase JS SDK](https://firebase.google.com/) | `^12.18.0` | Autenticación de usuarios (`Auth`) y base de datos en la nube (`Firestore`) |
-| [expo-camera](https://docs.expo.dev/versions/latest/sdk/camera/) | `~57.0.5` | Acceso y lectura visual de códigos QR identificatorios |
-| [react-native-nfc-manager](https://github.com/revtel/react-native-nfc-manager) | `^3.5.0` | Lectura y comunicación con tags NFC en placas de identificación |
-| [expo-haptics](https://docs.expo.dev/versions/latest/sdk/haptics/) | `~57.0.2` | Feedback táctil vibratorio en botones y pestañas de navegación |
-| [expo-image](https://docs.expo.dev/versions/latest/sdk/image/) | `^57.0.4` | Carga eficiente y almacenamiento en caché de imágenes de mascotas |
-| [TypeScript](https://www.typescriptlang.org/) | `~6.0.3` | Tipado estático y robustez del desarrollo |
+| [Expo](https://expo.dev/) | `~57.0.0` | Framework principal del ecosistema móvil |
+| [React Native](https://reactnative.dev/) | `0.86.3` | UI nativa multiplataforma con New Architecture |
+| [expo-router](https://expo.github.io/router) | `^57.0.21` | Navegación nativa basada en archivos |
+| [Firebase](https://firebase.google.com/) | `^12.18.0` | Autenticación y Cloud Firestore |
+| [Hardware Nativo](https://docs.expo.dev/) | `SDK 57` | Cámara QR (`expo-camera`) y lectura NFC (`nfc-manager`) |
+| [TypeScript](https://www.typescriptlang.org/) | `~6.0.3` | Tipado estático y robustez del código |
 
 ---
 
 ## 📁 Estructura del Proyecto
 
 ```text
-Vetlink/
-├── app/
-│   ├── (auth)/                    # Flujo de autenticación
-│   │   ├── _layout.tsx            # Stack layout de login/registro
-│   │   ├── login.tsx              # Inicio de sesión con Firebase Auth
-│   │   └── register.tsx           # Registro de usuarios y roles
-│   ├── (tabs)/                    # Navegación principal por pestañas
-│   │   ├── _layout.tsx            # Barra de pestañas inferior con HapticTab
-│   │   ├── index.tsx              # Dashboard / Pantalla de inicio
-│   │   ├── mascotas.tsx           # Pantalla de "Mis Mascotas"
-│   │   ├── scan.tsx               # Escáner de QR y lector de NFC
-│   │   ├── mapa.tsx               # Mapa de veterinarias y centros de atención
-│   │   ├── tienda.tsx             # Catálogo y productos para mascotas
-│   │   └── perfil.tsx             # Perfil de usuario y cierre de sesión
-│   ├── mascotas/
-│   │   └── [id].tsx               # Detalle / Ficha médica de la mascota
-│   ├── _layout.tsx                # Layout raíz con AuthProvider y temas
-│   ├── index.tsx                  # Redirección inicial según estado de sesión
-│   ├── modal.tsx                  # Ventana modal genérica
-│   ├── recordatorios.tsx          # Gestión de recordatorios y vacunas
-│   ├── turnos.tsx                 # Consulta y reserva de turnos
-│   └── veterinarias.tsx           # Directorio de clínicas veterinarias
-├── assets/                        # Imágenes, íconos y recursos estáticos
-├── components/                    # Componentes modulares reutilizables
-├── config/
-│   └── firebase.ts                # Inicialización de Firebase Auth y Firestore
-├── context/
-│   └── AuthContext.tsx            # Estado global del usuario autenticado
-├── services/
-│   └── petService.ts              # Consultas y vinculación de mascotas en Firestore
-├── hooks/                         # Hooks personalizados (tema, esquemas de color)
-├── constants/                     # Paletas de colores y configuración general
-├── .env.example                   # Plantilla de variables de entorno
-├── app.json                       # Configuración de Expo y permisos (Cámara, NFC)
-├── package.json
-└── tsconfig.json
+Huellapp/
+├── app/                  # Rutas y navegación (auth, tabs, fichas médicas)
+├── components/           # Componentes UI reutilizables (tarjetas, modales, mapa)
+├── services/             # Lógica de negocio e integraciones (Firebase, NFC, Chatbot)
+├── context/              # Estado global (Autenticación y Tema Claro/Oscuro)
+├── constants/            # Puntos veterinarios de Pilar y paleta de diseño
+├── docs/                 # Landing Page oficial (desplegada en GitHub Pages)
+└── assets/               # Recursos gráficos oficiales, íconos y capturas
 ```
 
 ---
@@ -89,7 +85,7 @@ Vetlink/
 
 ### 1. Clonar el repositorio e instalar dependencias
 ```bash
-git clone https://github.com/AlexMeridaPozo/Vetlink.git
+git clone https://github.com/AlexMeridaPozo/Huellapp.git
 cd "Aplicacion Movil"
 npm install
 ```
@@ -142,7 +138,7 @@ La aplicación utiliza la infraestructura de Google Firebase para la gestión de
 
 ## 🏷️ Identificación Inteligente (QR & NFC)
 
-VetLink incorpora dos métodos de identificación rápida para mascotas extraviadas o consultas veterinarias:
+Huellapp incorpora dos métodos de identificación rápida para mascotas extraviadas o consultas veterinarias:
 
 1. **Escaneo de Código QR:** Emplea `expo-camera` para enfocar y leer de inmediato el identificador único (ej. `PET-001`) grabado en la chapa identificatoria.
 2. **Tecnología NFC:** Permite aproximar el dispositivo móvil a un tag o placa con chip NFC mediante `react-native-nfc-manager` para recuperar la ficha médica de la mascota al instante.
@@ -186,4 +182,4 @@ npm run lint       # Analiza el código fuente en busca de errores con ESLint
 
 ## 👥 Equipo de Desarrollo
 
-Proyecto desarrollado por el equipo de **VetLink** en el marco del **Proyecto Integrador Final de Aplicaciones Móviles**.
+Proyecto desarrollado por el equipo de **Huellapp** en el marco del **Proyecto Integrador Final de Aplicaciones Móviles**.

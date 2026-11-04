@@ -17,9 +17,20 @@ import * as Haptics from 'expo-haptics';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { usePets, toggleEstadoExtravio } from '@/services/petService';
 import { SosIcon } from '@/components/SosIcon';
+import { PUNTOS_VETERINARIOS_PILAR, LugarMascotas } from '@/constants/veterinarias';
 
-// Teléfono de urgencias por defecto (puede ser 911 o número de guardia local)
-const EMERGENCY_PHONE = '911';
+// Centro de guardia principal 24hs de Pilar
+const GUARDIA_PRINCIPAL = {
+  id: 'vet-2',
+  nombre: 'Hospital Veterinario San Roque (Guardia 24hs)',
+  telefono: '0230-443-5566',
+  direccion: 'Av. Tratado del Pilar 280, Pilar',
+};
+
+// Veterinarias con guardia 24hs y servicios de internación de urgencia en Pilar
+const CLINICAS_URGENCIA: LugarMascotas[] = PUNTOS_VETERINARIOS_PILAR.filter(
+  (v) => v.guardia24hs || v.servicios?.some((s) => s.toLowerCase().includes('urgencia') || s.toLowerCase().includes('internación') || s.toLowerCase().includes('guardia'))
+);
 
 export default function SosScreen() {
   const router = useRouter();
@@ -141,24 +152,55 @@ export default function SosScreen() {
     );
   };
 
+  const handleCallNumber = (phone: string, label: string) => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    } catch {}
+    const cleaned = phone.replace(/[^\d+]/g, '');
+    Linking.openURL(`tel:${cleaned}`).catch(() => {
+      Alert.alert('Error', `No se pudo iniciar la llamada a ${label} (${phone}).`);
+    });
+  };
+
   const handleCallEmergency = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+    } catch {}
+
     Alert.alert(
-      '🚨 Llamada de Urgencia',
-      `¿Deseas iniciar una llamada telefónica inmediata a la línea de emergencias (${EMERGENCY_PHONE})?`,
+      '🚨 Llamada de Urgencia Veterinaria',
+      'Selecciona el centro médico al que deseas llamar inmediatamente:',
       [
-        { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Llamar ahora',
-          style: 'destructive',
-          onPress: () => {
-            Linking.openURL(`tel:${EMERGENCY_PHONE}`).catch((err) => {
-              Alert.alert('Error', 'No se pudo abrir la aplicación de llamadas telefónicas.');
-            });
-          },
+          text: `🏥 Guardia 24hs San Roque (${GUARDIA_PRINCIPAL.telefono})`,
+          onPress: () => handleCallNumber(GUARDIA_PRINCIPAL.telefono, 'Hospital San Roque (Guardia 24hs)'),
         },
+        {
+          text: '🩺 Planeta Veterinario (011-6276-0994)',
+          onPress: () => handleCallNumber('011-6276-0994', 'Planeta Veterinario'),
+        },
+        {
+          text: '🚑 Emergencias Generales (911)',
+          style: 'destructive',
+          onPress: () => handleCallNumber('911', 'Línea 911'),
+        },
+        { text: 'Cancelar', style: 'cancel' },
       ]
     );
+  };
+
+  const handleGoToMapGuardia = (clinicId: string = 'vet-2') => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    } catch {}
+    router.push({
+      pathname: '/(tabs)/mapa',
+      params: {
+        filter: 'guardia',
+        focusId: clinicId,
+        zoomGuardia: 'true',
+      },
+    });
   };
 
   return (
@@ -193,7 +235,7 @@ export default function SosScreen() {
           ]}
           onPress={handleCallEmergency}
           accessibilityRole="button"
-          accessibilityLabel="Llamar a línea de emergencias"
+          accessibilityLabel="Llamar a línea de emergencias veterinarias"
         >
           <View style={styles.heroSosIconWrapper}>
             <SosIcon size={34} focused variant="custom" />
@@ -202,7 +244,7 @@ export default function SosScreen() {
           <View style={styles.heroSosContent}>
             <Text style={styles.heroSosTitle}>LLAMAR A URGENCIAS</Text>
             <Text style={styles.heroSosSubtitle}>
-              Línea directa ({EMERGENCY_PHONE}) • Guardias de turno
+              Guardia 24hs Pilar ({GUARDIA_PRINCIPAL.telefono}) • Toca para discar
             </Text>
           </View>
 
@@ -211,14 +253,14 @@ export default function SosScreen() {
 
         {/* ACCESOS RÁPIDOS DE EMERGENCIA */}
         <View style={styles.quickActionsGrid}>
-          {/* Clínicas de Guardia */}
+          {/* Clínicas de Guardia: Navega al mapa y hace ZOOM a la guardia 24hs */}
           <Pressable
             style={({ pressed }) => [
               styles.actionCard,
               isDark && styles.actionCardDark,
               pressed && styles.cardPressed,
             ]}
-            onPress={handleOpenGuardiasMap}
+            onPress={() => handleGoToMapGuardia('vet-2')}
           >
             <View style={[styles.actionIconCircle, { backgroundColor: '#fee2e2' }]}>
               <MaterialCommunityIcons name="hospital-box" size={24} color="#dc2626" />
@@ -227,7 +269,7 @@ export default function SosScreen() {
               Guardias 24hs
             </Text>
             <Text style={[styles.actionCardDesc, isDark && styles.subtituloDark]}>
-              Clínicas y mapa de guardias
+              Abrir mapa con Zoom en guardia
             </Text>
           </Pressable>
 
@@ -252,14 +294,89 @@ export default function SosScreen() {
           </Pressable>
         </View>
 
-        {/* Ficha Médica de Emergencia de Mascotas */}
+        {/* SECCIÓN DESTACADA: LÍNEAS DIRECTAS DE GUARDIAS Y URGENCIAS */}
         <View style={styles.seccionHeader}>
           <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
-            Ficha de Urgencia de tus Mascotas
+            Guardias Veterinarias y Urgencias 🏥
           </Text>
           <Text style={[styles.seccionSubtitulo, isDark && styles.subtituloDark]}>
-            Datos vitales para mostrar al veterinario de guardia
+            Números de contacto directo vinculados a las clínicas del mapa
           </Text>
+        </View>
+
+        <View style={styles.clinicasUrgenciaList}>
+          {CLINICAS_URGENCIA.map((vet) => (
+            <View
+              key={vet.id}
+              style={[
+                styles.clinicEmergencyCard,
+                isDark && styles.clinicEmergencyCardDark,
+                vet.guardia24hs && styles.clinicEmergencyCardHighlighted,
+                isDark && vet.guardia24hs && styles.clinicEmergencyCardHighlightedDark,
+              ]}
+            >
+              <View style={styles.clinicCardHeader}>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.clinicBadgeRow}>
+                    {(vet.enHuellapp ?? vet.enVetlink) ? (
+                      <View style={styles.badgeHuellappOn}>
+                        <Ionicons name="checkmark-circle" size={11} color="#15803d" />
+                        <Text style={styles.badgeHuellappOnText}>EN RED HUELLAPP</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.badgeHuellappOff}>
+                        <Text style={styles.badgeHuellappOffText}>EXTERNA</Text>
+                      </View>
+                    )}
+                    {vet.guardia24hs && (
+                      <View style={styles.badgeGuardia}>
+                        <View style={styles.sosPulseDot} />
+                        <Text style={styles.badgeGuardiaText}>GUARDIA 24 HORAS</Text>
+                      </View>
+                    )}
+                    <View style={[styles.badgeTipo, isDark && styles.badgeTipoDark]}>
+                      <Text style={[styles.badgeTipoText, isDark && styles.badgeTipoTextDark]}>
+                        {vet.tipo.toUpperCase()}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={[styles.clinicName, isDark && styles.textDark]}>
+                    {vet.nombre}
+                  </Text>
+                  <Text style={[styles.clinicAddress, isDark && styles.subtituloDark]}>
+                    📍 {vet.direccion}
+                  </Text>
+                  <Text style={[styles.clinicHours, isDark && styles.subtituloDark]}>
+                    ⏰ {vet.horario}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.clinicActionButtons}>
+                {/* Botón de Llamar al Teléfono Real de la Veterinaria */}
+                <TouchableOpacity
+                  style={styles.btnCallClinic}
+                  activeOpacity={0.8}
+                  onPress={() => handleCallNumber(vet.telefono, vet.nombre)}
+                >
+                  <Ionicons name="call" size={16} color="#ffffff" />
+                  <Text style={styles.btnCallClinicText}>Llamar ({vet.telefono})</Text>
+                </TouchableOpacity>
+
+                {/* Botón de Ver en Mapa y hacer Zoom en esa veterinaria */}
+                <TouchableOpacity
+                  style={[styles.btnMapClinic, isDark && styles.btnMapClinicDark]}
+                  activeOpacity={0.8}
+                  onPress={() => handleGoToMapGuardia(vet.id)}
+                >
+                  <Ionicons name="map-outline" size={16} color={isDark ? '#4ade80' : '#04b639'} />
+                  <Text style={[styles.btnMapClinicText, isDark && styles.btnMapClinicTextDark]}>
+                    Ver en mapa (Zoom)
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
         </View>
 
         {pets.length === 0 ? (
@@ -759,5 +876,177 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#475569',
     lineHeight: 17,
+  },
+
+  // Lista de clínicas de urgencia
+  clinicasUrgenciaList: {
+    marginBottom: 20,
+    gap: 12,
+  },
+  clinicEmergencyCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  clinicEmergencyCardDark: {
+    backgroundColor: '#18181b',
+    borderColor: '#27272a',
+  },
+  clinicEmergencyCardHighlighted: {
+    borderColor: '#fca5a5',
+    backgroundColor: '#fff5f5',
+    borderLeftWidth: 5,
+    borderLeftColor: '#dc2626',
+  },
+  clinicEmergencyCardHighlightedDark: {
+    borderColor: '#7f1d1d',
+    backgroundColor: '#1c1315',
+    borderLeftColor: '#ef4444',
+  },
+  clinicCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  clinicBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+    flexWrap: 'wrap',
+  },
+  badgeHuellappOn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 3,
+    borderWidth: 1,
+    borderColor: '#86efac',
+  },
+  badgeHuellappOnText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#15803d',
+    letterSpacing: 0.3,
+  },
+  badgeHuellappOff: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  badgeHuellappOffText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748b',
+    letterSpacing: 0.3,
+  },
+  badgeGuardia: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 4,
+  },
+  badgeGuardiaText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#dc2626',
+    letterSpacing: 0.4,
+  },
+  badgeTipo: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  badgeTipoDark: {
+    backgroundColor: '#27272a',
+  },
+  badgeTipoText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  badgeTipoTextDark: {
+    color: '#cbd5e1',
+  },
+  clinicName: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  clinicAddress: {
+    fontSize: 13,
+    color: '#64748b',
+    marginBottom: 2,
+  },
+  clinicHours: {
+    fontSize: 12,
+    color: '#059669',
+    fontWeight: '600',
+  },
+  clinicActionButtons: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 8,
+  },
+  btnCallClinic: {
+    flex: 1.2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#dc2626',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    gap: 6,
+  },
+  btnCallClinicText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  btnMapClinic: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    gap: 4,
+  },
+  btnMapClinicDark: {
+    backgroundColor: '#064e3b26',
+    borderColor: '#065f46',
+  },
+  btnMapClinicText: {
+    color: '#15803d',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  btnMapClinicTextDark: {
+    color: '#4ade80',
   },
 });

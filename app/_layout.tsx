@@ -6,6 +6,17 @@ import 'react-native-get-random-values';
 import 'react-native-reanimated';
 import 'react-native-url-polyfill/auto';
 
+import {
+  useFonts,
+  Quicksand_600SemiBold,
+  Quicksand_700Bold,
+} from '@expo-google-fonts/quicksand';
+import {
+  NunitoSans_400Regular,
+  NunitoSans_600SemiBold,
+  NunitoSans_700Bold,
+} from '@expo-google-fonts/nunito-sans';
+
 import { AnimatedSplashScreen } from '@/components/SplashScreen';
 import { AuthProvider } from '@/context/AuthContext';
 import { AppThemeProvider, useAppTheme } from '@/context/ThemeContext';
@@ -18,12 +29,22 @@ export const unstable_settings = {
 };
 
 function RootLayoutNav() {
-  const { isDark } = useAppTheme();
+  const { isDark, colors } = useAppTheme();
   const [showSplash, setShowSplash] = useState(true);
 
+  const [fontsLoaded] = useFonts({
+    Quicksand_600SemiBold,
+    Quicksand_700Bold,
+    NunitoSans_400Regular,
+    NunitoSans_600SemiBold,
+    NunitoSans_700Bold,
+  });
+
   useEffect(() => {
-    SplashScreen.hideAsync().catch(() => { });
-  }, []);
+    if (fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => { });
+    }
+  }, [fontsLoaded]);
 
   return (
     <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
@@ -37,8 +58,13 @@ function RootLayoutNav() {
           options={{
             title: 'Recordatorios',
             headerShown: true,
-            headerTintColor: isDark ? '#4ade80' : '#166534',
-            headerStyle: { backgroundColor: isDark ? '#18181b' : '#f0fdf4' },
+            headerTintColor: colors.primary,
+            headerTitleStyle: {
+              fontFamily: fontsLoaded ? 'Quicksand_700Bold' : undefined,
+              fontSize: 18,
+            },
+            headerStyle: { backgroundColor: colors.surface },
+            headerShadowVisible: false,
           }}
         />
         <Stack.Screen
@@ -46,8 +72,13 @@ function RootLayoutNav() {
           options={{
             title: 'Turnos',
             headerShown: true,
-            headerTintColor: isDark ? '#4ade80' : '#166534',
-            headerStyle: { backgroundColor: isDark ? '#18181b' : '#f0fdf4' },
+            headerTintColor: colors.primary,
+            headerTitleStyle: {
+              fontFamily: fontsLoaded ? 'Quicksand_700Bold' : undefined,
+              fontSize: 18,
+            },
+            headerStyle: { backgroundColor: colors.surface },
+            headerShadowVisible: false,
           }}
         />
         <Stack.Screen
@@ -55,8 +86,13 @@ function RootLayoutNav() {
           options={{
             title: 'Veterinarias',
             headerShown: true,
-            headerTintColor: isDark ? '#4ade80' : '#166534',
-            headerStyle: { backgroundColor: isDark ? '#18181b' : '#f0fdf4' },
+            headerTintColor: colors.primary,
+            headerTitleStyle: {
+              fontFamily: fontsLoaded ? 'Quicksand_700Bold' : undefined,
+              fontSize: 18,
+            },
+            headerStyle: { backgroundColor: colors.surface },
+            headerShadowVisible: false,
           }}
         />
         <Stack.Screen

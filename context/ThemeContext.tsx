@@ -3,7 +3,7 @@ import { useColorScheme as useRNColorScheme, TouchableOpacity, StyleSheet, View 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
+import { Colors, Palette } from '@/constants/theme';
 
 export type ColorTheme = 'light' | 'dark';
 
@@ -111,7 +111,7 @@ export function ThemeToggleButton({ style }: { style?: any }) {
       <Ionicons
         name={isDark ? 'sunny' : 'moon'}
         size={18}
-        color={isDark ? '#facc15' : '#04b639'}
+        color={isDark ? '#facc15' : Palette.greenPrimary}
       />
     </TouchableOpacity>
   );
@@ -127,17 +127,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   toggleBtnLight: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#bbf7d0',
-    shadowColor: '#04b639',
+    backgroundColor: Palette.greenSoft,
+    borderColor: Palette.greenBorder,
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 3,
     elevation: 2,
   },
   toggleBtnDark: {
-    backgroundColor: '#1f2937',
-    borderColor: '#374151',
+    backgroundColor: '#182420',
+    borderColor: '#273831',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,

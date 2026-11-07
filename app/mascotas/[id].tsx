@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { getPetById, toggleEstadoExtravio, type Pet } from '@/services/petService';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -21,6 +21,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Palette, Typography, Radius, Shadows } from '@/constants/theme';
 
 export default function MascotaDetalleScreen() {
   const { isDark } = useAppTheme();
@@ -42,7 +43,6 @@ export default function MascotaDetalleScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [nfcModalVisible, setNfcModalVisible] = useState(false);
 
-  // Firestore es la FUENTE DE VERDAD: Consultamos los datos actualizados del documento
   useEffect(() => {
     let isMounted = true;
     if (params.id) {
@@ -75,12 +75,12 @@ export default function MascotaDetalleScreen() {
     }
   }, [params.id]);
 
-  // Datos consolidados (prioriza Firestore en tiempo real, con fallback a route params)
+  // Datos consolidados
   const displayId = pet?.id || params.id || 'PET-001';
   const displayNombre = pet?.nombre || params.nombre || 'Mascota';
   const displayEspecie = pet?.especie || params.especie || 'Perro';
   const displayRaza = pet?.raza || params.raza || 'Raza no especificada';
-  const displaySexo = pet?.sexo || params.sexo || 'N/A';
+  const displaySexo = pet?.sexo || params.sexo || 'No informado';
   const displayPeso = pet?.peso !== undefined ? String(pet.peso) : params.peso || 'N/A';
   const displayEdad = pet?.edad !== undefined ? String(pet.edad) : pet?.fechaNacimiento || params.edad || 'N/A';
   const displayFotoUrl = pet?.fotoUrl || params.fotoUrl || '';
@@ -90,14 +90,15 @@ export default function MascotaDetalleScreen() {
   const isNfcLinked = pet?.nfcStatus === 'linked';
 
   const isMale = displaySexo.toLowerCase().includes('macho');
+  const isGato = displayEspecie.toLowerCase().includes('gato');
 
   const handleToggleExtravio = async () => {
     if (!displayId) return;
     const nuevoEstado = !pet?.extraviada;
     Alert.alert(
-      nuevoEstado ? '🚨 Activar Alerta de Extravío' : '✅ Marcar como En Casa',
+      nuevoEstado ? 'Activar Alerta de Extravío' : 'Marcar como En Casa',
       nuevoEstado
-        ? `¿Confirmas que ${displayNombre} se ha extraviado? La ficha pública mostrará una alerta destacada y registrará la ubicación GPS de cualquier persona que la escanee.`
+        ? `¿Confirmas que ${displayNombre} se ha extraviado? La ficha pública mostrará una alerta destacada y registrará la ubicación GPS de quien la escanee.`
         : `¿${displayNombre} ya está a salvo en casa? Se desactivará la alerta de extravío.`,
       [
         { text: 'Cancelar', style: 'cancel' },
@@ -121,8 +122,8 @@ export default function MascotaDetalleScreen() {
   const handleOpenVincularNfc = () => {
     if (!isVeterinario) {
       Alert.alert(
-        'Acceso Denegado (Seguridad)',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en Huellapp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
+        'Acceso Restringido',
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en HuellaApp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
       );
       return;
     }
@@ -140,10 +141,10 @@ export default function MascotaDetalleScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={22} color={isDark ? '#fafafa' : '#0f172a'} />
+          <Ionicons name="arrow-back" size={20} color={isDark ? '#fafafa' : Palette.textPrimary} />
         </TouchableOpacity>
         <Text style={[styles.navTitle, isDark && styles.textDark]}>
-          Ficha Clínica: {displayNombre}
+          Ficha Clínica
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <ThemeToggleButton />
@@ -153,7 +154,7 @@ export default function MascotaDetalleScreen() {
             onPress={onRefresh}
             accessibilityLabel="Actualizar ficha"
           >
-            <Ionicons name="refresh" size={20} color="#04b639" />
+            <Ionicons name="refresh-outline" size={20} color={Palette.greenDeep} />
           </TouchableOpacity>
         </View>
       </View>
@@ -163,7 +164,7 @@ export default function MascotaDetalleScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#04b639']} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Palette.greenPrimary]} />
         }
       >
         {/* Banner / Foto Principal */}
@@ -177,13 +178,23 @@ export default function MascotaDetalleScreen() {
             />
           ) : (
             <View style={[styles.imageFallback, isDark && styles.imageFallbackDark]}>
-              <MaterialIcons name="pets" size={72} color="#04b639" />
+              <MaterialCommunityIcons
+                name={isGato ? 'cat' : 'dog'}
+                size={72}
+                color={Palette.greenDeep}
+              />
             </View>
           )}
 
           <View style={[styles.speciesFloatingBadge, isDark && styles.speciesFloatingBadgeDark]}>
+            <MaterialCommunityIcons
+              name={isGato ? 'cat' : 'dog'}
+              size={14}
+              color={Palette.greenDeep}
+              style={{ marginRight: 4 }}
+            />
             <Text style={[styles.speciesFloatingText, isDark && styles.speciesFloatingTextDark]}>
-              {displayEspecie === 'Gato' ? '🐱 Gato' : '🐶 Perro'} • {displayId}
+              {displayEspecie} • {displayId}
             </Text>
           </View>
         </View>
@@ -198,18 +209,18 @@ export default function MascotaDetalleScreen() {
             <View
               style={[
                 styles.genderTag,
-                { backgroundColor: isMale ? (isDark ? '#1e3a8a' : '#dbeafe') : (isDark ? '#831843' : '#fce7f3') },
+                { backgroundColor: isMale ? (isDark ? 'rgba(2, 132, 199, 0.2)' : Palette.cyanLight) : (isDark ? 'rgba(244, 114, 182, 0.2)' : '#fff1f2') },
               ]}
             >
               <Ionicons
-                name={isMale ? 'male' : 'female'}
+                name={isMale ? 'male-outline' : 'female-outline'}
                 size={14}
-                color={isMale ? (isDark ? '#93c5fd' : '#1d4ed8') : (isDark ? '#f472b6' : '#be185d')}
+                color={isMale ? '#0284c7' : '#e11d48'}
               />
               <Text
                 style={[
                   styles.genderTagText,
-                  { color: isMale ? (isDark ? '#93c5fd' : '#1d4ed8') : (isDark ? '#f472b6' : '#be185d') },
+                  { color: isMale ? '#0284c7' : '#e11d48' },
                 ]}
               >
                 {displaySexo}
@@ -220,20 +231,24 @@ export default function MascotaDetalleScreen() {
           {/* Ficha técnica rápida */}
           <View style={styles.statsGrid}>
             <View style={[styles.statBox, isDark && styles.statBoxDark]}>
-              <MaterialIcons name="scale" size={20} color="#04b639" />
+              <Ionicons name="scale-outline" size={18} color={Palette.greenDeep} />
               <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Peso</Text>
-              <Text style={[styles.statValue, isDark && styles.textDark]}>{displayPeso}</Text>
+              <Text style={[styles.statValue, isDark && styles.textDark]}>
+                {displayPeso !== 'N/A' ? `${displayPeso} kg` : 'Sin peso'}
+              </Text>
             </View>
 
             <View style={[styles.statBox, isDark && styles.statBoxDark]}>
-              <MaterialIcons name="cake" size={20} color="#04b639" />
+              <Ionicons name="calendar-outline" size={18} color={Palette.greenDeep} />
               <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Edad</Text>
-              <Text style={[styles.statValue, isDark && styles.textDark]}>{displayEdad}</Text>
+              <Text style={[styles.statValue, isDark && styles.textDark]}>
+                {displayEdad !== 'N/A' ? `${displayEdad} años` : 'Sin edad'}
+              </Text>
             </View>
 
             <View style={[styles.statBox, isDark && styles.statBoxDark]}>
-              <MaterialIcons name="verified" size={20} color="#04b639" />
-              <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>ID Estable</Text>
+              <Ionicons name="shield-checkmark-outline" size={18} color={Palette.greenDeep} />
+              <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Código</Text>
               <Text style={[styles.statValue, isDark && styles.textDark]}>{displayId}</Text>
             </View>
           </View>
@@ -242,7 +257,7 @@ export default function MascotaDetalleScreen() {
           {displayPropietario ? (
             <View style={[styles.ownerSection, isDark && styles.ownerSectionDark]}>
               <View style={styles.ownerRow}>
-                <Ionicons name="person" size={16} color="#04b639" />
+                <Ionicons name="person-outline" size={16} color={Palette.greenDeep} />
                 <Text style={[styles.ownerLabel, isDark && styles.ownerLabelDark]}>
                   Tutor / Propietario:{' '}
                   <Text style={{ fontWeight: '700' }}>{displayPropietario}</Text>
@@ -250,7 +265,7 @@ export default function MascotaDetalleScreen() {
               </View>
               {displayTelefono ? (
                 <View style={[styles.ownerRow, { marginTop: 4 }]}>
-                  <Ionicons name="call" size={16} color="#04b639" />
+                  <Ionicons name="call-outline" size={16} color={Palette.greenDeep} />
                   <Text style={[styles.ownerLabel, isDark && styles.ownerLabelDark]}>
                     Teléfono:{' '}
                     <Text style={{ fontWeight: '700' }}>{displayTelefono}</Text>
@@ -276,9 +291,9 @@ export default function MascotaDetalleScreen() {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Ionicons
-                name={pet?.extraviada ? 'alert-circle' : 'shield-checkmark'}
+                name={pet?.extraviada ? 'alert-circle-outline' : 'shield-checkmark-outline'}
                 size={22}
-                color={pet?.extraviada ? '#ef4444' : '#04b639'}
+                color={pet?.extraviada ? Palette.redEmergency : Palette.greenDeep}
               />
               <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
                 Seguridad y Rescate
@@ -293,15 +308,24 @@ export default function MascotaDetalleScreen() {
               onPress={handleToggleExtravio}
               activeOpacity={0.8}
             >
+              <Ionicons
+                name={pet?.extraviada ? 'alert-circle-outline' : 'shield-checkmark-outline'}
+                size={14}
+                color="#ffffff"
+                style={{ marginRight: 4 }}
+              />
               <Text style={styles.btnToggleExtravioText}>
-                {pet?.extraviada ? '🚨 Extraviada' : '✅ En Casa'}
+                {pet?.extraviada ? 'Extraviada' : 'En Casa'}
               </Text>
             </TouchableOpacity>
           </View>
 
           {pet?.extraviada && (
             <View style={styles.lostAlertBox}>
-              <Text style={styles.lostAlertBoxTitle}>Modo de Búsqueda Activo</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="warning-outline" size={16} color={Palette.redEmergency} />
+                <Text style={styles.lostAlertBoxTitle}>Modo de Búsqueda Activo</Text>
+              </View>
               <Text style={styles.lostAlertBoxText}>
                 Cualquier persona que escanee la chapita QR o NFC verá la alerta de extravío y podrá enviarte su ubicación GPS con un toque.
               </Text>
@@ -312,7 +336,7 @@ export default function MascotaDetalleScreen() {
           {pet?.ultimoEscaneo ? (
             <View style={[styles.scanDetectedBox, isDark && styles.scanDetectedBoxDark]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Ionicons name="location" size={20} color="#2563eb" />
+                <Ionicons name="location-outline" size={18} color="#2563eb" />
                 <Text style={[styles.scanDetectedTitle, isDark && styles.textDark]}>
                   Último Escaneo Detectado
                 </Text>
@@ -347,7 +371,7 @@ export default function MascotaDetalleScreen() {
             style={styles.btnPreviewPublic}
             onPress={() => router.push({ pathname: '/pet', params: { id: displayId } } as any)}
           >
-            <Ionicons name="open-outline" size={16} color="#04b639" />
+            <Ionicons name="open-outline" size={16} color={Palette.greenDeep} />
             <Text style={styles.btnPreviewPublicText}>Ver Ficha Pública de Rescate (Web)</Text>
           </TouchableOpacity>
         </View>
@@ -356,7 +380,7 @@ export default function MascotaDetalleScreen() {
         <View style={[styles.infoCard, isDark && styles.cardDark, { marginTop: 14 }]}>
           <View style={styles.nfcCardHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <MaterialIcons name="nfc" size={22} color="#04b639" />
+              <MaterialCommunityIcons name="nfc" size={22} color={Palette.greenDeep} />
               <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
                 Identificación NFC
               </Text>
@@ -371,9 +395,9 @@ export default function MascotaDetalleScreen() {
               ]}
             >
               <Ionicons
-                name={isNfcLinked ? 'checkmark-circle' : 'alert-circle'}
+                name={isNfcLinked ? 'checkmark-circle-outline' : 'alert-circle-outline'}
                 size={14}
-                color={isNfcLinked ? (isDark ? '#4ade80' : '#15803d') : (isDark ? '#fcd34d' : '#92400e')}
+                color={isNfcLinked ? (isDark ? '#4ade80' : Palette.greenDeep) : (isDark ? '#fcd34d' : '#92400e')}
               />
               <Text
                 style={[
@@ -395,7 +419,7 @@ export default function MascotaDetalleScreen() {
                 <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>{pet?.nfcTagId || 'N/A'}</Text>
               </View>
               <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
-                <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Enlace de Identificación:</Text>
+                <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Enlace Oficial:</Text>
                 <Text style={[styles.nfcDetailValue, styles.monospace, isDark && styles.textDark]}>
                   {pet?.nfcUrl || `https://huellapp.app/pet?id=${displayId}`}
                 </Text>
@@ -420,8 +444,10 @@ export default function MascotaDetalleScreen() {
                 onPress={handleOpenVincularNfc}
                 activeOpacity={0.8}
               >
-                <MaterialIcons name="nfc" size={18} color="#04b639" style={{ marginRight: 6 }} />
-                <Text style={[styles.relinkNfcBtnText, isDark && styles.relinkNfcBtnTextDark]}>Reasignar o Reescribir Etiqueta NFC</Text>
+                <MaterialCommunityIcons name="nfc" size={18} color={Palette.greenDeep} style={{ marginRight: 6 }} />
+                <Text style={[styles.relinkNfcBtnText, isDark && styles.relinkNfcBtnTextDark]}>
+                  Reasignar o Reescribir Etiqueta NFC
+                </Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -434,7 +460,7 @@ export default function MascotaDetalleScreen() {
                 onPress={handleOpenVincularNfc}
                 activeOpacity={0.8}
               >
-                <MaterialIcons name="nfc" size={18} color="#ffffff" style={{ marginRight: 8 }} />
+                <MaterialCommunityIcons name="nfc" size={18} color="#ffffff" style={{ marginRight: 8 }} />
                 <Text style={styles.linkNfcPrimaryBtnText}>Vincular Etiqueta NFC</Text>
               </TouchableOpacity>
             </View>
@@ -467,15 +493,15 @@ export default function MascotaDetalleScreen() {
                   </Text>
                 </View>
                 <Ionicons
-                  name={item.completado ? 'checkmark-circle' : 'time-outline'}
+                  name={item.completado ? 'checkmark-circle-outline' : 'time-outline'}
                   size={20}
-                  color={item.completado ? '#04b639' : '#f59e0b'}
+                  color={item.completado ? Palette.greenDeep : '#f59e0b'}
                 />
               </View>
             ))
           ) : (
             <View style={styles.historyEmptyBox}>
-              <Ionicons name="medical-outline" size={26} color={isDark ? '#71717a' : '#9ca3af'} />
+              <Ionicons name="medical-outline" size={26} color={Palette.textMuted} />
               <Text style={[styles.historyEmptyText, isDark && styles.textDark]}>
                 Sin registros clínicos previos
               </Text>
@@ -521,7 +547,7 @@ export default function MascotaDetalleScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
     backgroundColor: '#09090b',
@@ -532,24 +558,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.cardLight,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
   },
   navbarDark: {
     backgroundColor: '#18181b',
     borderBottomColor: '#27272a',
   },
   navTitle: {
-    fontSize: 17,
+    fontSize: Typography.size.bodyLarge,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 12,
-    backgroundColor: '#f1f5f9',
+    borderRadius: Radius.md,
+    backgroundColor: Palette.greenSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -561,24 +588,11 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   imageCard: {
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     overflow: 'hidden',
     position: 'relative',
     marginBottom: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 4,
-      },
-      web: {
-        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-      },
-    }),
+    ...Shadows.md,
   },
   petImage: {
     width: '100%',
@@ -588,7 +602,7 @@ const styles = StyleSheet.create({
   imageFallback: {
     width: '100%',
     height: 240,
-    backgroundColor: '#ecfdf5',
+    backgroundColor: Palette.greenSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -599,35 +613,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: Radius.full,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   speciesFloatingText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.textPrimary,
   },
   infoCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.xl,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-      },
-    }),
+    borderColor: Palette.borderLight,
+    ...Shadows.sm,
   },
   cardDark: {
     backgroundColor: '#18181b',
@@ -640,13 +643,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   petName: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.h2,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   petBreed: {
-    fontSize: 15,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
   genderTag: {
@@ -654,12 +659,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 12,
+    borderRadius: Radius.full,
     gap: 4,
   },
   genderTagText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -668,35 +673,36 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    backgroundColor: '#f8fafc',
-    borderRadius: 14,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
     padding: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: Palette.borderLight,
   },
   statBoxDark: {
     backgroundColor: '#27272a',
     borderColor: '#3f3f46',
   },
   statLabel: {
-    fontSize: 11,
-    color: '#64748b',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 4,
-    fontWeight: '500',
   },
   statValue: {
-    fontSize: 14,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
     marginTop: 2,
   },
   ownerSection: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Palette.greenSoft,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderColor: Palette.greenBorder,
     marginBottom: 14,
   },
   ownerRow: {
@@ -705,24 +711,27 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   ownerLabel: {
-    fontSize: 13,
-    color: '#166534',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.greenDeep,
   },
   section: {
     marginTop: 8,
     paddingTop: 14,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: Palette.borderLight,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
     marginBottom: 8,
   },
   sectionBody: {
-    fontSize: 14,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     lineHeight: 20,
   },
   // NFC Card
@@ -738,12 +747,12 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: Radius.full,
   },
   nfcBadgeLinked: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   nfcBadgeUnlinked: {
     backgroundColor: '#fef3c7',
@@ -751,86 +760,87 @@ const styles = StyleSheet.create({
     borderColor: '#fde68a',
   },
   nfcStatusBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
   },
   nfcStatusTextLinked: {
-    color: '#15803d',
+    color: Palette.greenDeep,
   },
   nfcStatusTextUnlinked: {
     color: '#92400e',
   },
   nfcDetailsBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
   },
   nfcDetailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
   },
   nfcDetailLabel: {
-    fontSize: 12,
-    color: '#64748b',
-    fontWeight: '500',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
   nfcDetailValue: {
-    fontSize: 12,
-    color: '#0f172a',
-    fontWeight: '700',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.textPrimary,
     flexShrink: 1,
     textAlign: 'right',
   },
   monospace: {
     fontFamily: Platform.select({ ios: 'Courier', default: 'monospace' }),
-    fontSize: 11,
+    fontSize: Typography.size.tiny,
   },
   relinkNfcBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ecfdf5',
+    backgroundColor: Palette.greenSoft,
     borderWidth: 1,
-    borderColor: '#a7f3d0',
-    borderRadius: 10,
+    borderColor: Palette.greenBorder,
+    borderRadius: Radius.md,
     paddingVertical: 10,
     marginTop: 12,
   },
   relinkNfcBtnText: {
-    color: '#04b639',
-    fontSize: 13,
-    fontWeight: '700',
+    color: Palette.greenDeep,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
   },
   unlinkedNfcBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
     gap: 12,
   },
   unlinkedNfcDesc: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     lineHeight: 18,
   },
   linkNfcPrimaryBtn: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
+    borderRadius: Radius.md,
     paddingVertical: 12,
   },
   linkNfcPrimaryBtnText: {
     color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.bodyBold,
   },
   // History
   historyRow: {
@@ -838,23 +848,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
     gap: 12,
   },
   historyDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
   },
   historyTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0f172a',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   historySubtitle: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
   historyEmptyBox: {
@@ -865,34 +877,32 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   historyEmptyText: {
-    fontSize: 14,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
     marginTop: 4,
     textAlign: 'center',
   },
   historyEmptySubtext: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     textAlign: 'center',
     lineHeight: 18,
   },
   backHomeBtn: {
     marginTop: 24,
-    backgroundColor: '#04b639',
-    borderRadius: 14,
-    paddingVertical: 16,
+    backgroundColor: Palette.greenDeep,
+    borderRadius: Radius.md,
+    paddingVertical: 15,
     alignItems: 'center',
-    shadowColor: '#04b639',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...Shadows.md,
   },
   backHomeBtnText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.bodyBold,
   },
   textDark: {
     color: '#fafafa',
@@ -901,8 +911,8 @@ const styles = StyleSheet.create({
     color: '#a1a1aa',
   },
   ownerSectionDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
+    backgroundColor: 'rgba(8, 122, 67, 0.15)',
+    borderColor: 'rgba(8, 122, 67, 0.3)',
   },
   ownerLabelDark: {
     color: '#4ade80',
@@ -911,8 +921,8 @@ const styles = StyleSheet.create({
     borderTopColor: '#27272a',
   },
   nfcBadgeLinkedDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+    borderColor: Palette.greenDeep,
   },
   nfcBadgeUnlinkedDark: {
     backgroundColor: '#451a03',
@@ -932,8 +942,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#3f3f46',
   },
   relinkNfcBtnDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+    borderColor: Palette.greenDeep,
   },
   relinkNfcBtnTextDark: {
     color: '#4ade80',
@@ -959,75 +969,80 @@ const styles = StyleSheet.create({
     backgroundColor: '#09090b',
   },
   btnToggleExtravio: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
+    paddingVertical: 7,
+    borderRadius: Radius.md,
   },
   btnExtraviadaActive: {
-    backgroundColor: '#fee2e2',
-    borderColor: '#fca5a5',
+    backgroundColor: Palette.redEmergency,
   },
   btnExtraviadaInactive: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#86efac',
+    backgroundColor: Palette.greenDeep,
   },
   btnToggleExtravioText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: '#ffffff',
   },
   lostAlertBox: {
-    backgroundColor: '#fee2e2',
-    borderRadius: 12,
+    backgroundColor: Palette.redSoft,
+    borderRadius: Radius.md,
     padding: 12,
     marginTop: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#dc2626',
+    borderLeftColor: Palette.redEmergency,
+    borderWidth: 1,
+    borderColor: Palette.redBorder,
   },
   lostAlertBoxTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#991b1b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.redEmergency,
   },
   lostAlertBoxText: {
-    fontSize: 12,
-    color: '#7f1d1d',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
     lineHeight: 16,
   },
   scanDetectedBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
     padding: 12,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
   },
   scanDetectedBoxDark: {
     backgroundColor: '#27272a',
     borderColor: '#3f3f46',
   },
   scanDetectedTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   scanDetectedDate: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 4,
   },
   scanDetectedCoords: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    color: Palette.textSecondary,
     marginTop: 2,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
   btnOpenMap: {
-    backgroundColor: '#2563eb',
-    borderRadius: 10,
-    paddingVertical: 8,
+    backgroundColor: Palette.greenDeep,
+    borderRadius: Radius.md,
+    paddingVertical: 9,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1037,12 +1052,13 @@ const styles = StyleSheet.create({
   },
   btnOpenMapText: {
     color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
   },
   noScansText: {
-    fontSize: 12,
-    color: '#94a3b8',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textMuted,
     marginTop: 10,
     fontStyle: 'italic',
   },
@@ -1054,11 +1070,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: Palette.borderLight,
   },
   btnPreviewPublicText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#04b639',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
   },
 });

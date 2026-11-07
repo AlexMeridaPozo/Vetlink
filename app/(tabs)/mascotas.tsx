@@ -1,5 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
@@ -28,6 +29,7 @@ import VincularNfcModal from '@/components/VincularNfcModal';
 import { app } from '@/config/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
+import { Palette, FontFamily } from '@/constants/theme';
 import {
   getNextSuggestedPetId,
   registerPet,
@@ -38,7 +40,6 @@ import {
 
 import { PetCard, type PetCardProps } from '@/components/PetCard';
 export { PetCard, type PetCardProps };
-
 
 // ── 2. Modal de Registro de Mascotas (Veterinarios) ───────────────────────────
 interface RegistrarMascotaModalProps {
@@ -260,7 +261,7 @@ function RegistrarMascotaModal({
           <View style={[styles.formHeader, isDark && styles.formHeaderDark]}>
             <View style={styles.formTitleRow}>
               <View style={[styles.formIconCircle, isDark && styles.formIconCircleDark]}>
-                <MaterialIcons name="pets" size={24} color="#04b639" />
+                <Ionicons name="paw-outline" size={22} color={Palette.greenDeep} />
               </View>
               <View>
                 <Text style={[styles.formTitle, isDark && styles.textDark]}>Registrar Mascota</Text>
@@ -268,7 +269,7 @@ function RegistrarMascotaModal({
               </View>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Ionicons name="close" size={22} color={isDark ? '#a1a1aa' : '#6b7280'} />
+              <Ionicons name="close-outline" size={24} color={isDark ? '#a1a1aa' : Palette.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -284,7 +285,7 @@ function RegistrarMascotaModal({
                       onPress={seleccionarFotoModal}
                       activeOpacity={0.8}
                     >
-                      <Ionicons name="camera" size={14} color="#ffffff" style={{ marginRight: 4 }} />
+                      <Ionicons name="camera-outline" size={15} color="#ffffff" style={{ marginRight: 4 }} />
                       <Text style={styles.photoActionBtnText}>Cambiar</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -292,8 +293,8 @@ function RegistrarMascotaModal({
                       onPress={() => setFotoUrl('')}
                       activeOpacity={0.8}
                     >
-                      <Ionicons name="trash-outline" size={14} color="#ef4444" style={{ marginRight: 4 }} />
-                      <Text style={[styles.photoActionBtnText, { color: '#ef4444' }]}>Quitar</Text>
+                      <Ionicons name="trash-outline" size={15} color={Palette.redEmergency} style={{ marginRight: 4 }} />
+                      <Text style={[styles.photoActionBtnText, { color: Palette.redEmergency }]}>Quitar</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -304,22 +305,23 @@ function RegistrarMascotaModal({
                   activeOpacity={0.8}
                 >
                   <View style={[styles.photoPickerIconCircle, isDark && styles.photoPickerIconCircleDark]}>
-                    <Ionicons name="camera" size={26} color="#04b639" />
+                    <Ionicons name="camera-outline" size={24} color={Palette.greenDeep} />
                   </View>
                   <Text style={[styles.photoPickerTitle, isDark && styles.textDark]}>
                     Foto de Perfil
                   </Text>
                   <Text style={[styles.photoPickerSubtitle, isDark && styles.formSubtitleDark]}>
-                    📸 Tomar foto o 🖼️ elegir de galería
+                    Tomar foto o elegir de galería
                   </Text>
                 </TouchableOpacity>
               )}
             </View>
+
             {/* ID Estable */}
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <Text style={[styles.formLabel, isDark && styles.textDark]}>Identificador Estable Único</Text>
-                <Text style={[styles.formBadgeLabel, isDark && { backgroundColor: '#132e1f', color: '#4ade80' }]}>Código oficial</Text>
+                <Text style={[styles.formBadgeLabel, isDark && { backgroundColor: '#133324', color: '#4ade80' }]}>Código oficial</Text>
               </View>
               <View style={styles.idRow}>
                 <TextInput
@@ -328,13 +330,13 @@ function RegistrarMascotaModal({
                   onChangeText={setPetId}
                   autoCapitalize="characters"
                   placeholder="PET-001"
-                  placeholderTextColor={isDark ? '#71717a' : '#9ca3af'}
+                  placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
                 />
                 <TouchableOpacity
-                  style={[styles.suggestBtn, isDark && { backgroundColor: '#132e1f', borderColor: '#166534' }]}
+                  style={[styles.suggestBtn, isDark && { backgroundColor: '#133324', borderColor: Palette.greenDeep }]}
                   onPress={() => getNextSuggestedPetId().then((sug) => setPetId(sug))}
                 >
-                  <Ionicons name="refresh" size={16} color="#04b639" />
+                  <Ionicons name="refresh-outline" size={16} color={Palette.greenDeep} />
                   <Text style={[styles.suggestBtnText, isDark && { color: '#4ade80' }]}>Auto</Text>
                 </TouchableOpacity>
               </View>
@@ -351,33 +353,42 @@ function RegistrarMascotaModal({
                 value={nombre}
                 onChangeText={setNombre}
                 placeholder="Ej: Max, Luna, Rocky"
-                placeholderTextColor={isDark ? '#71717a' : '#9ca3af'}
+                placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
               />
             </View>
 
-            {/* Especie y Sexo */}
+            {/* Especie y Sexo (Con íconos Line Art) */}
             <View style={styles.formRow}>
               <View style={[styles.inputGroup, { flex: 1 }]}>
                 <Text style={[styles.formLabel, isDark && styles.textDark]}>Especie</Text>
                 <View style={styles.selectorRow}>
-                  {['Perro', 'Gato'].map((esp) => (
+                  {[
+                    { id: 'Perro', icon: 'dog' as const },
+                    { id: 'Gato', icon: 'cat' as const },
+                  ].map((esp) => (
                     <TouchableOpacity
-                      key={esp}
+                      key={esp.id}
                       style={[
                         styles.selectorBtn,
                         isDark && styles.selectorBtnDark,
-                        especie === esp && (isDark ? { backgroundColor: '#132e1f', borderColor: '#04b639' } : styles.selectorBtnActive),
+                        especie === esp.id && (isDark ? styles.selectorBtnActiveDark : styles.selectorBtnActive),
                       ]}
-                      onPress={() => setEspecie(esp)}
+                      onPress={() => setEspecie(esp.id)}
                     >
+                      <MaterialCommunityIcons
+                        name={esp.icon}
+                        size={16}
+                        color={especie === esp.id ? Palette.greenDeep : (isDark ? '#a1a1aa' : Palette.textSecondary)}
+                        style={{ marginRight: 4 }}
+                      />
                       <Text
                         style={[
                           styles.selectorBtnText,
                           isDark && styles.formSubtitleDark,
-                          especie === esp && styles.selectorBtnTextActive,
+                          especie === esp.id && styles.selectorBtnTextActive,
                         ]}
                       >
-                        {esp === 'Perro' ? '🐶 Perro' : '🐱 Gato'}
+                        {esp.id}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -387,24 +398,33 @@ function RegistrarMascotaModal({
               <View style={[styles.inputGroup, { flex: 1 }]}>
                 <Text style={[styles.formLabel, isDark && styles.textDark]}>Sexo</Text>
                 <View style={styles.selectorRow}>
-                  {['Macho', 'Hembra'].map((sx) => (
+                  {[
+                    { id: 'Macho', icon: 'male-outline' as const },
+                    { id: 'Hembra', icon: 'female-outline' as const },
+                  ].map((sx) => (
                     <TouchableOpacity
-                      key={sx}
+                      key={sx.id}
                       style={[
                         styles.selectorBtn,
                         isDark && styles.selectorBtnDark,
-                        sexo === sx && (isDark ? { backgroundColor: '#132e1f', borderColor: '#04b639' } : styles.selectorBtnActive),
+                        sexo === sx.id && (isDark ? styles.selectorBtnActiveDark : styles.selectorBtnActive),
                       ]}
-                      onPress={() => setSexo(sx)}
+                      onPress={() => setSexo(sx.id)}
                     >
+                      <Ionicons
+                        name={sx.icon}
+                        size={14}
+                        color={sexo === sx.id ? Palette.greenDeep : (isDark ? '#a1a1aa' : Palette.textSecondary)}
+                        style={{ marginRight: 4 }}
+                      />
                       <Text
                         style={[
                           styles.selectorBtnText,
                           isDark && styles.formSubtitleDark,
-                          sexo === sx && styles.selectorBtnTextActive,
+                          sexo === sx.id && styles.selectorBtnTextActive,
                         ]}
                       >
-                        {sx}
+                        {sx.id}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -421,7 +441,7 @@ function RegistrarMascotaModal({
                   value={raza}
                   onChangeText={setRaza}
                   placeholder="Ej: Golden Retriever"
-                  placeholderTextColor={isDark ? '#71717a' : '#9ca3af'}
+                  placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
                 />
               </View>
 
@@ -432,7 +452,7 @@ function RegistrarMascotaModal({
                   value={peso}
                   onChangeText={setPeso}
                   placeholder="Ej: 28 kg"
-                  placeholderTextColor={isDark ? '#71717a' : '#9ca3af'}
+                  placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
                 />
               </View>
             </View>
@@ -445,7 +465,7 @@ function RegistrarMascotaModal({
                 value={edad}
                 onChangeText={setEdad}
                 placeholder="Ej: 3 años o 15/03/2023"
-                placeholderTextColor={isDark ? '#71717a' : '#9ca3af'}
+                placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
               />
             </View>
 
@@ -456,8 +476,8 @@ function RegistrarMascotaModal({
                 style={[styles.formInput, isDark && styles.formInputDark]}
                 value={propietario}
                 onChangeText={setPropietario}
-                placeholder="Nombre completo del dueño"
-                placeholderTextColor={isDark ? '#71717a' : '#9ca3af'}
+                placeholder="Nombre completo del tutor"
+                placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
               />
             </View>
 
@@ -469,7 +489,7 @@ function RegistrarMascotaModal({
                 onChangeText={setTelefono}
                 keyboardType="phone-pad"
                 placeholder="+54 9 11 2345-6789"
-                placeholderTextColor={isDark ? '#71717a' : '#9ca3af'}
+                placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
               />
             </View>
 
@@ -481,7 +501,7 @@ function RegistrarMascotaModal({
                 value={descripcion}
                 onChangeText={setDescripcion}
                 placeholder="Vacunación, alergias, observaciones médicas..."
-                placeholderTextColor={isDark ? '#71717a' : '#9ca3af'}
+                placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
                 multiline
                 numberOfLines={3}
               />
@@ -491,13 +511,13 @@ function RegistrarMascotaModal({
               style={[styles.submitBtn, loading && { opacity: 0.7 }]}
               onPress={handleSubmit}
               disabled={loading}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
               {loading ? (
                 <ActivityIndicator color="#ffffff" />
               ) : (
                 <>
-                  <Ionicons name="cloud-upload" size={18} color="#ffffff" style={{ marginRight: 8 }} />
+                  <Ionicons name="cloud-upload-outline" size={18} color="#ffffff" style={{ marginRight: 8 }} />
                   <Text style={styles.submitBtnText}>Guardar Mascota</Text>
                 </>
               )}
@@ -696,7 +716,7 @@ export default function MascotasScreen() {
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <View style={[styles.emptyIconCircle, isDark && styles.emptyIconCircleDark]}>
-        <MaterialIcons name="pets" size={56} color="#04b639" />
+        <Ionicons name="paw-outline" size={50} color={Palette.greenDeep} />
       </View>
       <Text style={[styles.emptyTitle, isDark && styles.emptyTitleDark]}>
         No tienes mascotas registradas
@@ -704,12 +724,12 @@ export default function MascotasScreen() {
       <Text style={[styles.emptySubtitle, isDark && styles.emptySubtitleDark]}>
         {isVeterinario
           ? 'Registra pacientes clínicos para gestionar sus fichas y etiquetas NFC.'
-          : 'Registra a tu primera mascota o vincula su placa para ver sus datos.'}
+          : 'Registra a tu primera mascota o vincula su chapita para ver sus datos.'}
       </Text>
       <TouchableOpacity
         style={styles.emptyButton}
         onPress={handleRegisterPress}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
       >
         <Ionicons name="add-circle-outline" size={20} color="#ffffff" style={{ marginRight: 6 }} />
         <Text style={styles.emptyButtonText}>
@@ -726,7 +746,10 @@ export default function MascotasScreen() {
       {/* Header Superior */}
       <View style={[styles.header, isDark && styles.headerDark]}>
         <View>
-          <Text style={styles.headerBrand}>Huellapp</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.headerBrandGreen}>Huell</Text>
+            <Text style={[styles.headerBrandDark, isDark && styles.textDark]}>App</Text>
+          </View>
           <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
             {isVeterinario ? 'Mascotas Clínicas' : 'Mis Mascotas'}
           </Text>
@@ -739,12 +762,12 @@ export default function MascotasScreen() {
             activeOpacity={0.7}
             accessibilityLabel="Recargar mascotas"
           >
-            <Ionicons name="refresh-outline" size={20} color={isDark ? '#fafafa' : '#18181b'} />
+            <Ionicons name="refresh-outline" size={20} color={isDark ? '#fafafa' : Palette.textPrimary} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerPrimaryButton}
             onPress={handleRegisterPress}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
             <Ionicons name={isVeterinario ? 'add-circle-outline' : 'qr-code-outline'} size={18} color="#ffffff" />
             <Text style={styles.headerPrimaryButtonText}>
@@ -757,7 +780,7 @@ export default function MascotasScreen() {
       {/* Contenido Principal */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#04b639" />
+          <ActivityIndicator size="large" color={Palette.greenPrimary} />
           <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>
             Cargando mascotas...
           </Text>
@@ -776,8 +799,8 @@ export default function MascotasScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={refresh}
-              colors={['#04b639']}
-              tintColor="#04b639"
+              colors={[Palette.greenPrimary]}
+              tintColor={Palette.greenPrimary}
             />
           }
           showsVerticalScrollIndicator={false}
@@ -816,10 +839,10 @@ export default function MascotasScreen() {
             <View style={styles.modalHandle} />
             <View style={[styles.modalHeader, isDark && styles.modalHeaderDark]}>
               <Text style={[styles.modalTitle, isDark && styles.modalTitleDark]}>
-                🐾 {qrMascota?.nombre}
+                {qrMascota?.nombre}
               </Text>
               <TouchableOpacity onPress={() => setQrMascota(null)}>
-                <Ionicons name="close" size={24} color={isDark ? '#a1a1aa' : '#6b7280'} />
+                <Ionicons name="close-outline" size={24} color={isDark ? '#a1a1aa' : Palette.textSecondary} />
               </TouchableOpacity>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -835,7 +858,7 @@ export default function MascotasScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* Modal Vincular NFC (Compartido con [id].tsx) */}
+      {/* Modal Vincular NFC */}
       {nfcMascota && (
         <VincularNfcModal
           visible={!!nfcMascota}
@@ -865,10 +888,10 @@ export default function MascotasScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.backgroundLight,
   },
   safeAreaDark: {
-    backgroundColor: '#09090b',
+    backgroundColor: Palette.backgroundDark,
   },
   header: {
     flexDirection: 'row',
@@ -876,28 +899,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.surfaceLight,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
   },
   headerDark: {
-    backgroundColor: '#18181b',
-    borderBottomColor: '#27272a',
+    backgroundColor: Palette.surfaceDark,
+    borderBottomColor: Palette.borderDark,
   },
-  headerBrand: {
+  headerBrandGreen: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#04b639',
-    textTransform: 'uppercase',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.greenPrimary,
+    letterSpacing: 0.5,
+  },
+  headerBrandDark: {
+    fontSize: 13,
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
     letterSpacing: 0.5,
   },
   headerTitle: {
     fontSize: 22,
-    fontWeight: '800',
-    color: '#111827',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
   },
   headerTitleDark: {
-    color: '#f4f4f5',
+    color: Palette.textPrimaryDark,
   },
   headerActions: {
     flexDirection: 'row',
@@ -907,29 +935,34 @@ const styles = StyleSheet.create({
   reloadButton: {
     width: 38,
     height: 38,
-    borderRadius: 10,
-    backgroundColor: '#f0fdf4',
+    borderRadius: 12,
+    backgroundColor: Palette.surfaceSubtle,
     borderWidth: 1,
-    borderColor: '#dcfce7',
+    borderColor: Palette.borderLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   reloadButtonDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
+    backgroundColor: '#20302B',
+    borderColor: Palette.borderDark,
   },
   headerPrimaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     paddingHorizontal: 14,
     paddingVertical: 9,
-    borderRadius: 10,
-    gap: 4,
+    borderRadius: 12,
+    gap: 5,
+    shadowColor: Palette.greenDeep,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerPrimaryButtonText: {
     color: '#ffffff',
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
     fontSize: 14,
   },
   listContent: {
@@ -948,11 +981,11 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 15,
-    color: '#64748b',
-    fontWeight: '500',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
   },
   loadingTextDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -961,54 +994,58 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyIconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#dcfce7',
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: Palette.greenSoft,
+    borderWidth: 1.5,
+    borderColor: Palette.greenBorder,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   emptyIconCircleDark: {
-    backgroundColor: '#14532d33',
+    backgroundColor: '#133324',
+    borderColor: '#1F543B',
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#111827',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
     textAlign: 'center',
     marginBottom: 8,
   },
   emptyTitleDark: {
-    color: '#f4f4f5',
+    color: Palette.textPrimaryDark,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,
   },
   emptySubtitleDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   emptyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     paddingHorizontal: 22,
     paddingVertical: 14,
-    borderRadius: 12,
-    shadowColor: '#04b639',
+    borderRadius: 16,
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 4,
   },
   emptyButtonText: {
     color: '#ffffff',
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
   },
   fab: {
     position: 'absolute',
@@ -1017,301 +1054,22 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
     elevation: 6,
   },
-  // Card styles
-  card: {
-    backgroundColor: '#f0fdf4',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#dcfce7',
-    marginBottom: 14,
-    padding: 14,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#15803d',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.07,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0 2px 8px rgba(21, 128, 61, 0.07)',
-      },
-    }),
-  },
-  cardDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-      },
-    }),
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarContainer: {
-    position: 'relative',
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 16,
-    backgroundColor: '#f1f5f9',
-  },
-  avatarFallback: {
-    width: 72,
-    height: 72,
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#dcfce7',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarFallbackDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
-  },
-  speciesBadge: {
-    position: 'absolute',
-    bottom: -4,
-    right: -4,
-    backgroundColor: '#ffffff',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  speciesBadgeDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
-  },
-  speciesBadgeText: {
-    fontSize: 13,
-  },
-  petInfo: {
-    flex: 1,
-    marginLeft: 14,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 2,
-  },
-  petName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#14532d',
-  },
-  petNameDark: {
-    color: '#f4f4f5',
-  },
-  genderBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 8,
-    gap: 3,
-  },
-  genderText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  petBreed: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginBottom: 8,
-  },
-  petBreedDark: {
-    color: '#a1a1aa',
-  },
-  badgesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginVertical: 4,
-  },
-  idChip: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  idChipDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
-  },
-  idChipText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#334155',
-    letterSpacing: 0.5,
-  },
-  idChipTextDark: {
-    color: '#e4e4e7',
-  },
-  nfcChipLinked: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: '#ecfdf5',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#86efac',
-  },
-  nfcChipLinkedDark: {
-    backgroundColor: '#064e3b33',
-    borderColor: '#059669',
-  },
-  nfcChipLinkedText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#15803d',
-  },
-  nfcChipLinkedTextDark: {
-    color: '#4ade80',
-  },
-  nfcChipUnlinked: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: '#f9fafb',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  nfcChipUnlinkedDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
-  },
-  nfcChipUnlinkedText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#6b7280',
-  },
-  nfcChipUnlinkedTextDark: {
-    color: '#a1a1aa',
-  },
-  metricsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  metricItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0fdf4',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: '#dcfce7',
-  },
-  metricItemDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
-  },
-  metricText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#334155',
-  },
-  metricTextDark: {
-    color: '#e4e4e7',
-  },
-  arrowContainer: {
-    marginLeft: 6,
-  },
-  cardActionsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 10,
-  },
-  quickActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 9,
-    borderRadius: 10,
-  },
-  quickActionBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#04b639',
-  },
-  qrQuickBtn: {
-    backgroundColor: '#f0fdf4',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
-  },
-  qrQuickBtnDark: {
-    backgroundColor: '#14532d22',
-    borderColor: '#166534',
-  },
-  nfcQuickBtn: {
-    backgroundColor: '#ecfdf5',
-    borderWidth: 1,
-    borderColor: '#a7f3d0',
-  },
-  nfcQuickBtnDark: {
-    backgroundColor: '#27272a',
-    borderWidth: 1,
-    borderColor: '#3f3f46',
-  },
-  nfcQuickBtnLinked: {
-    backgroundColor: '#dcfce7',
-    borderWidth: 1,
-    borderColor: '#86efac',
-  },
-  nfcQuickBtnLinkedDark: {
-    backgroundColor: '#064e3b33',
-    borderWidth: 1,
-    borderColor: '#059669',
-  },
-  // Bottom Sheet Modal styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.surfaceLight,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -1319,12 +1077,12 @@ const styles = StyleSheet.create({
     maxHeight: '90%',
   },
   modalSheetDark: {
-    backgroundColor: '#18181b',
+    backgroundColor: Palette.surfaceDark,
   },
   modalHandle: {
     width: 40,
     height: 4,
-    backgroundColor: '#d1d5db',
+    backgroundColor: Palette.borderLight,
     borderRadius: 2,
     alignSelf: 'center',
     marginTop: 12,
@@ -1336,27 +1094,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
     marginBottom: 4,
   },
   modalHeaderDark: {
-    borderBottomColor: '#27272a',
+    borderBottomColor: Palette.borderDark,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
   },
   modalTitleDark: {
-    color: '#f4f4f5',
+    color: Palette.textPrimaryDark,
   },
-  // Form Modal styles
   formSheetContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.surfaceLight,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '92%',
     paddingBottom: 20,
+  },
+  formSheetContainerDark: {
+    backgroundColor: Palette.surfaceDark,
   },
   formHeader: {
     flexDirection: 'row',
@@ -1365,7 +1125,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
+  },
+  formHeaderDark: {
+    borderBottomColor: Palette.borderDark,
   },
   formTitleRow: {
     flexDirection: 'row',
@@ -1375,20 +1138,27 @@ const styles = StyleSheet.create({
   formIconCircle: {
     width: 42,
     height: 42,
-    borderRadius: 21,
-    backgroundColor: '#ecfdf5',
+    borderRadius: 14,
+    backgroundColor: Palette.greenSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  formIconCircleDark: {
+    backgroundColor: '#133324',
+  },
   formTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
   },
   formSubtitle: {
     fontSize: 12,
-    color: '#64748b',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
     marginTop: 2,
+  },
+  formSubtitleDark: {
+    color: Palette.textSecondaryDark,
   },
   closeBtn: {
     padding: 6,
@@ -1407,27 +1177,33 @@ const styles = StyleSheet.create({
   },
   formLabel: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#334155',
+    fontFamily: FontFamily.bodySemiBold,
+    color: Palette.textPrimary,
   },
   formBadgeLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#04b639',
-    backgroundColor: '#ecfdf5',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.greenDeep,
+    backgroundColor: Palette.greenSoft,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
   },
   formInput: {
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: Palette.borderLight,
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 11,
     fontSize: 14,
-    color: '#0f172a',
-    backgroundColor: '#f8fafc',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textPrimary,
+    backgroundColor: Palette.surfaceLight,
+  },
+  formInputDark: {
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
+    color: Palette.textPrimaryDark,
   },
   idRow: {
     flexDirection: 'row',
@@ -1443,19 +1219,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     paddingHorizontal: 12,
-    backgroundColor: '#ecfdf5',
-    borderRadius: 10,
+    backgroundColor: Palette.greenSoft,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   suggestBtnText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#04b639',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.greenDeep,
   },
   formHint: {
     fontSize: 12,
-    color: '#64748b',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
   },
   formRow: {
     flexDirection: 'row',
@@ -1467,109 +1244,58 @@ const styles = StyleSheet.create({
   },
   selectorBtn: {
     flex: 1,
+    flexDirection: 'row',
     paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: Palette.borderLight,
+    backgroundColor: Palette.surfaceLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  selectorBtnDark: {
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
+  },
   selectorBtnActive: {
-    borderColor: '#04b639',
-    backgroundColor: '#ecfdf5',
+    borderColor: Palette.greenDeep,
+    backgroundColor: Palette.greenSoft,
+  },
+  selectorBtnActiveDark: {
+    borderColor: '#4ade80',
+    backgroundColor: '#133324',
   },
   selectorBtnText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#64748b',
+    fontFamily: FontFamily.bodySemiBold,
+    color: Palette.textSecondary,
   },
   selectorBtnTextActive: {
-    color: '#04b639',
-    fontWeight: '700',
+    color: Palette.greenDeep,
+    fontFamily: FontFamily.bodyBold,
   },
   formTextArea: {
     minHeight: 70,
     textAlignVertical: 'top',
   },
   submitBtn: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     marginTop: 8,
+    shadowColor: Palette.greenDeep,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
   },
   submitBtnText: {
     color: '#ffffff',
     fontSize: 15,
-    fontWeight: '700',
-  },
-  formSheetContainerDark: {
-    backgroundColor: '#18181b',
-  },
-  formHeaderDark: {
-    borderBottomColor: '#27272a',
-  },
-  formIconCircleDark: {
-    backgroundColor: '#064e3b',
-  },
-  formSubtitleDark: {
-    color: '#a1a1aa',
-  },
-  formInputDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
-    color: '#f4f4f5',
-  },
-  selectorBtnDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
-  },
-  textDark: {
-    color: '#fafafa',
-  },
-  avatarCameraBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: '#04b639',
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#ffffff',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.25,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 3,
-      },
-      web: {
-        boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
-      },
-    }),
-  },
-  avatarCameraBadgeDark: {
-    borderColor: '#18181b',
-  },
-  avatarLoadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    fontFamily: FontFamily.bodyBold,
   },
   photoPickerContainer: {
     marginBottom: 16,
@@ -1579,39 +1305,40 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 18,
     paddingHorizontal: 16,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: '#86efac',
-    backgroundColor: '#f0fdf4',
+    borderColor: Palette.greenBorder,
+    backgroundColor: Palette.greenSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
   photoPickerBtnDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
+    backgroundColor: '#133324',
+    borderColor: '#1F543B',
   },
   photoPickerIconCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#dcfce7',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Palette.surfaceLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   photoPickerIconCircleDark: {
-    backgroundColor: '#064e3b',
+    backgroundColor: '#20302B',
   },
   photoPickerTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.textPrimary,
     marginBottom: 2,
   },
   photoPickerSubtitle: {
     fontSize: 12,
-    color: '#64748b',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
     textAlign: 'center',
   },
   photoPreviewWrapper: {
@@ -1619,11 +1346,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   photoPreview: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 3,
-    borderColor: '#04b639',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 2.5,
+    borderColor: Palette.greenPrimary,
     marginBottom: 10,
   },
   photoActionsRow: {
@@ -1633,22 +1360,25 @@ const styles = StyleSheet.create({
   photoActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 10,
   },
   photoChangeBtn: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
   },
   photoRemoveBtn: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: Palette.redSoft,
   },
   photoRemoveBtnDark: {
-    backgroundColor: '#450a0a',
+    backgroundColor: '#381616',
   },
   photoActionBtnText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
+  },
+  textDark: {
+    color: Palette.textPrimaryDark,
   },
 });

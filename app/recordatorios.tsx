@@ -23,6 +23,7 @@ import {
   type Recordatorio,
 } from '@/services/reminderService';
 import { initNotifications } from '@/services/notificationService';
+import { Palette, Typography, Radius, Shadows } from '@/constants/theme';
 
 export default function RecordatoriosScreen() {
   const { isDark } = useAppTheme();
@@ -34,7 +35,6 @@ export default function RecordatoriosScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [filtro, setFiltro] = useState<'todos' | 'proximos' | 'vencidos'>('todos');
 
-  // Inicializar notificaciones al cargar
   useEffect(() => {
     initNotifications().catch(() => {});
   }, []);
@@ -49,7 +49,6 @@ export default function RecordatoriosScreen() {
       const list = await getRecordatorios(user.uid, isVeterinario, user.email || undefined);
       setRecordatorios(list);
 
-      // Si el usuario es propietario, sincronizar sus avisos en este dispositivo local
       if (!isVeterinario && list.length > 0) {
         sincronizarNotificacionesUsuario(list).catch(() => {});
       }
@@ -120,7 +119,6 @@ export default function RecordatoriosScreen() {
     );
   };
 
-  // Filtrado de lista
   const recordatoriosFiltrados = recordatorios.filter((r) => {
     const tiempo = calcularTiempoRestante(r.fechaCompleta);
     if (filtro === 'proximos') return !tiempo.esVencido;
@@ -137,30 +135,30 @@ export default function RecordatoriosScreen() {
       <View style={[styles.topBar, isDark && styles.topBarDark]}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.screenTitle, isDark && styles.textDark]}>
-            Recordatorios Automáticos
+            Recordatorios Sanitarios
           </Text>
           <Text style={[styles.screenSubtitle, isDark && styles.subtituloDark]}>
             {isVeterinario
               ? 'Gestión y programación de avisos automáticos para pacientes'
-              : 'Avisos sanitarios programados por tu veterinaria'}
+              : 'Avisos y cuidados programados por tu veterinaria'}
           </Text>
         </View>
         <ThemeToggleButton />
       </View>
 
-      {/* Banner de Rol Veterinario con botón de Crear Recordatorio */}
+      {/* Banner de Rol Veterinario */}
       {isVeterinario && (
         <View style={[styles.vetHeaderBanner, isDark && styles.vetHeaderBannerDark]}>
           <View style={{ flex: 1 }}>
             <View style={[styles.vetBadge, isDark && styles.vetBadgeDark]}>
-              <Ionicons name="shield-checkmark" size={14} color="#04b639" />
+              <Ionicons name="shield-checkmark-outline" size={13} color={Palette.greenDeep} />
               <Text style={styles.vetBadgeText}>Veterinario Autorizado</Text>
             </View>
             <Text style={[styles.vetDoctorTitle, isDark && styles.textDark]}>
               {profile?.displayName || user?.displayName || 'Dr. Veterinario'}
             </Text>
             <Text style={[styles.vetDoctorDesc, isDark && styles.subtituloDark]}>
-              Programa recordatorios con fecha y hora. El tutor recibirá la alerta aunque la app esté cerrada.
+              Programa recordatorios para tus pacientes. El tutor recibirá la alerta local en su dispositivo.
             </Text>
           </View>
 
@@ -169,8 +167,8 @@ export default function RecordatoriosScreen() {
             onPress={() => setModalVisible(true)}
             activeOpacity={0.85}
           >
-            <Ionicons name="add" size={20} color="#ffffff" />
-            <Text style={styles.createBtnText}>Nuevo Recordatorio</Text>
+            <Ionicons name="add" size={18} color="#ffffff" />
+            <Text style={styles.createBtnText}>Nuevo</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -182,7 +180,7 @@ export default function RecordatoriosScreen() {
           onPress={() => setFiltro('todos')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.metricNumber, { color: '#04b639' }]}>{recordatorios.length}</Text>
+          <Text style={[styles.metricNumber, { color: Palette.greenDeep }]}>{recordatorios.length}</Text>
           <Text style={[styles.metricLabel, isDark && styles.subtituloDark]}>Total</Text>
         </TouchableOpacity>
 
@@ -204,7 +202,7 @@ export default function RecordatoriosScreen() {
           onPress={() => setFiltro('vencidos')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.metricNumber, { color: '#dc2626' }]}>{vencidosCount}</Text>
+          <Text style={[styles.metricNumber, { color: Palette.redEmergency }]}>{vencidosCount}</Text>
           <Text style={[styles.metricLabel, isDark && styles.subtituloDark]}>Vencidos</Text>
         </TouchableOpacity>
       </View>
@@ -212,7 +210,7 @@ export default function RecordatoriosScreen() {
       {/* Contenido / Listado */}
       {cargando ? (
         <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color="#04b639" />
+          <ActivityIndicator size="large" color={Palette.greenPrimary} />
           <Text style={[styles.loadingText, isDark && styles.subtituloDark]}>
             Cargando recordatorios...
           </Text>
@@ -225,22 +223,22 @@ export default function RecordatoriosScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#04b639']}
-              tintColor="#04b639"
+              colors={[Palette.greenPrimary]}
+              tintColor={Palette.greenPrimary}
             />
           }
         >
           {recordatoriosFiltrados.length === 0 ? (
             <View style={styles.emptyContainer}>
               <View style={[styles.emptyIconCircle, isDark && styles.emptyIconCircleDark]}>
-                <Ionicons name="notifications-off-outline" size={44} color="#04b639" />
+                <Ionicons name="notifications-outline" size={40} color={Palette.greenDeep} />
               </View>
               <Text style={[styles.emptyTitle, isDark && styles.textDark]}>
                 No hay recordatorios {filtro !== 'todos' ? filtro : ''}
               </Text>
               <Text style={[styles.emptySubtitle, isDark && styles.subtituloDark]}>
                 {isVeterinario
-                  ? 'Usa el botón "Nuevo Recordatorio" para programar avisos automáticos para tus pacientes.'
+                  ? 'Usa el botón "Nuevo" para programar avisos automáticos para tus pacientes.'
                   : 'Aquí aparecerán los avisos y recordatorios sanitarios programados por tu veterinaria.'}
               </Text>
 
@@ -250,7 +248,7 @@ export default function RecordatoriosScreen() {
                   onPress={() => setModalVisible(true)}
                   activeOpacity={0.85}
                 >
-                  <Ionicons name="add-circle" size={18} color="#ffffff" style={{ marginRight: 6 }} />
+                  <Ionicons name="add-circle-outline" size={18} color="#ffffff" style={{ marginRight: 6 }} />
                   <Text style={styles.emptyActionBtnText}>Crear Primer Recordatorio</Text>
                 </TouchableOpacity>
               )}
@@ -266,7 +264,7 @@ export default function RecordatoriosScreen() {
                     <View style={styles.cardHeaderInfo}>
                       <Text style={[styles.cardTitle, isDark && styles.textDark]}>{rec.titulo}</Text>
                       <View style={styles.recipientRow}>
-                        <Ionicons name="person-outline" size={13} color="#04b639" />
+                        <Ionicons name="person-outline" size={13} color={Palette.greenDeep} />
                         <Text style={[styles.recipientText, isDark && styles.subtituloDark]}>
                           Tutor: <Text style={{ fontWeight: '700' }}>{rec.userName}</Text> ({rec.userEmail})
                         </Text>
@@ -311,21 +309,21 @@ export default function RecordatoriosScreen() {
                   {/* Datos de Fecha, Hora y Emisor */}
                   <View style={styles.cardMetaRow}>
                     <View style={styles.metaItem}>
-                      <Ionicons name="calendar-outline" size={14} color="#64748b" />
+                      <Ionicons name="calendar-outline" size={14} color={Palette.textSecondary} />
                       <Text style={[styles.metaText, isDark && styles.subtituloDark]}>
                         {rec.fecha}
                       </Text>
                     </View>
 
                     <View style={styles.metaItem}>
-                      <Ionicons name="time-outline" size={14} color="#64748b" />
+                      <Ionicons name="time-outline" size={14} color={Palette.textSecondary} />
                       <Text style={[styles.metaText, isDark && styles.subtituloDark]}>
                         {rec.hora} hs
                       </Text>
                     </View>
 
                     <View style={styles.metaItem}>
-                      <Ionicons name="medkit-outline" size={14} color="#64748b" />
+                      <Ionicons name="medkit-outline" size={14} color={Palette.textSecondary} />
                       <Text style={[styles.metaText, isDark && styles.subtituloDark]}>
                         {rec.veterinarioNombre}
                       </Text>
@@ -335,13 +333,12 @@ export default function RecordatoriosScreen() {
                   {/* Pie de tarjeta con indicador de estado y botón eliminar */}
                   <View style={[styles.cardFooter, isDark && styles.cardFooterDark]}>
                     <View style={styles.statusIndicatorRow}>
-                      <Ionicons name="notifications" size={14} color="#04b639" />
+                      <Ionicons name="notifications-outline" size={14} color={Palette.greenDeep} />
                       <Text style={styles.statusIndicatorText}>
                         Aviso automático configurado
                       </Text>
                     </View>
 
-                    {/* Botón de eliminación exclusivo para veterinarios */}
                     {isVeterinario && (
                       <TouchableOpacity
                         style={styles.deleteButton}
@@ -349,7 +346,7 @@ export default function RecordatoriosScreen() {
                         activeOpacity={0.7}
                         accessibilityLabel="Eliminar recordatorio"
                       >
-                        <Ionicons name="trash-outline" size={16} color="#ef4444" style={{ marginRight: 4 }} />
+                        <Ionicons name="trash-outline" size={14} color={Palette.redEmergency} style={{ marginRight: 4 }} />
                         <Text style={styles.deleteButtonText}>Eliminar</Text>
                       </TouchableOpacity>
                     )}
@@ -376,7 +373,7 @@ export default function RecordatoriosScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
     backgroundColor: '#09090b',
@@ -388,91 +385,94 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
+    backgroundColor: Palette.cardLight,
   },
   topBarDark: {
     borderBottomColor: '#27272a',
+    backgroundColor: '#09090b',
   },
   screenTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.h3,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   screenSubtitle: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
-  // Banner Veterinario
   vetHeaderBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Palette.greenSoft,
     borderBottomWidth: 1,
-    borderBottomColor: '#bbf7d0',
+    borderBottomColor: Palette.greenBorder,
     paddingHorizontal: 20,
     paddingVertical: 14,
     gap: 12,
   },
   vetHeaderBannerDark: {
-    backgroundColor: '#132e1f',
-    borderBottomColor: '#166534',
+    backgroundColor: 'rgba(8, 122, 67, 0.15)',
+    borderBottomColor: 'rgba(8, 122, 67, 0.3)',
   },
   vetBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#dcfce7',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 8,
+    backgroundColor: Palette.cardLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Radius.full,
     alignSelf: 'flex-start',
     marginBottom: 4,
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
   },
   vetBadgeDark: {
     backgroundColor: '#052e16',
   },
   vetBadgeText: {
-    fontSize: 10,
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#15803d',
+    color: Palette.greenDeep,
   },
   vetDoctorTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   vetDoctorDesc: {
-    fontSize: 11,
-    color: '#475569',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
     lineHeight: 15,
   },
   createBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    shadowColor: '#04b639',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: 9,
+    borderRadius: Radius.md,
+    ...Shadows.sm,
   },
   createBtnText: {
     color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
     marginLeft: 4,
   },
-  // Métricas
   metricsBanner: {
     flexDirection: 'row',
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.cardLight,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: Palette.borderLight,
     paddingVertical: 10,
     alignItems: 'center',
   },
@@ -489,19 +489,20 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   metricNumber: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: Typography.size.h3,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
   },
   metricLabel: {
-    fontSize: 11,
-    color: '#64748b',
-    fontWeight: '600',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
   metricDivider: {
     width: 1,
     height: 24,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: Palette.borderLight,
   },
   metricDividerDark: {
     backgroundColor: '#27272a',
@@ -517,10 +518,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: {
-    fontSize: 14,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
-  // Empty State
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -531,24 +532,28 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Palette.greenSoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
   },
   emptyIconCircleDark: {
-    backgroundColor: '#132e1f',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
   },
   emptyTitle: {
-    fontSize: 17,
+    fontSize: Typography.size.bodyLarge,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
     textAlign: 'center',
     marginBottom: 6,
   },
   emptySubtitle: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     textAlign: 'center',
     lineHeight: 18,
     marginBottom: 20,
@@ -556,28 +561,23 @@ const styles = StyleSheet.create({
   emptyActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     paddingHorizontal: 18,
     paddingVertical: 11,
-    borderRadius: 12,
+    borderRadius: Radius.md,
   },
   emptyActionBtnText: {
     color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.bodyBold,
   },
-  // Card
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6 },
-      android: { elevation: 2 },
-      web: { boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
-    }),
+    borderColor: Palette.borderLight,
+    ...Shadows.sm,
   },
   cardDark: {
     backgroundColor: '#18181b',
@@ -594,9 +594,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   recipientRow: {
     flexDirection: 'row',
@@ -605,54 +606,57 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   recipientText: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
   badgeTime: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: Radius.full,
   },
   badgeTimeText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
   },
   badgeToday: {
     backgroundColor: '#fef3c7',
   },
   badgeTodayText: {
     color: '#b45309',
-    fontSize: 11,
-    fontWeight: '800',
   },
   badgeUpcoming: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
   },
   badgeUpcomingText: {
-    color: '#15803d',
-    fontSize: 11,
-    fontWeight: '700',
+    color: Palette.greenDeep,
   },
   badgeOverdue: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: Palette.redSoft,
+    borderWidth: 1,
+    borderColor: Palette.redBorder,
   },
   badgeOverdueText: {
-    color: '#b91c1c',
-    fontSize: 11,
-    fontWeight: '700',
+    color: Palette.redEmergency,
   },
   descBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 10,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
     padding: 10,
     marginVertical: 8,
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
   },
   descBoxDark: {
     backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
   },
   descText: {
-    fontSize: 13,
-    color: '#334155',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textPrimary,
     lineHeight: 18,
   },
   descTextDark: {
@@ -671,8 +675,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metaText: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -680,7 +685,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: Palette.borderLight,
   },
   cardFooterDark: {
     borderTopColor: '#27272a',
@@ -691,22 +696,24 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   statusIndicatorText: {
-    fontSize: 11,
-    color: '#04b639',
-    fontWeight: '600',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
   },
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fef2f2',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
+    backgroundColor: Palette.redSoft,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: Radius.sm,
+    borderWidth: 1,
+    borderColor: Palette.redBorder,
   },
   deleteButtonText: {
-    fontSize: 12,
-    color: '#ef4444',
-    fontWeight: '700',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.redEmergency,
   },
   textDark: {
     color: '#fafafa',

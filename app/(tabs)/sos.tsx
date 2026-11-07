@@ -18,6 +18,7 @@ import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { usePets, toggleEstadoExtravio } from '@/services/petService';
 import { SosIcon } from '@/components/SosIcon';
 import { PUNTOS_VETERINARIOS_PILAR, LugarMascotas } from '@/constants/veterinarias';
+import { Palette, Typography, Radius, Shadows } from '@/constants/theme';
 
 // Centro de guardia principal 24hs de Pilar
 const GUARDIA_PRINCIPAL = {
@@ -29,14 +30,22 @@ const GUARDIA_PRINCIPAL = {
 
 // Veterinarias con guardia 24hs y servicios de internación de urgencia en Pilar
 const CLINICAS_URGENCIA: LugarMascotas[] = PUNTOS_VETERINARIOS_PILAR.filter(
-  (v) => v.guardia24hs || v.servicios?.some((s) => s.toLowerCase().includes('urgencia') || s.toLowerCase().includes('internación') || s.toLowerCase().includes('guardia'))
+  (v) =>
+    v.guardia24hs ||
+    v.servicios?.some((s) => {
+      const lower = s.toLowerCase();
+      return (
+        lower.includes('urgencia') ||
+        lower.includes('internación') ||
+        lower.includes('guardia')
+      );
+    })
 );
 
 export default function SosScreen() {
   const router = useRouter();
   const { isDark } = useAppTheme();
   const { pets } = usePets();
-  // Estado local que refleja el flag extraviada de cada mascota (id -> bool)
   const [estadoExtravio, setEstadoExtravio] = useState<Record<string, boolean>>({});
 
   const getExtraviada = (pet: { id: string; extraviada?: boolean }) =>
@@ -47,11 +56,10 @@ export default function SosScreen() {
     const nuevoEstado = !actual;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
     Alert.alert(
-      nuevoEstado ? '🚨 Activar Alerta de Extravío' : '✅ Marcar como En Casa',
+      nuevoEstado ? 'Activar Alerta de Extravío' : 'Marcar como En Casa',
       nuevoEstado
-        ? `¿Confirmas que ${pet.nombre} se ha extraviado? Cualquier persona que escanee la chapita QR / NFC verá la alerta y enviará su ubicación GPS.`
+        ? `¿Confirmas que ${pet.nombre} se ha extraviado? Cualquier persona que escanee la chapita QR / NFC verá la alerta y podrá enviar su ubicación GPS.`
         : `¿${pet.nombre} ya está a salvo en casa? Se desactivará la alerta de extravío.`,
-
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -71,42 +79,14 @@ export default function SosScreen() {
     );
   };
 
-  const handleOpenGuardiasMap = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    Alert.alert(
-      '🏥 Guardias y Clínicas de Urgencia',
-      '¿Cómo deseas buscar atención veterinaria de emergencia?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: '🗺️ Abrir en Google Maps',
-          onPress: () => {
-            const query = encodeURIComponent('veterinarias de guardia urgencias 24 horas');
-            const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-            Linking.openURL(url).catch(() => {
-              Alert.alert('Error', 'No se pudo abrir la aplicación de mapas.');
-            });
-          },
-        },
-        {
-          text: '🐾 Ver Mapa GPS VetLink',
-          onPress: () => {
-            router.push('/(tabs)/mapa');
-          },
-        },
-      ]
-    );
-  };
   const handleCallVetContact = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-
-    // Filtramos las mascotas que tienen teléfono de contacto cargado
     const petsConTelefono = pets.filter((p) => p.telefonoContacto && p.telefonoContacto.trim() !== '');
 
     if (petsConTelefono.length === 0) {
       Alert.alert(
-        '📞 Contacto de Emergencia',
-        'No tienes un teléfono de contacto o veterinario asignado en tus mascotas.\n\nPuedes agregarlo editando la ficha de tu mascota en la pestaña "Mis Mascotas".',
+        'Contacto de Emergencia',
+        'No tienes un teléfono de contacto o veterinario asignado en tus mascotas.\n\nPuedes agregarlo editando la ficha de tu mascota en "Mis Mascotas".',
         [
           { text: 'Entendido', style: 'cancel' },
           { text: 'Ir a Mascotas', onPress: () => router.push('/(tabs)/mascotas') },
@@ -118,8 +98,8 @@ export default function SosScreen() {
     if (petsConTelefono.length === 1) {
       const pet = petsConTelefono[0];
       Alert.alert(
-        '📞 Llamar a Contacto',
-        `¿Deseas llamar al teléfono de contacto registrado para ${pet.nombre} (${pet.telefonoContacto})?`,
+        'Llamar a Contacto',
+        `¿Deseas llamar al teléfono registrado para ${pet.nombre} (${pet.telefonoContacto})?`,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -135,7 +115,6 @@ export default function SosScreen() {
       return;
     }
 
-    // Si tiene más de una mascota con teléfono, le damos a elegir a cuál llamar
     const opciones = petsConTelefono.map((pet) => ({
       text: `${pet.nombre} (${pet.telefonoContacto})`,
       onPress: () => {
@@ -146,7 +125,7 @@ export default function SosScreen() {
     }));
 
     Alert.alert(
-      '📞 Selecciona el Contacto',
+      'Selecciona el Contacto',
       '¿A qué teléfono de contacto o veterinario deseas llamar?',
       [...opciones, { text: 'Cancelar', style: 'cancel' }]
     );
@@ -168,19 +147,19 @@ export default function SosScreen() {
     } catch {}
 
     Alert.alert(
-      '🚨 Llamada de Urgencia Veterinaria',
-      'Selecciona el centro médico al que deseas llamar inmediatamente:',
+      'Llamada de Urgencia Veterinaria',
+      'Selecciona el centro médico al que deseas llamar de inmediato:',
       [
         {
-          text: `🏥 Guardia 24hs San Roque (${GUARDIA_PRINCIPAL.telefono})`,
+          text: `Guardia 24hs San Roque (${GUARDIA_PRINCIPAL.telefono})`,
           onPress: () => handleCallNumber(GUARDIA_PRINCIPAL.telefono, 'Hospital San Roque (Guardia 24hs)'),
         },
         {
-          text: '🩺 Planeta Veterinario (011-6276-0994)',
+          text: 'Planeta Veterinario (011-6276-0994)',
           onPress: () => handleCallNumber('011-6276-0994', 'Planeta Veterinario'),
         },
         {
-          text: '🚑 Emergencias Generales (911)',
+          text: 'Línea de Emergencias 911',
           style: 'destructive',
           onPress: () => handleCallNumber('911', 'Línea 911'),
         },
@@ -215,11 +194,11 @@ export default function SosScreen() {
         {/* Cabecera con Alerta de Emergencia */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
-            <View style={styles.badgeSosHeader}>
+            <View style={[styles.badgeSosHeader, isDark && styles.badgeSosHeaderDark]}>
               <View style={styles.sosPulseDot} />
               <Text style={styles.badgeSosHeaderText}>CENTRO DE EMERGENCIAS</Text>
             </View>
-            <Text style={[styles.titulo, isDark && styles.textDark]}>Atención SOS 🐾</Text>
+            <Text style={[styles.titulo, isDark && styles.textDark]}>Atención SOS</Text>
             <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>
               Asistencia inmediata y guardia veterinaria activa
             </Text>
@@ -238,7 +217,7 @@ export default function SosScreen() {
           accessibilityLabel="Llamar a línea de emergencias veterinarias"
         >
           <View style={styles.heroSosIconWrapper}>
-            <SosIcon size={34} focused variant="custom" />
+            <SosIcon size={32} focused variant="custom" />
           </View>
 
           <View style={styles.heroSosContent}>
@@ -248,12 +227,12 @@ export default function SosScreen() {
             </Text>
           </View>
 
-          <Ionicons name="call" size={26} color="#ffffff" />
+          <Ionicons name="call-outline" size={24} color="#ffffff" />
         </Pressable>
 
         {/* ACCESOS RÁPIDOS DE EMERGENCIA */}
         <View style={styles.quickActionsGrid}>
-          {/* Clínicas de Guardia: Navega al mapa y hace ZOOM a la guardia 24hs */}
+          {/* Clínicas de Guardia */}
           <Pressable
             style={({ pressed }) => [
               styles.actionCard,
@@ -262,8 +241,8 @@ export default function SosScreen() {
             ]}
             onPress={() => handleGoToMapGuardia('vet-2')}
           >
-            <View style={[styles.actionIconCircle, { backgroundColor: '#fee2e2' }]}>
-              <MaterialCommunityIcons name="hospital-box" size={24} color="#dc2626" />
+            <View style={[styles.actionIconCircle, { backgroundColor: Palette.redSoft }]}>
+              <MaterialCommunityIcons name="hospital-box-outline" size={24} color={Palette.redEmergency} />
             </View>
             <Text style={[styles.actionCardTitle, isDark && styles.textDark]}>
               Guardias 24hs
@@ -273,7 +252,7 @@ export default function SosScreen() {
             </Text>
           </Pressable>
 
-          {/* Contacto Veterinario / Urgencia */}
+          {/* Contacto Veterinario */}
           <Pressable
             style={({ pressed }) => [
               styles.actionCard,
@@ -282,8 +261,8 @@ export default function SosScreen() {
             ]}
             onPress={handleCallVetContact}
           >
-            <View style={[styles.actionIconCircle, { backgroundColor: '#dcfce7' }]}>
-              <MaterialCommunityIcons name="phone-in-talk" size={24} color="#16a34a" />
+            <View style={[styles.actionIconCircle, { backgroundColor: Palette.greenSoft }]}>
+              <MaterialCommunityIcons name="phone-outgoing-outline" size={24} color={Palette.greenDeep} />
             </View>
             <Text style={[styles.actionCardTitle, isDark && styles.textDark]}>
               Veterinario SOS
@@ -296,11 +275,14 @@ export default function SosScreen() {
 
         {/* SECCIÓN DESTACADA: LÍNEAS DIRECTAS DE GUARDIAS Y URGENCIAS */}
         <View style={styles.seccionHeader}>
-          <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
-            Guardias Veterinarias y Urgencias 🏥
-          </Text>
+          <View style={styles.sectionHeaderRow}>
+            <MaterialCommunityIcons name="hospital-building" size={20} color={Palette.redEmergency} />
+            <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
+              Guardias y Urgencias
+            </Text>
+          </View>
           <Text style={[styles.seccionSubtitulo, isDark && styles.subtituloDark]}>
-            Números de contacto directo vinculados a las clínicas del mapa
+            Centros médicos con atención veterinaria permanente
           </Text>
         </View>
 
@@ -320,12 +302,12 @@ export default function SosScreen() {
                   <View style={styles.clinicBadgeRow}>
                     {(vet.enHuellapp ?? vet.enVetlink) ? (
                       <View style={styles.badgeHuellappOn}>
-                        <Ionicons name="checkmark-circle" size={11} color="#15803d" />
-                        <Text style={styles.badgeHuellappOnText}>EN RED HUELLAPP</Text>
+                        <Ionicons name="checkmark-circle-outline" size={12} color={Palette.greenDeep} />
+                        <Text style={styles.badgeHuellappOnText}>RED HUELLAPP</Text>
                       </View>
                     ) : (
-                      <View style={styles.badgeHuellappOff}>
-                        <Text style={styles.badgeHuellappOffText}>EXTERNA</Text>
+                      <View style={[styles.badgeHuellappOff, isDark && styles.badgeHuellappOffDark]}>
+                        <Text style={[styles.badgeHuellappOffText, isDark && styles.subtituloDark]}>EXTERNA</Text>
                       </View>
                     )}
                     {vet.guardia24hs && (
@@ -343,35 +325,41 @@ export default function SosScreen() {
                   <Text style={[styles.clinicName, isDark && styles.textDark]}>
                     {vet.nombre}
                   </Text>
-                  <Text style={[styles.clinicAddress, isDark && styles.subtituloDark]}>
-                    📍 {vet.direccion}
-                  </Text>
-                  <Text style={[styles.clinicHours, isDark && styles.subtituloDark]}>
-                    ⏰ {vet.horario}
-                  </Text>
+                  <View style={styles.clinicMetaRow}>
+                    <Ionicons name="location-outline" size={14} color={Palette.textMuted} />
+                    <Text style={[styles.clinicAddress, isDark && styles.subtituloDark]}>
+                      {vet.direccion}
+                    </Text>
+                  </View>
+                  <View style={styles.clinicMetaRow}>
+                    <Ionicons name="time-outline" size={14} color={Palette.greenDeep} />
+                    <Text style={[styles.clinicHours, isDark && styles.clinicHoursDark]}>
+                      {vet.horario}
+                    </Text>
+                  </View>
                 </View>
               </View>
 
               <View style={styles.clinicActionButtons}>
-                {/* Botón de Llamar al Teléfono Real de la Veterinaria */}
+                {/* Botón de Llamar al Teléfono Real */}
                 <TouchableOpacity
                   style={styles.btnCallClinic}
                   activeOpacity={0.8}
                   onPress={() => handleCallNumber(vet.telefono, vet.nombre)}
                 >
-                  <Ionicons name="call" size={16} color="#ffffff" />
+                  <Ionicons name="call-outline" size={15} color="#ffffff" />
                   <Text style={styles.btnCallClinicText}>Llamar ({vet.telefono})</Text>
                 </TouchableOpacity>
 
-                {/* Botón de Ver en Mapa y hacer Zoom en esa veterinaria */}
+                {/* Botón de Ver en Mapa con Zoom */}
                 <TouchableOpacity
                   style={[styles.btnMapClinic, isDark && styles.btnMapClinicDark]}
                   activeOpacity={0.8}
                   onPress={() => handleGoToMapGuardia(vet.id)}
                 >
-                  <Ionicons name="map-outline" size={16} color={isDark ? '#4ade80' : '#04b639'} />
+                  <Ionicons name="map-outline" size={15} color={Palette.greenDeep} />
                   <Text style={[styles.btnMapClinicText, isDark && styles.btnMapClinicTextDark]}>
-                    Ver en mapa (Zoom)
+                    Ver en mapa
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -379,11 +367,24 @@ export default function SosScreen() {
           ))}
         </View>
 
+        {/* SECCIÓN: ESTADO DE EXTRAVÍO POR MASCOTA */}
+        <View style={styles.seccionHeader}>
+          <View style={styles.sectionHeaderRow}>
+            <Ionicons name="search-outline" size={20} color={Palette.greenDeep} />
+            <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
+              Estado de Extravío
+            </Text>
+          </View>
+          <Text style={[styles.seccionSubtitulo, isDark && styles.subtituloDark]}>
+            Activa la alerta para que quien escanee la chapita pueda enviarte su ubicación
+          </Text>
+        </View>
+
         {pets.length === 0 ? (
           <View style={[styles.emptyPetsCard, isDark && styles.cardDark]}>
-            <Ionicons name="paw-outline" size={32} color={isDark ? '#71717a' : '#9ca3af'} />
+            <Ionicons name="paw-outline" size={32} color={Palette.textMuted} />
             <Text style={[styles.emptyPetsText, isDark && styles.subtituloDark]}>
-              No tienes mascotas registradas aún. Registra una mascota para disponer de su historial clínico en urgencias.
+              No tienes mascotas registradas aún. Registra una mascota para acceder a su ficha clínica y control de extravío.
             </Text>
             <Pressable
               style={styles.btnAddPet}
@@ -393,134 +394,102 @@ export default function SosScreen() {
             </Pressable>
           </View>
         ) : (
-          pets.map((pet) => (
-            <View
-              key={pet.id}
-              style={[styles.petEmergencyCard, isDark && styles.petEmergencyCardDark]}
-            >
-              <View style={styles.petCardTop}>
-                <View style={styles.petAvatarCircle}>
-                  <Text style={styles.petAvatarEmoji}>
-                    {pet.especie?.toLowerCase().includes('gato') ? '🐱' : '🐶'}
-                  </Text>
-                </View>
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={[styles.petName, isDark && styles.textDark]}>
-                    {pet.nombre}
-                  </Text>
-                  <Text style={[styles.petBreed, isDark && styles.subtituloDark]}>
-                    {pet.especie} • {pet.raza || 'Mestizo'}
-                  </Text>
-                </View>
-                <View style={styles.petWeightBadge}>
-                  <Text style={styles.petWeightText}>{pet.peso ? `${pet.peso} kg` : 'Sin peso'}</Text>
-                </View>
-              </View>
-
-              <View style={styles.petDetailsRow}>
-                <View style={styles.petDetailItem}>
-                  <Text style={styles.petDetailLabel}>Sexo</Text>
-                  <Text style={[styles.petDetailVal, isDark && styles.textDark]}>
-                    {pet.sexo || 'No informado'}
-                  </Text>
-                </View>
-                <View style={styles.petDetailItem}>
-                  <Text style={styles.petDetailLabel}>Edad</Text>
-                  <Text style={[styles.petDetailVal, isDark && styles.textDark]}>
-                    {pet.edad ? `${pet.edad} años` : 'No informada'}
-                  </Text>
-                </View>
-                <View style={styles.petDetailItem}>
-                  <Text style={styles.petDetailLabel}>Tel. Contacto</Text>
-                  <Text style={[styles.petDetailVal, isDark && styles.textDark]}>
-                    {pet.telefonoContacto || 'No informado'}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          ))
-        )}
-
-        {/* SECCIÓN: ESTADO DE EXTRAVÍO POR MASCOTA */}
-        {pets.length > 0 && (
-          <>
-            <View style={styles.seccionHeader}>
-              <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
-                🔍 Estado de Extravío
-              </Text>
-              <Text style={[styles.seccionSubtitulo, isDark && styles.subtituloDark]}>
-                Activá la alerta para que cualquiera que escanee el collar pueda contactarte
-              </Text>
-            </View>
-
-            {pets.map((pet) => {
-              const extraviada = getExtraviada(pet);
-              return (
-                <View
-                  key={`extravio-${pet.id}`}
-                  style={[
-                    styles.extravioCard,
-                    isDark && styles.extravioCardDark,
-                    extraviada && styles.extravioCardActive,
-                  ]}
-                >
-                  <View style={styles.extravioCardLeft}>
-                    <View style={[styles.petAvatarCircle, extraviada && { backgroundColor: '#fee2e2' }]}>
-                      <Text style={styles.petAvatarEmoji}>
-                        {pet.especie?.toLowerCase().includes('gato') ? '🐱' : '🐶'}
-                      </Text>
-                    </View>
-                    <View style={{ marginLeft: 12, flex: 1 }}>
-                      <Text style={[styles.petName, isDark && styles.textDark]}>{pet.nombre}</Text>
-                      <Text style={[styles.petBreed, isDark && styles.subtituloDark]}>
-                        {extraviada ? '🚨 Alerta de extravío activa' : '✅ En casa — sin alerta'}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <TouchableOpacity
+          pets.map((pet) => {
+            const extraviada = getExtraviada(pet);
+            const isGato = pet.especie?.toLowerCase().includes('gato');
+            return (
+              <View
+                key={`extravio-${pet.id}`}
+                style={[
+                  styles.extravioCard,
+                  isDark && styles.extravioCardDark,
+                  extraviada && styles.extravioCardActive,
+                ]}
+              >
+                <View style={styles.extravioCardLeft}>
+                  <View
                     style={[
-                      styles.btnToggleExtravio,
-                      extraviada ? styles.btnExtraviadaActive : styles.btnExtraviadaInactive,
+                      styles.petAvatarCircle,
+                      extraviada ? { backgroundColor: Palette.redSoft } : { backgroundColor: Palette.greenSoft },
                     ]}
-                    onPress={() => handleToggleExtravio(pet)}
-                    activeOpacity={0.8}
                   >
-                    <Text style={styles.btnToggleExtravioText}>
-                      {extraviada ? '🚨 Extraviada' : '✅ En Casa'}
+                    <MaterialCommunityIcons
+                      name={isGato ? 'cat' : 'dog'}
+                      size={22}
+                      color={extraviada ? Palette.redEmergency : Palette.greenDeep}
+                    />
+                  </View>
+                  <View style={{ marginLeft: 12, flex: 1 }}>
+                    <Text style={[styles.petName, isDark && styles.textDark]}>{pet.nombre}</Text>
+                    <Text style={[styles.petBreed, isDark && styles.subtituloDark]}>
+                      {extraviada ? 'Alerta activa — en búsqueda' : 'En casa — protegido'}
                     </Text>
-                  </TouchableOpacity>
+                  </View>
                 </View>
-              );
-            })}
-          </>
+
+                <TouchableOpacity
+                  style={[
+                    styles.btnToggleExtravio,
+                    extraviada ? styles.btnExtraviadaActive : styles.btnExtraviadaInactive,
+                  ]}
+                  onPress={() => handleToggleExtravio(pet)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name={extraviada ? 'alert-circle-outline' : 'shield-checkmark-outline'}
+                    size={14}
+                    color="#ffffff"
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text style={styles.btnToggleExtravioText}>
+                    {extraviada ? 'Extraviada' : 'En Casa'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })
         )}
 
         {/* GUÍA DE PRIMEROS AUXILIOS VETERINARIOS */}
         <View style={styles.seccionHeader}>
-          <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
-            Primeros Auxilios Rápidos 🩺
+          <View style={styles.sectionHeaderRow}>
+            <MaterialCommunityIcons name="medical-bag" size={20} color={Palette.greenDeep} />
+            <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
+              Primeros Auxilios Rápidos
+            </Text>
+          </View>
+          <Text style={[styles.seccionSubtitulo, isDark && styles.subtituloDark]}>
+            Instrucciones clave mientras te trasladas a la guardia
           </Text>
         </View>
 
         <View style={[styles.faqCard, isDark && styles.faqCardDark]}>
-          <Text style={styles.faqTitle}>⚠️ Intoxicación o Envenenamiento</Text>
+          <View style={styles.faqHeaderRow}>
+            <Ionicons name="warning-outline" size={18} color="#D97706" />
+            <Text style={styles.faqTitle}>Intoxicación o Envenenamiento</Text>
+          </View>
           <Text style={[styles.faqBody, isDark && styles.subtituloDark]}>
-            No induzcas el vómito sin indicación médica, ya que ciertas sustancias cáusticas queman al subir. Acude urgente con la muestra o envase del tóxico.
+            No induzcas el vómito sin indicación veterinaria, ya que sustancias cáusticas queman el tracto al subir. Acude urgente con la muestra o envase del tóxico.
           </Text>
         </View>
 
         <View style={[styles.faqCard, isDark && styles.faqCardDark]}>
-          <Text style={styles.faqTitle}>🌡️ Golpe de Calor</Text>
+          <View style={styles.faqHeaderRow}>
+            <Ionicons name="sunny-outline" size={18} color="#D97706" />
+            <Text style={styles.faqTitle}>Golpe de Calor</Text>
+          </View>
           <Text style={[styles.faqBody, isDark && styles.subtituloDark]}>
             Traslada a la mascota a la sombra, humedece patas, ingle y cabeza con agua fresca (nunca helada). Ofrécele agua a temperatura ambiente en pequeños sorbos.
           </Text>
         </View>
 
         <View style={[styles.faqCard, isDark && styles.faqCardDark]}>
-          <Text style={styles.faqTitle}>🩸 Hemorragias y Heridas</Text>
+          <View style={styles.faqHeaderRow}>
+            <Ionicons name="fitness-outline" size={18} color="#D97706" />
+            <Text style={styles.faqTitle}>Hemorragias y Heridas</Text>
+          </View>
           <Text style={[styles.faqBody, isDark && styles.subtituloDark]}>
-            Aplica presión constante y firme con gasas limpias sobre la herida para cortar el sangrado y traslada de inmediato al centro de atención.
+            Aplica presión constante y firme con gasas limpias sobre la herida para contener el sangrado y traslada de inmediato al centro de atención.
           </Text>
         </View>
       </ScrollView>
@@ -531,7 +500,7 @@ export default function SosScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
     backgroundColor: '#09090b',
@@ -549,34 +518,43 @@ const styles = StyleSheet.create({
   badgeSosHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: Palette.redSoft,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: Radius.full,
     alignSelf: 'flex-start',
-    marginBottom: 6,
+    marginBottom: 8,
     gap: 6,
+    borderWidth: 1,
+    borderColor: Palette.redBorder,
+  },
+  badgeSosHeaderDark: {
+    backgroundColor: 'rgba(217, 74, 74, 0.15)',
+    borderColor: 'rgba(217, 74, 74, 0.3)',
   },
   sosPulseDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#ef4444',
+    backgroundColor: Palette.redEmergency,
   },
   badgeSosHeaderText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#dc2626',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.redEmergency,
     letterSpacing: 0.5,
   },
   titulo: {
     fontSize: 26,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   subtitulo: {
-    color: '#64748b',
-    fontSize: 14,
+    color: Palette.textSecondary,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
     marginTop: 4,
   },
   subtituloDark: {
@@ -588,29 +566,25 @@ const styles = StyleSheet.create({
 
   // Hero SOS Button
   heroSosButton: {
-    backgroundColor: '#dc2626',
-    borderRadius: 20,
+    backgroundColor: Palette.redEmergency,
+    borderRadius: Radius.xl,
     paddingVertical: 18,
     paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
-    shadowColor: '#dc2626',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 8,
+    ...Shadows.md,
   },
   heroSosButtonPressed: {
     transform: [{ scale: 0.98 }],
-    opacity: 0.9,
+    opacity: 0.92,
   },
   heroSosIconWrapper: {
     backgroundColor: '#ffffff',
     width: 48,
     height: 48,
-    borderRadius: 14,
+    borderRadius: Radius.md,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -619,15 +593,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
   },
   heroSosTitle: {
-    fontSize: 18,
-    fontWeight: '900',
+    fontSize: Typography.size.h3,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
     color: '#ffffff',
     letterSpacing: 0.5,
   },
   heroSosSubtitle: {
-    fontSize: 12,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
     color: '#fee2e2',
-    fontWeight: '500',
     marginTop: 2,
   },
 
@@ -639,276 +614,93 @@ const styles = StyleSheet.create({
   },
   actionCard: {
     flex: 1,
-    backgroundColor: '#f8fafc',
-    borderRadius: 16,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
+    ...Shadows.sm,
   },
   actionCardDark: {
     backgroundColor: '#18181b',
     borderColor: '#27272a',
   },
   cardPressed: {
-    opacity: 0.85,
+    opacity: 0.88,
     transform: [{ scale: 0.98 }],
   },
   actionIconCircle: {
     width: 44,
     height: 44,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
   },
   actionCardTitle: {
-    fontSize: 14,
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
     marginBottom: 2,
   },
   actionCardDesc: {
-    fontSize: 11,
-    color: '#64748b',
-    lineHeight: 15,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
+    lineHeight: 16,
   },
 
   // Sección títulos
   seccionHeader: {
-    marginTop: 6,
+    marginTop: 8,
     marginBottom: 12,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   seccionTitulo: {
-    fontSize: 18,
+    fontSize: Typography.size.h3,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
   },
   seccionSubtitulo: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
 
-  // Ficha de mascotas
-  petEmergencyCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#fee2e2',
-    borderLeftWidth: 4,
-    borderLeftColor: '#ef4444',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  petEmergencyCardDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#3f1c1c',
-    borderLeftColor: '#ef4444',
-  },
-  petCardTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  petAvatarCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#fee2e2',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  petAvatarEmoji: {
-    fontSize: 22,
-  },
-  petName: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  petBreed: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 1,
-  },
-  petWeightBadge: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  petWeightText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  petDetailsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-  },
-  petDetailItem: {
-    flex: 1,
-  },
-  petDetailLabel: {
-    fontSize: 10,
-    color: '#94a3b8',
-    textTransform: 'uppercase',
-    fontWeight: '700',
-  },
-  petDetailVal: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#334155',
-    marginTop: 2,
-  },
-
-  emptyPetsCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  cardDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
-  },
-  emptyPetsText: {
-    fontSize: 13,
-    color: '#64748b',
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 14,
-    lineHeight: 18,
-  },
-  btnAddPet: {
-    backgroundColor: '#04b639',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  btnAddPetText: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-
-  // Extravío Cards
-  extravioCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  extravioCardDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
-  },
-  extravioCardActive: {
-    borderColor: '#fca5a5',
-    borderLeftWidth: 4,
-    borderLeftColor: '#ef4444',
-  },
-  extravioCardLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 10,
-  },
-  btnToggleExtravio: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  btnExtraviadaActive: {
-    backgroundColor: '#ef4444',
-  },
-  btnExtraviadaInactive: {
-    backgroundColor: '#04b639',
-  },
-  btnToggleExtravioText: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-
-  // FAQs
-  faqCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: '#f59e0b',
-  },
-  faqCardDark: {
-    backgroundColor: '#18181b',
-    borderLeftColor: '#f59e0b',
-  },
-  faqTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#d97706',
-    marginBottom: 4,
-  },
-  faqBody: {
-    fontSize: 12,
-    color: '#475569',
-    lineHeight: 17,
-  },
-
-  // Lista de clínicas de urgencia
+  // Clínicas de Urgencia
   clinicasUrgenciaList: {
     marginBottom: 20,
     gap: 12,
   },
   clinicEmergencyCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    borderColor: Palette.borderLight,
+    ...Shadows.sm,
   },
   clinicEmergencyCardDark: {
     backgroundColor: '#18181b',
     borderColor: '#27272a',
   },
   clinicEmergencyCardHighlighted: {
-    borderColor: '#fca5a5',
-    backgroundColor: '#fff5f5',
-    borderLeftWidth: 5,
-    borderLeftColor: '#dc2626',
+    borderColor: Palette.redBorder,
+    backgroundColor: Palette.redSoft,
+    borderLeftWidth: 4,
+    borderLeftColor: Palette.redEmergency,
   },
   clinicEmergencyCardHighlightedDark: {
-    borderColor: '#7f1d1d',
-    backgroundColor: '#1c1315',
-    borderLeftColor: '#ef4444',
+    borderColor: 'rgba(217, 74, 74, 0.4)',
+    backgroundColor: 'rgba(217, 74, 74, 0.08)',
+    borderLeftColor: Palette.redEmergency,
   },
   clinicCardHeader: {
     flexDirection: 'row',
@@ -925,83 +717,102 @@ const styles = StyleSheet.create({
   badgeHuellappOn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#dcfce7',
-    paddingHorizontal: 7,
+    backgroundColor: Palette.greenSoft,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
-    gap: 3,
+    borderRadius: Radius.full,
+    gap: 4,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   badgeHuellappOnText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#15803d',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.greenDeep,
     letterSpacing: 0.3,
   },
   badgeHuellappOff: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f1f5f9',
-    paddingHorizontal: 7,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: Radius.full,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
+  },
+  badgeHuellappOffDark: {
+    backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
   },
   badgeHuellappOffText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#64748b',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.textMuted,
     letterSpacing: 0.3,
   },
   badgeGuardia: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fee2e2',
+    backgroundColor: Palette.redSoft,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: Radius.full,
     gap: 4,
+    borderWidth: 1,
+    borderColor: Palette.redBorder,
   },
   badgeGuardiaText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#dc2626',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.redEmergency,
     letterSpacing: 0.4,
   },
   badgeTipo: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 7,
+    backgroundColor: Palette.cyanLight,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: Radius.full,
   },
   badgeTipoDark: {
     backgroundColor: '#27272a',
   },
   badgeTipoText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#475569',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.textSecondary,
   },
   badgeTipoTextDark: {
     color: '#cbd5e1',
   },
   clinicName: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.bodyLarge,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
+    marginBottom: 6,
+  },
+  clinicMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginBottom: 4,
   },
   clinicAddress: {
-    fontSize: 13,
-    color: '#64748b',
-    marginBottom: 2,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
+    flex: 1,
   },
   clinicHours: {
-    fontSize: 12,
-    color: '#059669',
-    fontWeight: '600',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
+  },
+  clinicHoursDark: {
+    color: Palette.greenPrimary,
   },
   clinicActionButtons: {
     flexDirection: 'row',
@@ -1013,40 +824,177 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#dc2626',
+    backgroundColor: Palette.redEmergency,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     gap: 6,
   },
   btnCallClinicText: {
     color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
   },
   btnMapClinic: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Palette.greenSoft,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderColor: Palette.greenBorder,
     paddingVertical: 10,
     paddingHorizontal: 8,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     gap: 4,
   },
   btnMapClinicDark: {
-    backgroundColor: '#064e3b26',
-    borderColor: '#065f46',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+    borderColor: 'rgba(8, 122, 67, 0.4)',
   },
   btnMapClinicText: {
-    color: '#15803d',
-    fontSize: 12,
-    fontWeight: '700',
+    color: Palette.greenDeep,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
   },
   btnMapClinicTextDark: {
-    color: '#4ade80',
+    color: '#86efac',
+  },
+
+  // Empty state
+  emptyPetsCard: {
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.lg,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
+  },
+  cardDark: {
+    backgroundColor: '#18181b',
+    borderColor: '#27272a',
+  },
+  emptyPetsText: {
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 14,
+    lineHeight: 18,
+  },
+  btnAddPet: {
+    backgroundColor: Palette.greenDeep,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: Radius.md,
+  },
+  btnAddPetText: {
+    color: '#ffffff',
+    fontFamily: Typography.family.bodyBold,
+    fontSize: Typography.size.bodySmall,
+  },
+
+  // Extravío Cards
+  extravioCard: {
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.lg,
+    padding: 14,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
+    ...Shadows.sm,
+  },
+  extravioCardDark: {
+    backgroundColor: '#18181b',
+    borderColor: '#27272a',
+  },
+  extravioCardActive: {
+    borderColor: Palette.redBorder,
+    borderLeftWidth: 4,
+    borderLeftColor: Palette.redEmergency,
+    backgroundColor: Palette.redSoft,
+  },
+  extravioCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
+  },
+  petAvatarCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  petName: {
+    fontSize: Typography.size.bodyLarge,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
+  },
+  petBreed: {
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
+    marginTop: 1,
+  },
+  btnToggleExtravio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: Radius.md,
+  },
+  btnExtraviadaActive: {
+    backgroundColor: Palette.redEmergency,
+  },
+  btnExtraviadaInactive: {
+    backgroundColor: Palette.greenDeep,
+  },
+  btnToggleExtravioText: {
+    color: '#ffffff',
+    fontFamily: Typography.family.bodyBold,
+    fontSize: Typography.size.caption,
+  },
+
+  // FAQs
+  faqCard: {
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.md,
+    padding: 14,
+    marginBottom: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: Palette.peachWarm,
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
+  },
+  faqCardDark: {
+    backgroundColor: '#18181b',
+    borderLeftColor: Palette.peachWarm,
+    borderColor: '#27272a',
+  },
+  faqHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  faqTitle: {
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: '#b45309',
+  },
+  faqBody: {
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
+    lineHeight: 18,
   },
 });

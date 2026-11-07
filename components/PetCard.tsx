@@ -3,6 +3,7 @@
  * Componente modular para representar la ficha resumida de una mascota.
  * Incluye avatar o placeholder de imagen, badges de especie, género, identificación,
  * estado de vinculación NFC y acciones interactivas.
+ * Estilo visual: Custom Modern Friendly Pet UI (HuellaApp)
  */
 
 import React from 'react';
@@ -17,7 +18,9 @@ import {
 import { Image } from 'expo-image';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type { Pet } from '@/services/petService';
+import { Palette, FontFamily } from '@/constants/theme';
 
 export interface PetCardProps {
   pet: Pet;
@@ -40,11 +43,12 @@ export const PetCard = React.memo(function PetCard({
 }: PetCardProps) {
   const isMale = pet.sexo?.toLowerCase().includes('macho');
   const isNfcLinked = pet.nfcStatus === 'linked';
+  const isGato = pet.especie?.toLowerCase().includes('gato');
 
   return (
     <TouchableOpacity
       style={[styles.card, isDark && styles.cardDark]}
-      activeOpacity={0.85}
+      activeOpacity={0.88}
       onPress={() => onPress(pet)}
     >
       <View style={styles.cardHeader}>
@@ -65,7 +69,11 @@ export const PetCard = React.memo(function PetCard({
             />
           ) : (
             <View style={[styles.avatarFallback, isDark && styles.avatarFallbackDark]}>
-              <MaterialIcons name="pets" size={32} color={isDark ? '#4ade80' : '#15803d'} />
+              <Ionicons
+                name="paw-outline"
+                size={34}
+                color={isDark ? Palette.greenPrimary : Palette.greenDeep}
+              />
             </View>
           )}
 
@@ -75,14 +83,17 @@ export const PetCard = React.memo(function PetCard({
             </View>
           ) : (
             <View style={[styles.avatarCameraBadge, isDark && styles.avatarCameraBadgeDark]}>
-              <Ionicons name="camera" size={11} color="#ffffff" />
+              <Ionicons name="camera-outline" size={11} color="#ffffff" />
             </View>
           )}
 
+          {/* Badge de Especie con ícono vectorial en lugar de emoji */}
           <View style={[styles.speciesBadge, isDark && styles.speciesBadgeDark]}>
-            <Text style={styles.speciesBadgeText}>
-              {pet.especie === 'Gato' ? '🐱' : '🐶'}
-            </Text>
+            <MaterialCommunityIcons
+              name={isGato ? 'cat' : 'dog'}
+              size={13}
+              color={isDark ? Palette.greenPrimary : Palette.greenDeep}
+            />
           </View>
         </TouchableOpacity>
 
@@ -93,18 +104,18 @@ export const PetCard = React.memo(function PetCard({
             <View
               style={[
                 styles.genderBadge,
-                { backgroundColor: isMale ? (isDark ? '#1e3a8a' : '#dbeafe') : (isDark ? '#831843' : '#fce7f3') },
+                { backgroundColor: isMale ? (isDark ? '#1e3a8a33' : '#ebf4ff') : (isDark ? '#83184333' : '#fff0f5') },
               ]}
             >
               <Ionicons
-                name={isMale ? 'male' : 'female'}
+                name={isMale ? 'male-outline' : 'female-outline'}
                 size={12}
-                color={isMale ? (isDark ? '#93c5fd' : '#1d4ed8') : (isDark ? '#f472b6' : '#be185d')}
+                color={isMale ? (isDark ? '#93c5fd' : '#2563eb') : (isDark ? '#f472b6' : '#db2777')}
               />
               <Text
                 style={[
                   styles.genderText,
-                  { color: isMale ? (isDark ? '#93c5fd' : '#1d4ed8') : (isDark ? '#f472b6' : '#be185d') },
+                  { color: isMale ? (isDark ? '#93c5fd' : '#2563eb') : (isDark ? '#f472b6' : '#db2777') },
                 ]}
               >
                 {pet.sexo}
@@ -119,14 +130,14 @@ export const PetCard = React.memo(function PetCard({
             </View>
             {isNfcLinked ? (
               <View style={[styles.nfcChipLinked, isDark && styles.nfcChipLinkedDark]}>
-                <MaterialIcons name="nfc" size={12} color={isDark ? '#4ade80' : '#15803d'} />
+                <MaterialIcons name="nfc" size={12} color={isDark ? '#4ade80' : Palette.greenDeep} />
                 <Text style={[styles.nfcChipLinkedText, isDark && styles.nfcChipLinkedTextDark]}>
                   NFC Activo
                 </Text>
               </View>
             ) : (
               <View style={[styles.nfcChipUnlinked, isDark && styles.nfcChipUnlinkedDark]}>
-                <MaterialIcons name="nfc" size={12} color={isDark ? '#71717a' : '#9ca3af'} />
+                <MaterialIcons name="nfc" size={12} color={isDark ? '#71717a' : Palette.textSecondary} />
                 <Text style={[styles.nfcChipUnlinkedText, isDark && styles.nfcChipUnlinkedTextDark]}>
                   Sin NFC
                 </Text>
@@ -141,14 +152,14 @@ export const PetCard = React.memo(function PetCard({
           {/* Fila de Peso y Edad */}
           <View style={styles.metricsRow}>
             <View style={[styles.metricItem, isDark && styles.metricItemDark]}>
-              <MaterialIcons name="scale" size={14} color="#04b639" />
+              <MaterialCommunityIcons name="scale" size={13} color={Palette.greenPrimary} />
               <Text style={[styles.metricText, isDark && styles.metricTextDark]}>
                 {pet.peso}
               </Text>
             </View>
 
             <View style={[styles.metricItem, isDark && styles.metricItemDark]}>
-              <MaterialIcons name="cake" size={14} color="#04b639" />
+              <MaterialCommunityIcons name="cake-variant-outline" size={13} color={Palette.greenPrimary} />
               <Text style={[styles.metricText, isDark && styles.metricTextDark]}>
                 {pet.edad}
               </Text>
@@ -157,10 +168,10 @@ export const PetCard = React.memo(function PetCard({
         </View>
 
         <View style={styles.arrowContainer}>
-          <MaterialIcons
-            name="chevron-right"
-            size={24}
-            color={isDark ? '#71717a' : '#a1a1aa'}
+          <Ionicons
+            name="chevron-forward-outline"
+            size={20}
+            color={isDark ? Palette.textSecondaryDark : Palette.textSecondary}
           />
         </View>
       </View>
@@ -175,8 +186,8 @@ export const PetCard = React.memo(function PetCard({
           }}
           activeOpacity={0.8}
         >
-          <MaterialIcons name="qr-code" size={16} color="#04b639" />
-          <Text style={styles.quickActionBtnText}>QR / 3D</Text>
+          <Ionicons name="qr-code-outline" size={15} color={Palette.greenDeep} />
+          <Text style={[styles.quickActionBtnText, isDark && styles.quickActionBtnTextDark]}>QR / 3D</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -194,13 +205,14 @@ export const PetCard = React.memo(function PetCard({
         >
           <MaterialIcons
             name="nfc"
-            size={16}
-            color={isNfcLinked ? (isDark ? '#4ade80' : '#15803d') : '#04b639'}
+            size={15}
+            color={isNfcLinked ? (isDark ? '#4ade80' : Palette.greenDeep) : (isDark ? '#22C55E' : Palette.greenDeep)}
           />
           <Text
             style={[
               styles.quickActionBtnText,
-              isNfcLinked && { color: isDark ? '#4ade80' : '#15803d', fontWeight: '700' },
+              isDark && styles.quickActionBtnTextDark,
+              isNfcLinked && { color: isDark ? '#4ade80' : Palette.greenDeep, fontFamily: FontFamily.bodyBold },
             ]}
           >
             {isNfcLinked ? '✓ NFC Vinculado' : 'Vincular NFC'}
@@ -215,42 +227,42 @@ export default PetCard;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#f0fdf4',
-    borderRadius: 16,
+    backgroundColor: Palette.surfaceLight,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#dcfce7',
+    borderColor: Palette.borderLight,
     marginBottom: 14,
-    padding: 14,
+    padding: 16,
     ...Platform.select({
       ios: {
-        shadowColor: '#15803d',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.07,
+        shadowColor: Palette.greenDeep,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.05,
         shadowRadius: 8,
       },
       android: {
         elevation: 2,
       },
       web: {
-        boxShadow: '0 2px 8px rgba(21, 128, 61, 0.07)',
+        boxShadow: '0 2px 8px rgba(8, 122, 67, 0.05)',
       },
     }),
   },
   cardDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
+        shadowOpacity: 0.25,
         shadowRadius: 6,
       },
       android: {
         elevation: 2,
       },
       web: {
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
       },
     }),
   },
@@ -264,22 +276,22 @@ const styles = StyleSheet.create({
   avatar: {
     width: 72,
     height: 72,
-    borderRadius: 16,
-    backgroundColor: '#f1f5f9',
+    borderRadius: 18,
+    backgroundColor: Palette.surfaceSubtle,
   },
   avatarFallback: {
     width: 72,
     height: 72,
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#dcfce7',
+    borderRadius: 18,
+    backgroundColor: Palette.greenSoft,
+    borderWidth: 1.5,
+    borderColor: Palette.greenBorder,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarFallbackDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
+    backgroundColor: '#133324',
+    borderColor: '#1F543B',
   },
   avatarLoadingOverlay: {
     position: 'absolute',
@@ -288,45 +300,47 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    borderRadius: 16,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarCameraBadge: {
     position: 'absolute',
-    bottom: 2,
-    left: 2,
-    backgroundColor: '#04b639',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    bottom: -2,
+    left: -2,
+    backgroundColor: Palette.greenPrimary,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: '#ffffff',
   },
   avatarCameraBadgeDark: {
-    borderColor: '#18181b',
+    borderColor: Palette.surfaceDark,
   },
   speciesBadge: {
     position: 'absolute',
-    bottom: -4,
-    right: -4,
+    bottom: -3,
+    right: -3,
     backgroundColor: '#ffffff',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
   },
   speciesBadgeDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
-  },
-  speciesBadgeText: {
-    fontSize: 13,
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
   },
   petInfo: {
     flex: 1,
@@ -340,11 +354,11 @@ const styles = StyleSheet.create({
   },
   petName: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#14532d',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
   },
   petNameDark: {
-    color: '#f4f4f5',
+    color: Palette.textPrimaryDark,
   },
   genderBadge: {
     flexDirection: 'row',
@@ -356,15 +370,16 @@ const styles = StyleSheet.create({
   },
   genderText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
   },
   petBreed: {
     fontSize: 13,
-    color: '#6b7280',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
     marginBottom: 8,
   },
   petBreedDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   badgesRow: {
     flexDirection: 'row',
@@ -373,45 +388,45 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   idChip: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Palette.surfaceSubtle,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
   },
   idChipDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
+    backgroundColor: '#20302B',
+    borderColor: Palette.borderDark,
   },
   idChipText: {
     fontSize: 11,
-    fontWeight: '800',
-    color: '#334155',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.textPrimary,
     letterSpacing: 0.5,
   },
   idChipTextDark: {
-    color: '#e4e4e7',
+    color: Palette.textPrimaryDark,
   },
   nfcChipLinked: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#ecfdf5',
+    backgroundColor: Palette.greenSoft,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   nfcChipLinkedDark: {
-    backgroundColor: '#064e3b33',
-    borderColor: '#059669',
+    backgroundColor: '#133324',
+    borderColor: '#1F543B',
   },
   nfcChipLinkedText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#15803d',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.greenDeep,
   },
   nfcChipLinkedTextDark: {
     color: '#4ade80',
@@ -420,24 +435,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Palette.surfaceSubtle,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Palette.borderLight,
   },
   nfcChipUnlinkedDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
+    backgroundColor: '#20302B',
+    borderColor: Palette.borderDark,
   },
   nfcChipUnlinkedText: {
     fontSize: 11,
-    fontWeight: '500',
-    color: '#6b7280',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
   },
   nfcChipUnlinkedTextDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   metricsRow: {
     flexDirection: 'row',
@@ -446,25 +461,25 @@ const styles = StyleSheet.create({
   metricItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Palette.surfaceSubtle,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
     gap: 4,
     borderWidth: 1,
-    borderColor: '#dcfce7',
+    borderColor: Palette.borderLight,
   },
   metricItemDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
+    backgroundColor: '#20302B',
+    borderColor: Palette.borderDark,
   },
   metricText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#334155',
+    fontFamily: FontFamily.bodySemiBold,
+    color: Palette.textPrimary,
   },
   metricTextDark: {
-    color: '#e4e4e7',
+    color: Palette.textPrimaryDark,
   },
   arrowContainer: {
     marginLeft: 6,
@@ -472,7 +487,7 @@ const styles = StyleSheet.create({
   cardActionsRow: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 10,
+    marginTop: 12,
   },
   quickActionBtn: {
     flex: 1,
@@ -481,40 +496,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     gap: 6,
   },
   qrQuickBtn: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.surfaceLight,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   qrQuickBtnDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#166534',
+    backgroundColor: '#20302B',
+    borderColor: '#1F543B',
   },
   nfcQuickBtn: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.surfaceLight,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.borderLight,
   },
   nfcQuickBtnDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#166534',
+    backgroundColor: '#20302B',
+    borderColor: Palette.borderDark,
   },
   nfcQuickBtnLinked: {
-    backgroundColor: '#ecfdf5',
+    backgroundColor: Palette.greenSoft,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   nfcQuickBtnLinkedDark: {
-    backgroundColor: '#064e3b33',
+    backgroundColor: '#133324',
     borderWidth: 1,
-    borderColor: '#059669',
+    borderColor: '#1F543B',
   },
   quickActionBtnText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#0f172a',
+    fontFamily: FontFamily.bodySemiBold,
+    color: Palette.textPrimary,
+  },
+  quickActionBtnTextDark: {
+    color: Palette.textPrimaryDark,
   },
 });

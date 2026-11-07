@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { usePets } from '@/services/petService';
+import { Palette, FontFamily } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback } from 'react';
@@ -11,7 +12,7 @@ import { SosIcon } from '@/components/SosIcon';
 export default function HomeScreen() {
   const router = useRouter();
   const { user, isVeterinario } = useAuth();
-  const { isDark } = useAppTheme();
+  const { isDark, colors } = useAppTheme();
   const { petCount, refresh: refreshPets } = usePets();
 
   const nombreUsuario = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
@@ -34,13 +35,13 @@ export default function HomeScreen() {
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
               <View style={[styles.vetBadge, isDark && styles.vetBadgeDark]}>
-                <Ionicons name="shield-checkmark" size={13} color={isDark ? '#4ade80' : '#15803d'} />
+                <Ionicons name="shield-checkmark-outline" size={14} color={isDark ? '#4ade80' : Palette.greenDeep} />
                 <Text style={[styles.vetBadgeText, isDark && styles.vetBadgeTextDark]}>
                   Perfil Veterinario
                 </Text>
               </View>
               <Text style={[styles.saludo, isDark && styles.textDark]}>
-                ¡Hola, {nombreUsuario}! 🩺
+                ¡Hola, Dr. {nombreUsuario}!
               </Text>
               <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>
                 Panel de atención y gestión clínica
@@ -62,7 +63,7 @@ export default function HomeScreen() {
           >
             <View style={styles.heroVetTop}>
               <View style={[styles.heroIconCircle, isDark && styles.heroIconCircleDark]}>
-                <Ionicons name="qr-code" size={32} color="#04b639" />
+                <Ionicons name="qr-code-outline" size={28} color={Palette.greenPrimary} />
               </View>
               <View style={[styles.heroActionBadge, isDark && styles.heroActionBadgeDark]}>
                 <Text style={[styles.heroActionBadgeText, isDark && styles.heroActionBadgeTextDark]}>
@@ -72,18 +73,18 @@ export default function HomeScreen() {
             </View>
 
             <Text style={[styles.heroVetTitle, isDark && styles.heroVetTitleDark]}>
-              Escanear Mascota
+              Escanear Paciente
             </Text>
             <Text style={[styles.heroVetSubtitle, isDark && styles.heroVetSubtitleDark]}>
-              Identificación inmediata por código QR o etiqueta NFC para consultar la ficha clínica del paciente.
+              Identificación inmediata por código QR o etiqueta NFC para consultar o actualizar la ficha clínica.
             </Text>
 
             <View style={[styles.heroVetFooter, isDark && styles.heroVetFooterDark]}>
               <View style={styles.heroCtaButton}>
-                <Ionicons name="camera-outline" size={18} color="#ffffff" />
+                <Ionicons name="camera-outline" size={17} color="#ffffff" />
                 <Text style={styles.heroCtaText}>Abrir Escáner</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={isDark ? '#4ade80' : '#04b639'} />
+              <Ionicons name="chevron-forward-outline" size={20} color={isDark ? '#4ade80' : Palette.greenDeep} />
             </View>
           </Pressable>
 
@@ -99,7 +100,7 @@ export default function HomeScreen() {
             accessibilityLabel="Buscar mascota por nombre o identificador"
           >
             <View style={[styles.searchIconWrapper, isDark && styles.searchIconWrapperDark]}>
-              <Ionicons name="search" size={22} color="#04b639" />
+              <Ionicons name="search-outline" size={20} color={Palette.greenDeep} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.searchCardTitle, isDark && styles.textDark]}>
@@ -109,7 +110,7 @@ export default function HomeScreen() {
                 Localizar paciente por nombre o ID clínico
               </Text>
             </View>
-            <Ionicons name="arrow-forward" size={18} color={isDark ? '#4ade80' : '#04b639'} />
+            <Ionicons name="arrow-forward-outline" size={18} color={isDark ? '#4ade80' : Palette.greenDeep} />
           </Pressable>
 
           {/* Sección de Gestión y Servicios Profesionales */}
@@ -122,6 +123,8 @@ export default function HomeScreen() {
               titulo="Atención SOS"
               subtitulo="Guardias de turno"
               icono="alert-circle-outline"
+              colorFondoIcono={isDark ? '#381616' : Palette.redSoft}
+              colorIcono={Palette.redEmergency}
               onPress={() => router.push('/(tabs)/sos')}
               isDark={isDark}
               isAlert={true}
@@ -130,6 +133,8 @@ export default function HomeScreen() {
               titulo="Turnos"
               subtitulo="Agenda de citas"
               icono="calendar-outline"
+              colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
+              colorIcono={Palette.cyanDark}
               onPress={() => router.push('/turnos')}
               isDark={isDark}
             />
@@ -137,6 +142,8 @@ export default function HomeScreen() {
               titulo="Mi Perfil"
               subtitulo="Datos profesionales"
               icono="person-outline"
+              colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
+              colorIcono={Palette.greenDeep}
               onPress={() => router.push('/(tabs)/perfil')}
               isDark={isDark}
             />
@@ -144,6 +151,8 @@ export default function HomeScreen() {
               titulo="Mi Veterinaria"
               subtitulo="Clínica asociada"
               icono="medkit-outline"
+              colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
+              colorIcono={Palette.greenDeep}
               onPress={() => router.push('/veterinarias')}
               isDark={isDark}
             />
@@ -151,13 +160,17 @@ export default function HomeScreen() {
               titulo="Recordatorios"
               subtitulo="Avisos sanitarios"
               icono="notifications-outline"
+              colorFondoIcono={isDark ? '#381E10' : Palette.peachSoft}
+              colorIcono={Palette.peachDark}
               onPress={() => router.push('/recordatorios')}
               isDark={isDark}
             />
             <BotonMenu
               titulo="Mapa Pilar"
               subtitulo="Clínicas y guardias"
-              icono="map-outline"
+              icono="compass-outline"
+              colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
+              colorIcono={Palette.cyanDark}
               onPress={() => router.push('/(tabs)/mapa')}
               isDark={isDark}
             />
@@ -167,7 +180,7 @@ export default function HomeScreen() {
     );
   }
 
-  // ── 2. Vista de Inicio para Propietarios / Tutores (Sin Tienda) ─────────────
+  // ── 2. Vista de Inicio para Propietarios / Tutores ─────────────────────────
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'left', 'right']}>
       <ScrollView
@@ -178,12 +191,12 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.saludo, isDark && styles.textDark]}>¡Hola, {nombreUsuario}! 👋</Text>
-            <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>¿Qué necesitas hoy?</Text>
+            <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>¿Qué necesita tu mascota hoy?</Text>
           </View>
           <ThemeToggleButton />
         </View>
 
-        {/* BOTÓN GRANDE CUADRADO PROTAGONISTA DE EMERGENCIA SOS */}
+        {/* HERO CARD DE EMERGENCIA SOS */}
         <Pressable
           style={({ pressed }) => [
             styles.sosHeroCard,
@@ -196,7 +209,7 @@ export default function HomeScreen() {
         >
           <View style={styles.sosHeroHeader}>
             <View style={styles.sosHeroIconCircle}>
-              <SosIcon size={26} focused variant="custom" />
+              <SosIcon size={24} focused variant="custom" />
             </View>
             <View style={styles.sosLiveBadge}>
               <View style={styles.sosPulseDot} />
@@ -211,12 +224,12 @@ export default function HomeScreen() {
 
           <View style={styles.sosHeroFooter}>
             <View style={styles.sosActionChip}>
-              <Ionicons name="call" size={13} color="#ffffff" />
+              <Ionicons name="call-outline" size={13} color="#ffffff" />
               <Text style={styles.sosActionChipText}>Atención Inmediata</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text style={styles.sosVerGuardiaText}>Ver guardia</Text>
-              <Ionicons name="chevron-forward" size={16} color="#dc2626" />
+              <Text style={styles.sosVerGuardiaText}>Ver guardias</Text>
+              <Ionicons name="chevron-forward-outline" size={15} color={Palette.redEmergency} />
             </View>
           </View>
         </Pressable>
@@ -234,7 +247,7 @@ export default function HomeScreen() {
         >
           <View style={styles.cardHeader}>
             <View style={[styles.cardIconWrapper, isDark && styles.cardIconWrapperDark]}>
-              <Ionicons name="paw" size={24} color="#04b639" />
+              <Ionicons name="paw-outline" size={24} color={Palette.greenDeep} />
             </View>
             <View style={styles.cardBadge}>
               <Text style={styles.cardNumero}>{petCount}</Text>
@@ -248,34 +261,40 @@ export default function HomeScreen() {
 
           <View style={[styles.cardFooter, isDark && styles.cardFooterDark]}>
             <Text style={[styles.cardLink, isDark && styles.cardLinkDark]}>Ver perfiles y detalles</Text>
-            <Ionicons name="chevron-forward" size={16} color="#04b639" />
+            <Ionicons name="chevron-forward-outline" size={16} color={isDark ? '#4ade80' : Palette.greenDeep} />
           </View>
         </Pressable>
 
         {/* Título de accesos rápidos */}
         <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>Servicios y Accesos</Text>
 
-        {/* Grilla de accesos (Sin tienda) */}
+        {/* Grilla de accesos */}
         <View style={styles.grid}>
           <BotonMenu
             titulo="SOS Urgencias"
             subtitulo="Guardia 24hs"
             icono="alert-circle-outline"
+            colorFondoIcono={isDark ? '#381616' : Palette.redSoft}
+            colorIcono={Palette.redEmergency}
             onPress={() => router.push('/(tabs)/sos')}
             isDark={isDark}
             isAlert={true}
           />
           <BotonMenu
             titulo="Escanear QR"
-            subtitulo="Identificar o vincular"
+            subtitulo="Identificar chapita"
             icono="qr-code-outline"
+            colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
+            colorIcono={Palette.greenDeep}
             onPress={() => router.push('/(tabs)/scan')}
             isDark={isDark}
           />
           <BotonMenu
             titulo="Mapa Pilar"
             subtitulo="15 lugares reales"
-            icono="map-outline"
+            icono="compass-outline"
+            colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
+            colorIcono={Palette.cyanDark}
             onPress={() => router.push('/(tabs)/mapa')}
             isDark={isDark}
           />
@@ -283,20 +302,26 @@ export default function HomeScreen() {
             titulo="Veterinarias"
             subtitulo="Cercanas a vos"
             icono="medkit-outline"
+            colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
+            colorIcono={Palette.greenDeep}
             onPress={() => router.push('/veterinarias')}
             isDark={isDark}
           />
           <BotonMenu
             titulo="Recordatorios"
-            subtitulo="Avisos importantes"
+            subtitulo="Vacunas y controles"
             icono="notifications-outline"
+            colorFondoIcono={isDark ? '#381E10' : Palette.peachSoft}
+            colorIcono={Palette.peachDark}
             onPress={() => router.push('/recordatorios')}
             isDark={isDark}
           />
           <BotonMenu
             titulo="Turnos"
-            subtitulo="Próximos y anteriores"
+            subtitulo="Agenda de citas"
             icono="calendar-outline"
+            colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
+            colorIcono={Palette.cyanDark}
             onPress={() => router.push('/turnos')}
             isDark={isDark}
           />
@@ -304,6 +329,8 @@ export default function HomeScreen() {
             titulo="Mi Perfil"
             subtitulo="Datos y ajustes"
             icono="person-outline"
+            colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
+            colorIcono={Palette.greenDeep}
             onPress={() => router.push('/(tabs)/perfil')}
             isDark={isDark}
           />
@@ -317,6 +344,8 @@ function BotonMenu({
   titulo,
   subtitulo,
   icono,
+  colorFondoIcono,
+  colorIcono,
   onPress,
   isDark,
   isAlert,
@@ -324,6 +353,8 @@ function BotonMenu({
   titulo: string;
   subtitulo: string;
   icono: keyof typeof Ionicons.glyphMap;
+  colorFondoIcono?: string;
+  colorIcono?: string;
   onPress: () => void;
   isDark?: boolean;
   isAlert?: boolean;
@@ -343,11 +374,10 @@ function BotonMenu({
       <View
         style={[
           styles.botonIconoContainer,
-          isDark && styles.botonIconoContainerDark,
-          isAlert && (isDark ? styles.botonAlertIconoContainerDark : styles.botonAlertIconoContainer),
+          colorFondoIcono && { backgroundColor: colorFondoIcono },
         ]}
       >
-        <Ionicons name={icono} size={22} color={isAlert ? '#dc2626' : '#04b639'} />
+        <Ionicons name={icono} size={20} color={colorIcono || Palette.greenDeep} />
       </View>
       <Text style={[styles.botonTitulo, isDark && styles.textDark, isAlert && styles.botonAlertTitulo]}>
         {titulo}
@@ -362,28 +392,28 @@ function BotonMenu({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
-    backgroundColor: '#09090b',
+    backgroundColor: Palette.backgroundDark,
   },
   // ── Tarjeta de Emergencia SOS Destacada ─────────────────────────
   sosHeroCard: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: Palette.redSoft,
     borderRadius: 22,
-    padding: 20,
+    padding: 18,
     marginBottom: 16,
-    borderWidth: 2,
-    borderColor: '#fca5a5',
-    shadowColor: '#dc2626',
+    borderWidth: 1.5,
+    borderColor: Palette.redBorder,
+    shadowColor: Palette.redEmergency,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.12,
     shadowRadius: 10,
     elevation: 3,
   },
   sosHeroCardDark: {
-    backgroundColor: '#450a0a33',
-    borderColor: '#b91c1c',
+    backgroundColor: '#381616',
+    borderColor: '#7F1D1D',
     shadowOpacity: 0.35,
   },
   sosHeroHeader: {
@@ -394,8 +424,8 @@ const styles = StyleSheet.create({
   },
   sosHeroIconCircle: {
     backgroundColor: '#fee2e2',
-    width: 46,
-    height: 46,
+    width: 44,
+    height: 44,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
@@ -406,7 +436,7 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: '#fee2e2',
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 4,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#fca5a5',
@@ -415,29 +445,30 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#dc2626',
+    backgroundColor: Palette.redEmergency,
   },
   sosLiveBadgeText: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#b91c1c',
+    fontFamily: FontFamily.bodyBold,
+    color: '#991B1B',
     letterSpacing: 0.5,
   },
   sosHeroTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#991b1b',
+    fontSize: 19,
+    fontFamily: FontFamily.headingBold,
+    color: '#991B1B',
     letterSpacing: 0.3,
     marginBottom: 4,
   },
   sosHeroSubtitle: {
     fontSize: 13,
+    fontFamily: FontFamily.bodyRegular,
     lineHeight: 18,
-    color: '#b91c1c',
+    color: '#991B1B',
     marginBottom: 14,
   },
   sosHeroSubtitleDark: {
-    color: '#fca5a5',
+    color: '#FCA5A5',
   },
   sosHeroFooter: {
     flexDirection: 'row',
@@ -451,7 +482,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#dc2626',
+    backgroundColor: Palette.redEmergency,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
@@ -459,32 +490,26 @@ const styles = StyleSheet.create({
   sosActionChipText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
   },
   sosVerGuardiaText: {
-    color: '#dc2626',
+    color: Palette.redEmergency,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
   },
   botonAlert: {
-    borderColor: '#fca5a5',
-    backgroundColor: '#fff5f5',
+    borderColor: Palette.redBorder,
+    backgroundColor: Palette.surfaceLight,
   },
   botonAlertDark: {
-    borderColor: '#991b1b',
-    backgroundColor: '#450a0a22',
-  },
-  botonAlertIconoContainer: {
-    backgroundColor: '#fee2e2',
-  },
-  botonAlertIconoContainerDark: {
-    backgroundColor: '#7f1d1d',
+    borderColor: '#7F1D1D',
+    backgroundColor: '#381616',
   },
   botonAlertTitulo: {
-    color: '#b91c1c',
+    color: '#991B1B',
   },
   botonAlertSubtitulo: {
-    color: '#dc2626',
+    color: Palette.redEmergency,
   },
   scrollContent: {
     padding: 20,
@@ -498,38 +523,39 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   saludo: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: 24,
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
   },
   subtitulo: {
-    color: '#64748b',
-    fontSize: 15,
-    marginTop: 4,
+    color: Palette.textSecondary,
+    fontSize: 14,
+    fontFamily: FontFamily.bodyRegular,
+    marginTop: 3,
   },
   subtituloDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   textDark: {
-    color: '#f4f4f5',
+    color: Palette.textPrimaryDark,
   },
   cardMascotas: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Palette.surfaceLight,
     borderRadius: 22,
     padding: 20,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
-    shadowColor: '#04b639',
+    borderColor: Palette.borderLight,
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 2,
   },
   cardMascotasDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
-    shadowOpacity: 0.3,
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
+    shadowOpacity: 0.25,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -538,7 +564,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cardIconWrapper: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.greenSoft,
     width: 44,
     height: 44,
     borderRadius: 14,
@@ -546,10 +572,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardIconWrapperDark: {
-    backgroundColor: '#1f2937',
+    backgroundColor: '#133324',
   },
   cardBadge: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenPrimary,
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -558,24 +584,25 @@ const styles = StyleSheet.create({
   },
   cardNumero: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontFamily: FontFamily.bodyBold,
     color: '#ffffff',
   },
   cardTitulo: {
-    fontWeight: '800',
+    fontFamily: FontFamily.headingBold,
     fontSize: 18,
-    color: '#14532d',
+    color: Palette.textPrimary,
   },
   cardTituloDark: {
-    color: '#86efac',
+    color: Palette.textPrimaryDark,
   },
   cardDetalle: {
-    color: '#166534',
+    color: Palette.textSecondary,
+    fontFamily: FontFamily.bodyRegular,
     marginTop: 4,
     fontSize: 14,
   },
   cardDetalleDark: {
-    color: '#bbf7d0',
+    color: Palette.textSecondaryDark,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -583,15 +610,15 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#bbf7d0',
+    borderTopColor: Palette.borderSubtle,
   },
   cardFooterDark: {
-    borderTopColor: '#166534',
+    borderTopColor: Palette.borderDark,
   },
   cardLink: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#04b639',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.greenDeep,
     marginRight: 4,
   },
   cardLinkDark: {
@@ -599,8 +626,8 @@ const styles = StyleSheet.create({
   },
   seccionTitulo: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
     marginBottom: 14,
   },
   grid: {
@@ -610,12 +637,12 @@ const styles = StyleSheet.create({
   },
   boton: {
     width: '48%',
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.surfaceLight,
     borderRadius: 18,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
@@ -623,32 +650,30 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   botonDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
   },
   botonPresionado: {
     opacity: 0.75,
     transform: [{ scale: 0.98 }],
   },
   botonIconoContainer: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     width: 42,
     height: 42,
-    borderRadius: 12,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
-  botonIconoContainerDark: {
-    backgroundColor: '#064e3b',
-  },
   botonTitulo: {
-    fontWeight: '700',
+    fontFamily: FontFamily.headingSemiBold,
     fontSize: 15,
-    color: '#0f172a',
+    color: Palette.textPrimary,
   },
   botonSubtitulo: {
-    color: '#64748b',
+    color: Palette.textSecondary,
+    fontFamily: FontFamily.bodyRegular,
     fontSize: 12,
     marginTop: 4,
     lineHeight: 16,
@@ -659,19 +684,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     alignSelf: 'flex-start',
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
     marginBottom: 6,
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
   },
   vetBadgeDark: {
-    backgroundColor: '#064e3b',
+    backgroundColor: '#133324',
+    borderColor: '#1F543B',
   },
   vetBadgeText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#15803d',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.greenDeep,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -679,22 +707,22 @@ const styles = StyleSheet.create({
     color: '#4ade80',
   },
   heroCardVet: {
-    backgroundColor: '#ecfdf5',
+    backgroundColor: Palette.surfaceLight,
     borderRadius: 22,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1.5,
-    borderColor: '#a7f3d0',
-    shadowColor: '#04b639',
+    borderColor: Palette.greenBorder,
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 3,
   },
   heroCardVetDark: {
-    backgroundColor: '#064e3b26',
-    borderColor: '#059669',
-    shadowOpacity: 0.3,
+    backgroundColor: Palette.surfaceDark,
+    borderColor: '#1F543B',
+    shadowOpacity: 0.25,
   },
   heroVetTop: {
     flexDirection: 'row',
@@ -703,34 +731,29 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   heroIconCircle: {
-    backgroundColor: '#ffffff',
-    width: 52,
-    height: 52,
+    backgroundColor: Palette.greenSoft,
+    width: 50,
+    height: 50,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
   },
   heroIconCircleDark: {
-    backgroundColor: '#1f2937',
+    backgroundColor: '#133324',
   },
   heroActionBadge: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenPrimary,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   heroActionBadgeDark: {
-    backgroundColor: '#16a34a',
+    backgroundColor: '#15803D',
   },
   heroActionBadgeText: {
     color: '#ffffff',
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -738,22 +761,23 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   heroVetTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#065f46',
+    fontSize: 20,
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
     marginBottom: 6,
   },
   heroVetTitleDark: {
-    color: '#6ee7b7',
+    color: Palette.textPrimaryDark,
   },
   heroVetSubtitle: {
     fontSize: 14,
+    fontFamily: FontFamily.bodyRegular,
     lineHeight: 20,
-    color: '#047857',
+    color: Palette.textSecondary,
     marginBottom: 16,
   },
   heroVetSubtitleDark: {
-    color: '#a7f3d0',
+    color: Palette.textSecondaryDark,
   },
   heroVetFooter: {
     flexDirection: 'row',
@@ -761,42 +785,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 14,
     borderTopWidth: 1,
-    borderTopColor: '#a7f3d0',
+    borderTopColor: Palette.borderSubtle,
   },
   heroVetFooterDark: {
-    borderTopColor: '#065f46',
+    borderTopColor: Palette.borderDark,
   },
   heroCtaButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 12,
   },
   heroCtaText: {
     color: '#ffffff',
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
     fontSize: 14,
   },
   searchCardVet: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.surfaceLight,
     borderRadius: 18,
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
     gap: 14,
   },
   searchCardVetDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
   },
   searchIconWrapper: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     width: 44,
     height: 44,
     borderRadius: 12,
@@ -804,16 +828,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchIconWrapperDark: {
-    backgroundColor: '#064e3b',
+    backgroundColor: '#133324',
   },
   searchCardTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontFamily: FontFamily.headingSemiBold,
+    color: Palette.textPrimary,
   },
   searchCardSubtitle: {
     fontSize: 12,
-    color: '#64748b',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
 });

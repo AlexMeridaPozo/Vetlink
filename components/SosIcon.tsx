@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { Palette } from '@/constants/theme';
 
 export type SosIconVariant = 'custom' | 'sos-badge' | 'phone-alert' | 'emergency';
 
@@ -22,7 +23,7 @@ export function SosIcon({
   variant = 'custom',
 }: SosIconProps) {
   // Color distintivo rojo de urgencias
-  const alertColor = focused ? '#dc2626' : (color || '#ef4444');
+  const alertColor = focused ? Palette.redEmergency : (color || Palette.redEmergency);
 
   // Opción 2: Símbolo estándar de SOS
   if (variant === 'sos-badge') {

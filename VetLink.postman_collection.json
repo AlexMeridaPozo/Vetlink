@@ -1,0 +1,228 @@
+{
+  "info": {
+    "_postman_id": "3b29c9ef-294b-4fc4-bcbe-8e0c8de642f8",
+    "name": "VetLink API Tests",
+    "description": "Colección de pruebas para VetLink (Firebase Auth, Cloud Firestore y Cloudflare Worker).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "firebaseApiKey",
+      "value": "AIzaSyDiqLibp6p-BMAe9rOc46VMv6PKWQEtPOU",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "vetlink-bc8e2",
+      "type": "string"
+    },
+    {
+      "key": "idToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testEmail",
+      "value": "usuario@ejemplo.com",
+      "type": "string"
+    },
+    {
+      "key": "testPassword",
+      "value": "password123",
+      "type": "string"
+    },
+    {
+      "key": "chatWorkerUrl",
+      "value": "http://localhost:8787",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth - Iniciar Sesion (Token Automatico)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "pm.test('Status code es 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "if (jsonData && jsonData.idToken) {",
+              "    pm.collectionVariables.set('idToken', jsonData.idToken);",
+              "    console.log('Token guardado con exito:', jsonData.idToken);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"returnSecureToken\": true\n}"
+        },
+        "url": {
+          "raw": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={{firebaseApiKey}}",
+          "protocol": "https",
+          "host": [
+            "identitytoolkit",
+            "googleapis",
+            "com"
+          ],
+          "path": [
+            "v1",
+            "accounts:signInWithPassword"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "{{firebaseApiKey}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Mascotas - Listar Mascotas (GET)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code es 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{idToken}}"
+          }
+        ],
+        "url": {
+          "raw": "https://firestore.googleapis.com/v1/projects/{{projectId}}/databases/(default)/documents/pets",
+          "protocol": "https",
+          "host": [
+            "firestore",
+            "googleapis",
+            "com"
+          ],
+          "path": [
+            "v1",
+            "projects",
+            "{{projectId}}",
+            "databases",
+            "(default)",
+            "documents",
+            "pets"
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Mascotas - Crear Mascota (POST)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code es 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{idToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fields\": {\n    \"nombre\": { \"stringValue\": \"Max\" },\n    \"especie\": { \"stringValue\": \"Perro\" },\n    \"raza\": { \"stringValue\": \"Labrador\" },\n    \"sexo\": { \"stringValue\": \"Macho\" },\n    \"peso\": { \"stringValue\": \"28\" }\n  }\n}"
+        },
+        "url": {
+          "raw": "https://firestore.googleapis.com/v1/projects/{{projectId}}/databases/(default)/documents/pets",
+          "protocol": "https",
+          "host": [
+            "firestore",
+            "googleapis",
+            "com"
+          ],
+          "path": [
+            "v1",
+            "projects",
+            "{{projectId}}",
+            "databases",
+            "(default)",
+            "documents",
+            "pets"
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Chatbot IA - Probar Asistente (POST)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code es 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{idToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Hola, ¿qué cuidados requiere un cachorro?\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{chatWorkerUrl}}",
+          "host": [
+            "{{chatWorkerUrl}}"
+          ]
+        }
+      }
+    }
+  ]
+}

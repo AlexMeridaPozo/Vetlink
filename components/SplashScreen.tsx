@@ -8,6 +8,8 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Palette } from '@/constants/theme';
 
 interface SplashScreenProps {
   onFinish?: () => void;
@@ -16,12 +18,9 @@ interface SplashScreenProps {
 export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
   const { width: windowWidth } = useWindowDimensions();
 
-  // Instancias de Animated.Value creadas perezosamente con useState para compatibilidad total con React 19 y React Compiler
   const [spinAnim] = useState(() => new Animated.Value(0));
   const [progressAnim] = useState(() => new Animated.Value(1));
   const [fadeAnim] = useState(() => new Animated.Value(1));
-
-  // Porcentaje visible que inicia en 1% y llega a 100%
   const [displayPercent, setDisplayPercent] = useState(1);
 
   useEffect(() => {
@@ -36,7 +35,7 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
     );
     spinLoop.start();
 
-    // 2. Escuchar el progreso para sincronizar el número de porcentaje (1% -> 100%)
+    // 2. Escuchar el progreso (1% -> 100%)
     const listenerId = progressAnim.addListener(({ value }) => {
       setDisplayPercent(Math.min(100, Math.max(1, Math.round(value))));
     });
@@ -53,7 +52,6 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
       if (finished) {
         setDisplayPercent(100);
 
-        // 4. Pausa breve al alcanzar 100% y desvanecimiento suave
         const timer = setTimeout(() => {
           Animated.timing(fadeAnim, {
             toValue: 0,
@@ -75,7 +73,6 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
     };
   }, [fadeAnim, onFinish, progressAnim, spinAnim]);
 
-  // Rotación del indicador circular (0deg a 360deg)
   const spinInterpolate = useMemo(
     () =>
       spinAnim.interpolate({
@@ -85,7 +82,6 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
     [spinAnim]
   );
 
-  // Ancho animado de la barra (1% a 100%)
   const widthInterpolate = useMemo(
     () =>
       progressAnim.interpolate({
@@ -95,20 +91,26 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
     [progressAnim]
   );
 
-  // Ancho responsivo de la barra según el tamaño del dispositivo
   const barWidth = Math.min(220, Math.max(160, windowWidth * 0.52));
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <View style={styles.centerContent}>
-        {/* Nombre / Logo Huellapp */}
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>Huellapp</Text>
+        {/* Ícono de Huella con anillo */}
+        <View style={styles.logoBadge}>
+          <Ionicons name="paw-outline" size={44} color={Palette.greenPrimary} />
         </View>
+
+        {/* Nombre / Logo HuellaApp matching brand style */}
+        <View style={styles.logoRow}>
+          <Text style={styles.logoTextGreen}>Huell</Text>
+          <Text style={styles.logoTextDark}>App</Text>
+        </View>
+
+        <Text style={styles.slogan}>Cuidado y bienestar animal</Text>
 
         {/* Fila de carga: Indicador circular + Barra de progreso + Porcentaje */}
         <View style={styles.loadingRow}>
-          {/* Indicador circular giratorio */}
           <Animated.View
             style={[
               styles.spinner,
@@ -116,7 +118,6 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
             ]}
           />
 
-          {/* Barra de progreso horizontal */}
           <View style={[styles.progressBarTrack, { width: barWidth }]}>
             <Animated.View
               style={[
@@ -126,7 +127,6 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
             />
           </View>
 
-          {/* Porcentaje de carga */}
           <Text style={styles.percentText}>{displayPercent}%</Text>
         </View>
       </View>
@@ -141,32 +141,57 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.backgroundLight,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 99999,
-    elevation: 99999, // Para Android
+    elevation: 99999,
   },
   centerContent: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  logoContainer: {
-    marginBottom: 32,
+  logoBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: Palette.surfaceLight,
+    borderWidth: 1.5,
+    borderColor: Palette.greenBorder,
+    justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: Palette.greenDeep,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  logoText: {
-    fontSize: 42,
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  logoTextGreen: {
+    fontSize: 40,
     fontWeight: '800',
-    color: '#04b639',
+    color: Palette.greenPrimary,
     letterSpacing: -0.5,
-    fontFamily: Platform.select({
-      ios: 'System',
-      android: 'Roboto',
-      web: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      default: 'normal',
-    }),
+  },
+  logoTextDark: {
+    fontSize: 40,
+    fontWeight: '800',
+    color: Palette.textPrimary,
+    letterSpacing: -0.5,
+  },
+  slogan: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Palette.textSecondary,
+    marginBottom: 36,
+    letterSpacing: 0.2,
   },
   loadingRow: {
     flexDirection: 'row',
@@ -178,25 +203,25 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 9,
     borderWidth: 2.2,
-    borderColor: '#E2E8F0',
-    borderTopColor: '#04b639',
+    borderColor: Palette.borderLight,
+    borderTopColor: Palette.greenPrimary,
   },
   progressBarTrack: {
     height: 7,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: Palette.borderLight,
     borderRadius: 4,
     overflow: 'hidden',
     marginHorizontal: 12,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenPrimary,
     borderRadius: 4,
   },
   percentText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#334155',
+    color: Palette.textPrimary,
     minWidth: 42,
     textAlign: 'right',
     fontVariant: ['tabular-nums'],

@@ -1,22 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
-
 import { Tabs } from 'expo-router';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ChatLogo_Infferior } from '@/components/ChatLogo_Infferior';
 import { HapticTab } from '@/components/haptic-tab';
-
 import { useAppTheme } from '@/context/ThemeContext';
+import { Palette, FontFamily } from '@/constants/theme';
 
 export default function TabLayout() {
-  const { isDark } = useAppTheme();
+  const { isDark, colors } = useAppTheme();
   const insets = useSafeAreaInsets();
 
-  // En Android con barra de 3 botones (Atrás, Inicio, Recientes) o navegación por gestos,
-  // y en iOS con la barra inferior / Home Indicator, insets.bottom aporta la altura real del sistema.
-  // Calculamos la altura y el padding inferior dinámicamente para que los iconos y etiquetas
-  // queden siempre por encima del área del sistema y sean 100% accesibles y fáciles de pulsar.
   const safeBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 8);
   const tabPaddingBottom = safeBottom > 0 ? safeBottom + (Platform.OS === 'android' ? 4 : 2) : 8;
   const tabHeight = 60 + safeBottom + (Platform.OS === 'android' && insets.bottom > 0 ? 4 : 0);
@@ -27,12 +22,12 @@ export default function TabLayout() {
         screenOptions={{
           headerShown: false,
           tabBarButton: HapticTab,
-          tabBarActiveTintColor: '#04b639',
-          tabBarInactiveTintColor: isDark ? '#71717a' : '#9ca3af',
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: isDark ? colors.textSecondary : '#5C6B64',
           tabBarStyle: {
-            backgroundColor: isDark ? '#121214' : '#ffffff',
+            backgroundColor: isDark ? colors.surface : '#FFFFFF',
             borderTopWidth: 1,
-            borderTopColor: isDark ? '#27272a' : '#f3f4f6',
+            borderTopColor: isDark ? colors.border : '#E2EFE7',
             height: tabHeight,
             paddingBottom: tabPaddingBottom,
             paddingTop: 8,
@@ -40,7 +35,7 @@ export default function TabLayout() {
             elevation: 10,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: -3 },
-            shadowOpacity: isDark ? 0.35 : 0.08,
+            shadowOpacity: isDark ? 0.35 : 0.05,
             shadowRadius: 8,
           },
           tabBarItemStyle: {
@@ -48,7 +43,7 @@ export default function TabLayout() {
           },
           tabBarLabelStyle: {
             fontSize: 11,
-            fontWeight: '600',
+            fontFamily: FontFamily.bodySemiBold,
             marginTop: 2,
           },
         }}>
@@ -57,7 +52,10 @@ export default function TabLayout() {
           options={{
             title: 'Inicio',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
+              <View style={styles.iconWrapper}>
+                <Ionicons name="home-outline" size={24} color={color} />
+                {focused && <View style={[styles.activeDot, { backgroundColor: color }]} />}
+              </View>
             ),
           }}
         />
@@ -66,7 +64,10 @@ export default function TabLayout() {
           options={{
             title: 'Mascotas',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'paw' : 'paw-outline'} size={24} color={color} />
+              <View style={styles.iconWrapper}>
+                <Ionicons name="paw-outline" size={24} color={color} />
+                {focused && <View style={[styles.activeDot, { backgroundColor: color }]} />}
+              </View>
             ),
           }}
         />
@@ -78,7 +79,7 @@ export default function TabLayout() {
               <View style={styles.centerTabWrapper}>
                 <HapticTab {...props} style={[props.style, styles.centerTabButton]}>
                   <View style={[styles.sosSquareButton, isDark && styles.sosSquareButtonDark]}>
-                    <Ionicons name="alert" size={24} color="#ffffff" />
+                    <Ionicons name="alert-circle-outline" size={26} color="#ffffff" />
                   </View>
                 </HapticTab>
               </View>
@@ -90,7 +91,10 @@ export default function TabLayout() {
           options={{
             title: 'Explorar',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'compass' : 'compass-outline'} size={24} color={color} />
+              <View style={styles.iconWrapper}>
+                <Ionicons name="compass-outline" size={24} color={color} />
+                {focused && <View style={[styles.activeDot, { backgroundColor: color }]} />}
+              </View>
             ),
           }}
         />
@@ -99,7 +103,10 @@ export default function TabLayout() {
           options={{
             title: 'Perfil',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
+              <View style={styles.iconWrapper}>
+                <Ionicons name="person-outline" size={24} color={color} />
+                {focused && <View style={[styles.activeDot, { backgroundColor: color }]} />}
+              </View>
             ),
           }}
         />
@@ -116,6 +123,17 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  iconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 28,
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 2,
+  },
   centerTabWrapper: {
     flex: 1,
     height: '100%',
@@ -131,21 +149,21 @@ const styles = StyleSheet.create({
   sosSquareButton: {
     width: 52,
     height: 52,
-    borderRadius: 16,
-    backgroundColor: '#dc2626',
+    borderRadius: 18,
+    backgroundColor: Palette.redEmergency,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: '#ffffff',
-    shadowColor: '#dc2626',
+    shadowColor: Palette.redEmergency,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 8,
   },
   sosSquareButtonDark: {
-    backgroundColor: '#dc2626',
-    borderColor: '#fee2e2',
+    backgroundColor: '#EF4444',
+    borderColor: '#381616',
     shadowColor: '#000000',
     shadowOpacity: 0.5,
   },

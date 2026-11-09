@@ -287,6 +287,13 @@ export default function HomeScreen() {
             isDark={isDark}
           />
           <BotonMenu
+            titulo="Beneficios"
+            subtitulo="Descuentos y promos"
+            icono="pricetag-outline"
+            onPress={() => router.push('/beneficios')}
+            isDark={isDark}
+          />
+          <BotonMenu
             titulo="Recordatorios"
             subtitulo="Avisos importantes"
             icono="notifications-outline"

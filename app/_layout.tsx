@@ -60,6 +60,12 @@ function RootLayoutNav() {
           }}
         />
         <Stack.Screen
+          name="beneficios"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="chat"
           options={{
             headerShown: false,

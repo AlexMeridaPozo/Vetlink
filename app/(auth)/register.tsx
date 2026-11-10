@@ -85,7 +85,7 @@ export default function RegisterScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemedView style={styles.formContainer}>
-          <ThemedText style={styles.title} type="title">VetLink</ThemedText>
+          <ThemedText type="title">Huellap</ThemedText>
           <ThemedText style={styles.subtitle}>Crea tu cuenta para comenzar</ThemedText>
 
           <View style={styles.inputGroup}>

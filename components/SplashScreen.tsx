@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -16,16 +17,19 @@ interface SplashScreenProps {
 export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
   const { width: windowWidth } = useWindowDimensions();
 
-  // Instancias de Animated.Value creadas perezosamente con useState para compatibilidad total con React 19 y React Compiler
+  // Instancias de Animated.Value
   const [spinAnim] = useState(() => new Animated.Value(0));
   const [progressAnim] = useState(() => new Animated.Value(1));
   const [fadeAnim] = useState(() => new Animated.Value(1));
 
-  // Porcentaje visible que inicia en 1% y llega a 100%
+  // Referencia para controlar el temporizador
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Porcentaje visible de carga
   const [displayPercent, setDisplayPercent] = useState(1);
 
   useEffect(() => {
-    // 1. Animación continua de rotación para el indicador circular
+    // 1. Animación continua del indicador circular
     const spinLoop = Animated.loop(
       Animated.timing(spinAnim, {
         toValue: 1,
@@ -34,14 +38,15 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
         useNativeDriver: true,
       })
     );
+
     spinLoop.start();
 
-    // 2. Escuchar el progreso para sincronizar el número de porcentaje (1% -> 100%)
+    // 2. Actualizar el porcentaje de carga
     const listenerId = progressAnim.addListener(({ value }) => {
       setDisplayPercent(Math.min(100, Math.max(1, Math.round(value))));
     });
 
-    // 3. Animación fluida de la barra de progreso
+    // 3. Animación de la barra de progreso
     const progressAnimation = Animated.timing(progressAnim, {
       toValue: 100,
       duration: 1800,
@@ -53,29 +58,37 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
       if (finished) {
         setDisplayPercent(100);
 
-        // 4. Pausa breve al alcanzar 100% y desvanecimiento suave
-        const timer = setTimeout(() => {
+        // 4. Pausa antes de ocultar la pantalla
+        timerRef.current = setTimeout(() => {
           Animated.timing(fadeAnim, {
             toValue: 0,
             duration: 350,
             easing: Easing.in(Easing.ease),
             useNativeDriver: true,
-          }).start(() => {
-            onFinish?.();
+          }).start(({ finished: fadeFinished }) => {
+            if (fadeFinished) {
+              onFinish?.();
+            }
           });
         }, 350);
-
-        return () => clearTimeout(timer);
       }
     });
 
+    // 5. Limpiar animaciones y temporizadores
     return () => {
       spinLoop.stop();
+      progressAnimation.stop();
+      fadeAnim.stopAnimation();
       progressAnim.removeListener(listenerId);
+
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
     };
   }, [fadeAnim, onFinish, progressAnim, spinAnim]);
 
-  // Rotación del indicador circular (0deg a 360deg)
+  // Rotación del indicador circular
   const spinInterpolate = useMemo(
     () =>
       spinAnim.interpolate({
@@ -85,7 +98,7 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
     [spinAnim]
   );
 
-  // Ancho animado de la barra (1% a 100%)
+  // Ancho animado de la barra
   const widthInterpolate = useMemo(
     () =>
       progressAnim.interpolate({
@@ -95,18 +108,18 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
     [progressAnim]
   );
 
-  // Ancho responsivo de la barra según el tamaño del dispositivo
+  // Ancho responsivo de la barra
   const barWidth = Math.min(220, Math.max(160, windowWidth * 0.52));
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <View style={styles.centerContent}>
-        {/* Nombre / Logo Vetlink */}
+        {/* Nombre / Logo Huellap */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>Vetlink</Text>
+          <Text style={styles.logoText}>Huellap</Text>
         </View>
 
-        {/* Fila de carga: Indicador circular + Barra de progreso + Porcentaje */}
+        {/* Fila de carga */}
         <View style={styles.loadingRow}>
           {/* Indicador circular giratorio */}
           <Animated.View
@@ -116,7 +129,7 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
             ]}
           />
 
-          {/* Barra de progreso horizontal */}
+          {/* Barra de progreso */}
           <View style={[styles.progressBarTrack, { width: barWidth }]}>
             <Animated.View
               style={[
@@ -145,7 +158,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 99999,
-    elevation: 99999, // Para Android
+    elevation: 99999,
   },
   centerContent: {
     alignItems: 'center',

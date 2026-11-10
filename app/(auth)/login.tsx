@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/themed-view';
 import { auth } from '@/config/firebase';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -42,7 +42,6 @@ export default function LoginScreen() {
       return;
     }
 
-
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
@@ -76,8 +75,13 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemedView style={styles.formContainer}>
-          <ThemedText style={styles.title} type="title">VetLink</ThemedText>
-          <ThemedText style={styles.subtitle}>Inicia sesión para continuar</ThemedText>
+          <ThemedText type="title" style={styles.title}>
+            Huellap
+          </ThemedText>
+
+          <ThemedText style={styles.subtitle}>
+            Inicia sesión para continuar
+          </ThemedText>
 
           <View style={styles.inputGroup}>
             <ThemedText style={styles.label}>Correo electrónico</ThemedText>
@@ -128,7 +132,9 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.footerContainer}>
-            <ThemedText style={styles.footerText}>¿No tienes una cuenta? </ThemedText>
+            <ThemedText style={styles.footerText}>
+              ¿No tienes una cuenta? 
+            </ThemedText>
             <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
               <ThemedText style={styles.footerLink}>Regístrate</ThemedText>
             </TouchableOpacity>

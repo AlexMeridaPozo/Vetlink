@@ -27,7 +27,7 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">VetLink</ThemedText>
+        <ThemedText type="title">Huellap</ThemedText>
         <HelloWave />
       </ThemedView>
 

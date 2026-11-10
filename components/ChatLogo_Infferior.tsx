@@ -1,5 +1,5 @@
 import { useAppTheme } from '@/context/ThemeContext';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -196,8 +196,8 @@ export function ChatLogo_Infferior() {
       accessibilityLabel="Abrir Asistente Chatbot"
       accessibilityHint="Toca para abrir o arrastra con el dedo para moverlo por la pantalla"
     >
-      {/* Icono con diseño de asistente / chat */}
-      <Ionicons name="chatbubble-ellipses-outline" size={28} color="#ffffff" />
+      {/* Ilustración de robot del Asistente HuellaApp */}
+      <MaterialCommunityIcons name="robot" size={32} color="#ffffff" />
 
       {/* Luz indicadora activa del asistente IA */}
       <View style={[styles.indicatorLight, isDark && styles.indicatorLightDark]} />

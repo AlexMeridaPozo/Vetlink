@@ -2,6 +2,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { usePets } from '@/services/petService';
 import { Palette, FontFamily } from '@/constants/theme';
+import { FriendlyPetBanner } from '@/components/FriendlyPetBanner';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback } from 'react';
@@ -120,40 +121,12 @@ export default function HomeScreen() {
 
           <View style={styles.grid}>
             <BotonMenu
-              titulo="Atención SOS"
-              subtitulo="Guardias de turno"
-              icono="alert-circle-outline"
-              colorFondoIcono={isDark ? '#381616' : Palette.redSoft}
-              colorIcono={Palette.redEmergency}
-              onPress={() => router.push('/(tabs)/sos')}
-              isDark={isDark}
-              isAlert={true}
-            />
-            <BotonMenu
               titulo="Turnos"
               subtitulo="Agenda de citas"
               icono="calendar-outline"
               colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
               colorIcono={Palette.cyanDark}
               onPress={() => router.push('/turnos')}
-              isDark={isDark}
-            />
-            <BotonMenu
-              titulo="Mi Perfil"
-              subtitulo="Datos profesionales"
-              icono="person-outline"
-              colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
-              colorIcono={Palette.greenDeep}
-              onPress={() => router.push('/(tabs)/perfil')}
-              isDark={isDark}
-            />
-            <BotonMenu
-              titulo="Mi Veterinaria"
-              subtitulo="Clínica asociada"
-              icono="medkit-outline"
-              colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
-              colorIcono={Palette.greenDeep}
-              onPress={() => router.push('/veterinarias')}
               isDark={isDark}
             />
             <BotonMenu
@@ -166,6 +139,15 @@ export default function HomeScreen() {
               isDark={isDark}
             />
             <BotonMenu
+              titulo="Mi Veterinaria"
+              subtitulo="Clínica asociada"
+              icono="medkit-outline"
+              colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
+              colorIcono={Palette.greenDeep}
+              onPress={() => router.push('/veterinarias')}
+              isDark={isDark}
+            />
+            <BotonMenu
               titulo="Mapa Pilar"
               subtitulo="Clínicas y guardias"
               icono="compass-outline"
@@ -174,7 +156,34 @@ export default function HomeScreen() {
               onPress={() => router.push('/(tabs)/mapa')}
               isDark={isDark}
             />
+            <BotonMenu
+              titulo="Mi Perfil"
+              subtitulo="Datos profesionales"
+              icono="person-outline"
+              colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
+              colorIcono={Palette.greenDeep}
+              onPress={() => router.push('/(tabs)/perfil')}
+              isDark={isDark}
+            />
+            <BotonMenu
+              titulo="Atención SOS"
+              subtitulo="Guardias de turno"
+              icono="alert-circle-outline"
+              colorFondoIcono={isDark ? '#381616' : Palette.redSoft}
+              colorIcono={Palette.redEmergency}
+              onPress={() => router.push('/(tabs)/sos')}
+              isDark={isDark}
+              isAlert={true}
+            />
           </View>
+
+          {/* Mensaje cálido de cuidado profesional */}
+          <FriendlyPetBanner
+            title="Su bienestar también depende de vos."
+            subtitle="Compromiso profesional y atención médica de excelencia para cada paciente."
+            variant="care"
+            style={{ marginTop: 12, marginBottom: 20 }}
+          />
         </ScrollView>
       </SafeAreaView>
     );
@@ -195,44 +204,6 @@ export default function HomeScreen() {
           </View>
           <ThemeToggleButton />
         </View>
-
-        {/* HERO CARD DE EMERGENCIA SOS */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.sosHeroCard,
-            isDark && styles.sosHeroCardDark,
-            pressed && styles.botonPresionado,
-          ]}
-          onPress={() => router.push('/(tabs)/sos')}
-          accessibilityRole="button"
-          accessibilityLabel="Atención urgente SOS y guardia 24 horas"
-        >
-          <View style={styles.sosHeroHeader}>
-            <View style={styles.sosHeroIconCircle}>
-              <SosIcon size={24} focused variant="custom" />
-            </View>
-            <View style={styles.sosLiveBadge}>
-              <View style={styles.sosPulseDot} />
-              <Text style={styles.sosLiveBadgeText}>GUARDIA 24HS ACTIVA</Text>
-            </View>
-          </View>
-
-          <Text style={styles.sosHeroTitle}>EMERGENCIAS SOS</Text>
-          <Text style={[styles.sosHeroSubtitle, isDark && styles.sosHeroSubtitleDark]}>
-            Línea directa y veterinarias con guardia nocturna en Pilar Centro
-          </Text>
-
-          <View style={styles.sosHeroFooter}>
-            <View style={styles.sosActionChip}>
-              <Ionicons name="call-outline" size={13} color="#ffffff" />
-              <Text style={styles.sosActionChipText}>Atención Inmediata</Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text style={styles.sosVerGuardiaText}>Ver guardias</Text>
-              <Ionicons name="chevron-forward-outline" size={15} color={Palette.redEmergency} />
-            </View>
-          </View>
-        </Pressable>
 
         {/* Tarjeta de mascotas / perfiles */}
         <Pressable
@@ -265,21 +236,11 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
-        {/* Título de accesos rápidos */}
+        {/* Título de servicios diarios */}
         <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>Servicios y Accesos</Text>
 
-        {/* Grilla de accesos */}
+        {/* Grilla de accesos prioritarios para el tutor */}
         <View style={styles.grid}>
-          <BotonMenu
-            titulo="SOS Urgencias"
-            subtitulo="Guardia 24hs"
-            icono="alert-circle-outline"
-            colorFondoIcono={isDark ? '#381616' : Palette.redSoft}
-            colorIcono={Palette.redEmergency}
-            onPress={() => router.push('/(tabs)/sos')}
-            isDark={isDark}
-            isAlert={true}
-          />
           <BotonMenu
             titulo="Escanear QR"
             subtitulo="Identificar chapita"
@@ -287,33 +248,6 @@ export default function HomeScreen() {
             colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
             colorIcono={Palette.greenDeep}
             onPress={() => router.push('/(tabs)/scan')}
-            isDark={isDark}
-          />
-          <BotonMenu
-            titulo="Mapa Pilar"
-            subtitulo="15 lugares reales"
-            icono="compass-outline"
-            colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
-            colorIcono={Palette.cyanDark}
-            onPress={() => router.push('/(tabs)/mapa')}
-            isDark={isDark}
-          />
-          <BotonMenu
-            titulo="Veterinarias"
-            subtitulo="Cercanas a vos"
-            icono="medkit-outline"
-            colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
-            colorIcono={Palette.greenDeep}
-            onPress={() => router.push('/veterinarias')}
-            isDark={isDark}
-          />
-          <BotonMenu
-            titulo="Recordatorios"
-            subtitulo="Vacunas y controles"
-            icono="notifications-outline"
-            colorFondoIcono={isDark ? '#381E10' : Palette.peachSoft}
-            colorIcono={Palette.peachDark}
-            onPress={() => router.push('/recordatorios')}
             isDark={isDark}
           />
           <BotonMenu
@@ -326,6 +260,33 @@ export default function HomeScreen() {
             isDark={isDark}
           />
           <BotonMenu
+            titulo="Recordatorios"
+            subtitulo="Vacunas y controles"
+            icono="notifications-outline"
+            colorFondoIcono={isDark ? '#381E10' : Palette.peachSoft}
+            colorIcono={Palette.peachDark}
+            onPress={() => router.push('/recordatorios')}
+            isDark={isDark}
+          />
+          <BotonMenu
+            titulo="Veterinarias"
+            subtitulo="Cercanas a vos"
+            icono="medkit-outline"
+            colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
+            colorIcono={Palette.greenDeep}
+            onPress={() => router.push('/veterinarias')}
+            isDark={isDark}
+          />
+          <BotonMenu
+            titulo="Mapa Pilar"
+            subtitulo="15 lugares reales"
+            icono="compass-outline"
+            colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
+            colorIcono={Palette.cyanDark}
+            onPress={() => router.push('/(tabs)/mapa')}
+            isDark={isDark}
+          />
+          <BotonMenu
             titulo="Mi Perfil"
             subtitulo="Datos y ajustes"
             icono="person-outline"
@@ -335,6 +296,44 @@ export default function HomeScreen() {
             isDark={isDark}
           />
         </View>
+
+        {/* ACCESO SECUNDARIO SOS: Calmo y no invasivo */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.sosSecondaryCard,
+            isDark && styles.sosSecondaryCardDark,
+            pressed && styles.botonPresionado,
+          ]}
+          onPress={() => router.push('/(tabs)/sos')}
+          accessibilityRole="button"
+          accessibilityLabel="Acceso a centro de emergencias SOS y guardias 24 horas"
+        >
+          <View style={[styles.sosSecondaryIconWrapper, isDark && styles.sosSecondaryIconWrapperDark]}>
+            <Ionicons name="alert-circle-outline" size={22} color={Palette.redEmergency} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[styles.sosSecondaryTitle, isDark && styles.textDark]}>
+                Guardias 24hs y Atención SOS
+              </Text>
+              <View style={styles.sosSecondaryBadge}>
+                <Text style={styles.sosSecondaryBadgeText}>SOS</Text>
+              </View>
+            </View>
+            <Text style={[styles.sosSecondarySubtitle, isDark && styles.subtituloDark]}>
+              Hospital San Roque y centros veterinarios activos en Pilar
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={18} color={Palette.redEmergency} />
+        </Pressable>
+
+        {/* Mensaje de calidez y personalidad de marca con ilustración vectorial */}
+        <FriendlyPetBanner
+          title="Cada huellita tiene una historia."
+          subtitle="Acompañamos cada etapa de su vida con cuidado, dedicación y amor."
+          variant="both"
+          style={{ marginTop: 6, marginBottom: 20 }}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -396,6 +395,61 @@ const styles = StyleSheet.create({
   },
   containerDark: {
     backgroundColor: Palette.backgroundDark,
+  },
+  // ── Tarjeta de Emergencia SOS Secundaria y no invasiva ────────
+  sosSecondaryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Palette.surfaceLight,
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
+    gap: 12,
+    marginTop: 4,
+    marginBottom: 10,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  sosSecondaryCardDark: {
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
+  },
+  sosSecondaryIconWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: Palette.redSoft,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sosSecondaryIconWrapperDark: {
+    backgroundColor: '#381616',
+  },
+  sosSecondaryTitle: {
+    fontSize: 15,
+    fontFamily: FontFamily.headingSemiBold,
+    color: Palette.textPrimary,
+  },
+  sosSecondarySubtitle: {
+    fontSize: 12,
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
+    marginTop: 2,
+  },
+  sosSecondaryBadge: {
+    backgroundColor: Palette.redEmergency,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  sosSecondaryBadgeText: {
+    color: '#ffffff',
+    fontSize: 9,
+    fontFamily: FontFamily.bodyBold,
   },
   // ── Tarjeta de Emergencia SOS Destacada ─────────────────────────
   sosHeroCard: {

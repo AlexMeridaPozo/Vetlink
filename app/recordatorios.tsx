@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import CrearRecordatorioModal from '@/components/CrearRecordatorioModal';
+import { EmptyState } from '@/components/EmptyState';
 import {
   getRecordatorios,
   eliminarRecordatorio,
@@ -229,30 +230,18 @@ export default function RecordatoriosScreen() {
           }
         >
           {recordatoriosFiltrados.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <View style={[styles.emptyIconCircle, isDark && styles.emptyIconCircleDark]}>
-                <Ionicons name="notifications-outline" size={40} color={Palette.greenDeep} />
-              </View>
-              <Text style={[styles.emptyTitle, isDark && styles.textDark]}>
-                No hay recordatorios {filtro !== 'todos' ? filtro : ''}
-              </Text>
-              <Text style={[styles.emptySubtitle, isDark && styles.subtituloDark]}>
-                {isVeterinario
-                  ? 'Usa el botón "Nuevo" para programar avisos automáticos para tus pacientes.'
-                  : 'Aquí aparecerán los avisos y recordatorios sanitarios programados por tu veterinaria.'}
-              </Text>
-
-              {isVeterinario && (
-                <TouchableOpacity
-                  style={styles.emptyActionBtn}
-                  onPress={() => setModalVisible(true)}
-                  activeOpacity={0.85}
-                >
-                  <Ionicons name="add-circle-outline" size={18} color="#ffffff" style={{ marginRight: 6 }} />
-                  <Text style={styles.emptyActionBtnText}>Crear Primer Recordatorio</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+            <EmptyState
+              variant="reminders"
+              title="No tenés recordatorios pendientes."
+              message={
+                isVeterinario
+                  ? 'Programá avisos automáticos sanitarios y fechas de vacunación para tus pacientes.'
+                  : 'Los avisos, vacunas y recordatorios sanitarios programados por tu veterinaria se mostrarán en esta sección.'
+              }
+              actionLabel={isVeterinario ? 'Crear Primer Recordatorio' : undefined}
+              actionIcon="add-circle-outline"
+              onAction={isVeterinario ? () => setModalVisible(true) : undefined}
+            />
           ) : (
             recordatoriosFiltrados.map((rec) => {
               const tiempo = calcularTiempoRestante(rec.fechaCompleta);

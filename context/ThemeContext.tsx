@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import { useColorScheme as useRNColorScheme, TouchableOpacity, StyleSheet, View } from 'react-native';
+import { useColorScheme as useRNColorScheme, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Palette } from '@/constants/theme';
+import { Colors, Palette, Radius } from '@/constants/theme';
 
 export type ColorTheme = 'light' | 'dark';
 
@@ -81,7 +81,6 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
 export function useAppTheme(): ThemeContextType {
   const context = useContext(ThemeContext);
   if (!context) {
-    // Fallback seguro si se usa fuera del provider
     return {
       theme: 'light',
       isDark: false,
@@ -94,7 +93,8 @@ export function useAppTheme(): ThemeContextType {
 }
 
 /**
- * Botón flotante o de encabezado para alternar rápidamente entre modo claro y oscuro.
+ * Botón para alternar entre tema claro y oscuro en encabezados
+ * con icono Line Art outline de contorno unificado.
  */
 export function ThemeToggleButton({ style }: { style?: any }) {
   const { isDark, toggleTheme } = useAppTheme();
@@ -109,9 +109,9 @@ export function ThemeToggleButton({ style }: { style?: any }) {
       accessibilityHint="Alterna entre el tema visual claro y oscuro de la aplicación"
     >
       <Ionicons
-        name={isDark ? 'sunny' : 'moon'}
+        name={isDark ? 'sunny-outline' : 'moon-outline'}
         size={18}
-        color={isDark ? '#facc15' : Palette.greenPrimary}
+        color={isDark ? '#FACC15' : Palette.greenDeep}
       />
     </TouchableOpacity>
   );
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   toggleBtn: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -131,17 +131,17 @@ const styles = StyleSheet.create({
     borderColor: Palette.greenBorder,
     shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
   toggleBtnDark: {
-    backgroundColor: '#182420',
-    borderColor: '#273831',
-    shadowColor: '#000',
+    backgroundColor: '#18181B',
+    borderColor: '#27272A',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 2,
   },
 });

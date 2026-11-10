@@ -1,22 +1,22 @@
 import { Platform } from 'react-native';
 
 /**
- * 🐾 HuellaApp - Sistema de Tokens de Diseño
+ * 🐾 HuellaApp - Sistema de Tokens de Diseño Oficial
  * Identidad visual: Custom Modern Friendly Pet UI
- * Colores basados en el logo oficial (Verde Huella, Verde Bosque, Cian, Durazno, Rojo Urgencia)
+ * Documento de referencia: DESIGN_SYSTEM.md
  */
 
 export const Palette = {
   // Verdes de Marca
-  greenPrimary: '#13A857',   // Verde Huella oficial del logo
-  greenDeep: '#087A43',      // Verde Bosque (WCAG AA ratio 5.2:1 con blanco)
+  greenPrimary: '#13A857',   // Verde Huella oficial del logo (identidad, marcas, bordes activos, iconos)
+  greenDeep: '#087A43',      // Verde Bosque (WCAG AA ratio 5.38:1 con blanco - BOTONES Y TEXTO)
   greenDarker: '#05562E',
-  greenSoft: '#EAF8EF',      // Fondo suave verde para chips y contenedores
-  greenBorder: '#BCE8CE',
+  greenSoft: '#EAF8F0',      // Fondo suave verde para chips, badges y contenedores
+  greenBorder: '#BCEAD0',
 
   // Cianos Secundarios
-  cyanSecondary: '#65CFE0',  // Cian amigable
-  cyanLight: '#E8F9FC',      // Fondo cian hielo para chips informativos
+  cyanSecondary: '#65CFE0',  // Cian informativo
+  cyanLight: '#E8F9FC',      // Superficie cian suave para chips y burbujas de asistente
   cyanBorder: '#B6E8F1',
   cyanDark: '#0E7490',
 
@@ -27,36 +27,37 @@ export const Palette = {
   peachDark: '#9A3412',
 
   // Rojo Urgencias / SOS
-  redEmergency: '#D94A4A',   // Rojo alerta (ratio 4.8:1 con blanco)
-  redSoft: '#FDF2F2',        // Fondo alerta suave
-  redBorder: '#FCA5A5',
+  redEmergency: '#D94A4A',   // Rojo alerta (ratio 4.62:1 con blanco - WCAG AA)
+  redSoft: '#FEF2F2',        // Fondo alerta suave
+  redBorder: '#FECACA',
   redDark: '#991B1B',
 
   // Neutros Claros
   backgroundLight: '#F8FCF8',// Fondo global menta cálido (evita la dureza del blanco puro)
-  surfaceLight: '#FFFFFF',   // Superficie de tarjetas y modales
+  cardLight: '#FFFFFF',      // Superficie de tarjetas y modales
+  surfaceLight: '#FFFFFF',
   surfaceRaised: '#FFFFFF',
   surfaceSubtle: '#F1F7F3',
-  borderLight: '#E2EFE7',
+  borderLight: '#E3EFE7',
   borderSubtle: '#EDF5F0',
 
   // Tipografía y Contraste
-  textPrimary: '#26332E',    // Carbón bosque de alto contraste (13.8:1 con fondo)
-  textSecondary: '#5C6B64',  // Gris pizarra legible (5.1:1 con fondo)
-  textMuted: '#8E9E96',
+  textPrimary: '#26332E',    // Carbón bosque de alto contraste (14.12:1 con fondo - WCAG AAA)
+  textSecondary: '#5A6E65',  // Gris pizarra legible (5.14:1 con fondo - WCAG AA)
+  textMuted: '#8B9E95',
   textPlaceholder: '#A3B3AB',
   white: '#FFFFFF',
 
   // Neutros Oscuros (Dark Mode)
-  backgroundDark: '#0F1714',
-  surfaceDark: '#182420',
+  backgroundDark: '#09090B',
+  surfaceDark: '#18181B',
   surfaceRaisedDark: '#20302B',
   surfaceSubtleDark: '#141F1B',
-  borderDark: '#273831',
+  borderDark: '#27272A',
   borderSubtleDark: '#1E2D27',
-  textPrimaryDark: '#F0FDF4',
-  textSecondaryDark: '#A3B8B0',
-  textMutedDark: '#6E857C',
+  textPrimaryDark: '#F4F4F5',
+  textSecondaryDark: '#A1A1AA',
+  textMutedDark: '#71717A',
 };
 
 export const Colors = {
@@ -85,7 +86,7 @@ export const Colors = {
 
     // Fondos y Superficies
     background: Palette.backgroundLight,
-    surface: Palette.surfaceLight,
+    surface: Palette.cardLight,
     surfaceRaised: Palette.surfaceRaised,
     surfaceSubtle: Palette.surfaceSubtle,
 
@@ -105,30 +106,30 @@ export const Colors = {
     icon: Palette.textSecondary,
     tabIconDefault: Palette.textSecondary,
     tabIconSelected: Palette.greenDeep,
-    tabBarBackground: Palette.surfaceLight,
+    tabBarBackground: Palette.cardLight,
     tabBarBorder: Palette.borderLight,
   },
   dark: {
     // Identidad y Acentos
-    primary: '#22C55E',
+    primary: '#4ADE80',
     primaryBrand: Palette.greenPrimary,
     primaryDark: '#15803D',
-    primarySoft: '#133324',
-    primaryBorder: '#1F543B',
+    primarySoft: 'rgba(8, 122, 67, 0.20)',
+    primaryBorder: Palette.greenDeep,
 
     secondary: '#38BDF8',
-    secondarySoft: '#162F3B',
+    secondarySoft: 'rgba(101, 207, 224, 0.15)',
     secondaryBorder: '#1F4759',
     secondaryDark: '#7DD3FC',
 
     accent: '#FB923C',
-    accentSoft: '#381E10',
+    accentSoft: 'rgba(255, 179, 138, 0.15)',
     accentBorder: '#5E311A',
     accentDark: '#FDBA74',
 
     emergency: '#EF4444',
-    emergencySoft: '#381616',
-    emergencyBorder: '#7F1D1D',
+    emergencySoft: 'rgba(217, 74, 74, 0.18)',
+    emergencyBorder: 'rgba(217, 74, 74, 0.4)',
     emergencyDark: '#FCA5A5',
 
     // Fondos y Superficies
@@ -145,14 +146,14 @@ export const Colors = {
     text: Palette.textPrimaryDark,
     textSecondary: Palette.textSecondaryDark,
     textMuted: Palette.textMutedDark,
-    textPlaceholder: '#6E857C',
-    textInverse: '#0F1714',
+    textPlaceholder: '#71717A',
+    textInverse: '#09090B',
 
     // Navegación
-    tint: '#22C55E',
+    tint: '#4ADE80',
     icon: Palette.textSecondaryDark,
     tabIconDefault: Palette.textSecondaryDark,
-    tabIconSelected: '#22C55E',
+    tabIconSelected: '#4ADE80',
     tabBarBackground: Palette.surfaceDark,
     tabBarBorder: Palette.borderDark,
   },
@@ -172,45 +173,70 @@ export const FontFamily = {
 };
 
 export const Typography = {
+  // Accesos directos a familias y tamaños según DESIGN_SYSTEM.md
+  family: {
+    heading: FontFamily.headingBold,
+    headingSemiBold: FontFamily.headingSemiBold,
+    body: FontFamily.bodyRegular,
+    bodySemiBold: FontFamily.bodySemiBold,
+    bodyBold: FontFamily.bodyBold,
+  },
+  size: {
+    display: 32,
+    h1: 26,
+    h2: 22,
+    h3: 18,
+    bodyLarge: 16,
+    body: 15,
+    bodySmall: 14,
+    caption: 12,
+    tiny: 10,
+  },
+  // Estilos preconfigurados
   display: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 32,
+    lineHeight: 38,
   },
   h1: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 24,
-    lineHeight: 30,
+    fontSize: 26,
+    lineHeight: 32,
   },
   h2: {
     fontFamily: FontFamily.headingSemiBold,
-    fontSize: 19,
-    lineHeight: 25,
+    fontSize: 22,
+    lineHeight: 28,
   },
   h3: {
     fontFamily: FontFamily.headingSemiBold,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 18,
+    lineHeight: 24,
   },
   bodyLarge: {
     fontFamily: FontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 22,
   },
   body: {
     fontFamily: FontFamily.bodyRegular,
+    fontSize: 15,
+    lineHeight: 21,
+  },
+  bodySmall: {
+    fontFamily: FontFamily.bodyRegular,
     fontSize: 14,
     lineHeight: 20,
   },
-  label: {
-    fontFamily: FontFamily.bodySemiBold,
-    fontSize: 13,
-    lineHeight: 18,
-  },
   caption: {
     fontFamily: FontFamily.bodySemiBold,
-    fontSize: 11,
-    lineHeight: 15,
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  tiny: {
+    fontFamily: FontFamily.bodyBold,
+    fontSize: 10,
+    lineHeight: 14,
   },
 };
 
@@ -228,11 +254,11 @@ export const Spacing = {
 };
 
 export const Radius = {
-  xs: 6,
-  sm: 10,
-  md: 14,
-  lg: 18,
-  xl: 22,
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
   full: 9999,
 };
 
@@ -242,30 +268,44 @@ export const Radius = {
 export const Shadows = {
   sm: Platform.select({
     ios: {
-      shadowColor: '#087A43',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.04,
-      shadowRadius: 4,
+      shadowRadius: 6,
     },
     android: {
       elevation: 2,
     },
     default: {
-      boxShadow: '0 2px 4px rgba(8, 122, 67, 0.04)',
+      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.04)',
     },
   }),
   md: Platform.select({
     ios: {
-      shadowColor: '#087A43',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.07,
+      shadowOpacity: 0.10,
       shadowRadius: 10,
     },
     android: {
-      elevation: 3,
+      elevation: 4,
     },
     default: {
-      boxShadow: '0 4px 10px rgba(8, 122, 67, 0.07)',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.10)',
+    },
+  }),
+  lg: Platform.select({
+    ios: {
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.18,
+      shadowRadius: 16,
+    },
+    android: {
+      elevation: 8,
+    },
+    default: {
+      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.18)',
     },
   }),
   emergency: Platform.select({

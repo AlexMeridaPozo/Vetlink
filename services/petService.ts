@@ -194,7 +194,7 @@ export async function registerPet(
         {
           id: 'initial-check',
           titulo: 'Alta médica inicial',
-          detalle: 'Registro de datos clínicos y ficha médica inicial en Huellapp.',
+          detalle: 'Registro de datos clínicos y ficha médica inicial en HuellaApp.',
           fecha: new Date().toLocaleDateString('es-AR'),
           veterinario: vetUid,
           completado: true,
@@ -314,9 +314,26 @@ export async function unlinkNfcTagFromPet(
  */
 export async function updatePetData(petId: string, updates: Partial<Pet>): Promise<void> {
   try {
-    const cleanId = petId.trim().toUpperCase();
-    const petDocRef = doc(db, 'mascotas', cleanId);
-    await updateDoc(petDocRef, {
+    if (!petId || !petId.trim()) {
+      throw new Error('ID de mascota requerido para actualizar.');
+    }
+    const rawId = petId.trim();
+    let targetDocRef = doc(db, 'mascotas', rawId.toUpperCase());
+
+    try {
+      const snap = await getDoc(targetDocRef);
+      if (!snap.exists()) {
+        const altDocRef = doc(db, 'mascotas', rawId);
+        const altSnap = await getDoc(altDocRef);
+        if (altSnap.exists()) {
+          targetDocRef = altDocRef;
+        }
+      }
+    } catch (lookupErr) {
+      console.warn('[updatePetData] Aviso al resolver referencia de mascota:', lookupErr);
+    }
+
+    await updateDoc(targetDocRef, {
       ...updates,
       updatedAt: new Date().toISOString(),
     });
@@ -506,11 +523,30 @@ export async function registrarEscaneoRescate(
 
 /**
  * 14. Alterna el estado de extravío de una mascota (reportar como perdida o marcar como recuperada).
+ * Soporta tanto identificadores en mayúsculas como IDs sensibles a mayúsculas/minúsculas de Firestore.
  */
 export async function toggleEstadoExtravio(petId: string, extraviada: boolean): Promise<void> {
-  const cleanId = petId.trim().toUpperCase();
-  const petDocRef = doc(db, 'mascotas', cleanId);
-  await updateDoc(petDocRef, {
+  if (!petId || !petId.trim()) {
+    throw new Error('ID de mascota requerido para actualizar estado de extravío.');
+  }
+
+  const rawId = petId.trim();
+  let targetDocRef = doc(db, 'mascotas', rawId);
+
+  try {
+    const rawSnap = await getDoc(targetDocRef);
+    if (!rawSnap.exists()) {
+      const upperRef = doc(db, 'mascotas', rawId.toUpperCase());
+      const upperSnap = await getDoc(upperRef);
+      if (upperSnap.exists()) {
+        targetDocRef = upperRef;
+      }
+    }
+  } catch (lookupErr) {
+    console.warn('[toggleEstadoExtravio] Error verificando existencia por ID, continuando con referencia directa:', lookupErr);
+  }
+
+  await updateDoc(targetDocRef, {
     extraviada,
     fechaExtravio: extraviada ? new Date().toISOString() : null,
     updatedAt: new Date().toISOString(),

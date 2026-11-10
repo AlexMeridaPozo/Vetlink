@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,12 +13,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { usePets, toggleEstadoExtravio } from '@/services/petService';
 import { SosIcon } from '@/components/SosIcon';
+import { FriendlyPetBanner } from '@/components/FriendlyPetBanner';
 import { PUNTOS_VETERINARIOS_PILAR, LugarMascotas } from '@/constants/veterinarias';
 import { Palette, Typography, Radius, Shadows } from '@/constants/theme';
 
@@ -45,38 +48,104 @@ const CLINICAS_URGENCIA: LugarMascotas[] = PUNTOS_VETERINARIOS_PILAR.filter(
 export default function SosScreen() {
   const router = useRouter();
   const { isDark } = useAppTheme();
-  const { pets } = usePets();
+  const { pets, refresh: refreshPets } = usePets();
   const [estadoExtravio, setEstadoExtravio] = useState<Record<string, boolean>>({});
+  const [updatingPetId, setUpdatingPetId] = useState<string | null>(null);
+
+  // Recargar datos desde Firestore cada vez que la pantalla recibe foco
+  useFocusEffect(
+    useCallback(() => {
+      refreshPets();
+    }, [refreshPets])
+  );
+
+  // Sincronizar estado local de extravío con los datos actualizados de Firestore
+  useEffect(() => {
+    const nuevoMap: Record<string, boolean> = {};
+    pets.forEach((p) => {
+      nuevoMap[p.id] = !!p.extraviada;
+    });
+    setEstadoExtravio(nuevoMap);
+  }, [pets]);
 
   const getExtraviada = (pet: { id: string; extraviada?: boolean }) =>
     estadoExtravio[pet.id] !== undefined ? estadoExtravio[pet.id] : !!pet.extraviada;
 
   const handleToggleExtravio = (pet: { id: string; nombre: string; extraviada?: boolean }) => {
+    if (updatingPetId) return;
+
     const actual = getExtraviada(pet);
     const nuevoEstado = !actual;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-    Alert.alert(
-      nuevoEstado ? 'Activar Alerta de Extravío' : 'Marcar como En Casa',
-      nuevoEstado
-        ? `¿Confirmas que ${pet.nombre} se ha extraviado? Cualquier persona que escanee la chapita QR / NFC verá la alerta y podrá enviar su ubicación GPS.`
-        : `¿${pet.nombre} ya está a salvo en casa? Se desactivará la alerta de extravío.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: nuevoEstado ? 'Activar Búsqueda' : 'Confirmar En Casa',
-          style: nuevoEstado ? 'destructive' : 'default',
-          onPress: async () => {
-            try {
-              await toggleEstadoExtravio(pet.id, nuevoEstado);
-              setEstadoExtravio((prev) => ({ ...prev, [pet.id]: nuevoEstado }));
-              Alert.alert('Éxito', nuevoEstado ? 'Alerta de extravío activada.' : 'Mascota marcada como a salvo.');
-            } catch {
-              Alert.alert('Error', 'No se pudo actualizar el estado en el servidor.');
-            }
+
+    const executeToggle = async () => {
+      try {
+        setUpdatingPetId(pet.id);
+        // 1. Actualización optimista inmediata en UI
+        setEstadoExtravio((prev) => ({ ...prev, [pet.id]: nuevoEstado }));
+
+        // 2. Operación de actualización en Firestore
+        await toggleEstadoExtravio(pet.id, nuevoEstado);
+
+        // 3. Refrescar estado global de mascotas
+        await refreshPets();
+
+        const successMsg = nuevoEstado
+          ? `Alerta de búsqueda activada para ${pet.nombre}. Quien escanee la chapita QR / NFC podrá enviar su ubicación GPS.`
+          : `${pet.nombre} ha sido marcado/a como en casa. Se desactivó la alerta de extravío.`;
+
+        if (Platform.OS === 'web') {
+          if (typeof window !== 'undefined' && window.alert) {
+            window.alert(successMsg);
+          }
+        } else {
+          Alert.alert('Estado actualizado', successMsg);
+        }
+      } catch (err) {
+        console.error('[handleToggleExtravio] Error al actualizar estado de extravío:', err);
+        // Revertir estado optimista en caso de error
+        setEstadoExtravio((prev) => ({ ...prev, [pet.id]: actual }));
+
+        const errorMsg = 'No se pudo actualizar el estado en el servidor. Verifica tu conexión e intenta nuevamente.';
+        if (Platform.OS === 'web') {
+          if (typeof window !== 'undefined' && window.alert) {
+            window.alert(`Error: ${errorMsg}`);
+          }
+        } else {
+          Alert.alert('Error', errorMsg);
+        }
+      } finally {
+        setUpdatingPetId(null);
+      }
+    };
+
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+    } catch {}
+
+    const confirmMessage = nuevoEstado
+      ? `¿Confirmas que ${pet.nombre} se ha extraviado?\n\nCualquier persona que escanee su chapita QR / NFC verá la alerta y podrá enviar su ubicación GPS.`
+      : `¿${pet.nombre} ya está a salvo en casa?\n\nSe desactivará la alerta pública de extravío.`;
+
+    // En web window.confirm es síncrono y fiable, evitando la pérdida de callbacks de Alert.alert
+    if (Platform.OS === 'web') {
+      const confirmed = typeof window !== 'undefined' && window.confirm ? window.confirm(confirmMessage) : true;
+      if (confirmed) {
+        executeToggle();
+      }
+    } else {
+      Alert.alert(
+        nuevoEstado ? 'Activar Alerta de Extravío' : 'Marcar como En Casa',
+        confirmMessage,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: nuevoEstado ? 'Activar Búsqueda' : 'Confirmar En Casa',
+            style: nuevoEstado ? 'destructive' : 'default',
+            onPress: executeToggle,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const handleCallVetContact = () => {
@@ -303,7 +372,7 @@ export default function SosScreen() {
                     {(vet.enHuellapp ?? vet.enVetlink) ? (
                       <View style={styles.badgeHuellappOn}>
                         <Ionicons name="checkmark-circle-outline" size={12} color={Palette.greenDeep} />
-                        <Text style={styles.badgeHuellappOnText}>RED HUELLAPP</Text>
+                        <Text style={styles.badgeHuellappOnText}>RED HUELLAAPP</Text>
                       </View>
                     ) : (
                       <View style={[styles.badgeHuellappOff, isDark && styles.badgeHuellappOffDark]}>
@@ -382,13 +451,21 @@ export default function SosScreen() {
 
         {pets.length === 0 ? (
           <View style={[styles.emptyPetsCard, isDark && styles.cardDark]}>
-            <Ionicons name="paw-outline" size={32} color={Palette.textMuted} />
+            <View style={styles.emptyPetsIllustration}>
+              <MaterialCommunityIcons name="dog" size={32} color={Palette.greenDeep} />
+              <MaterialCommunityIcons name="cat" size={28} color={Palette.peachDark} style={{ marginLeft: 6 }} />
+            </View>
+            <Text style={[styles.emptyPetsTitle, isDark && styles.textDark]}>
+              "Un pequeño cuidado hace una gran diferencia"
+            </Text>
             <Text style={[styles.emptyPetsText, isDark && styles.subtituloDark]}>
-              No tienes mascotas registradas aún. Registra una mascota para acceder a su ficha clínica y control de extravío.
+              No tienes mascotas registradas aún. Registra una mascota para acceder a su ficha médica, código QR de rescate y control de extravío.
             </Text>
             <Pressable
               style={styles.btnAddPet}
               onPress={() => router.push('/(tabs)/mascotas')}
+              accessibilityRole="button"
+              accessibilityLabel="Registrar mascota en Mis Mascotas"
             >
               <Text style={styles.btnAddPetText}>Ir a Mis Mascotas</Text>
             </Pressable>
@@ -397,6 +474,8 @@ export default function SosScreen() {
           pets.map((pet) => {
             const extraviada = getExtraviada(pet);
             const isGato = pet.especie?.toLowerCase().includes('gato');
+            const isUpdating = updatingPetId === pet.id;
+
             return (
               <View
                 key={`extravio-${pet.id}`}
@@ -431,19 +510,30 @@ export default function SosScreen() {
                   style={[
                     styles.btnToggleExtravio,
                     extraviada ? styles.btnExtraviadaActive : styles.btnExtraviadaInactive,
+                    isUpdating && styles.btnToggleDisabled,
                   ]}
                   onPress={() => handleToggleExtravio(pet)}
-                  activeOpacity={0.8}
+                  activeOpacity={0.7}
+                  disabled={isUpdating}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Estado de ${pet.nombre}: ${extraviada ? 'Extraviada' : 'En casa'}. Toca para cambiar.`}
                 >
-                  <Ionicons
-                    name={extraviada ? 'alert-circle-outline' : 'shield-checkmark-outline'}
-                    size={14}
-                    color="#ffffff"
-                    style={{ marginRight: 4 }}
-                  />
-                  <Text style={styles.btnToggleExtravioText}>
-                    {extraviada ? 'Extraviada' : 'En Casa'}
-                  </Text>
+                  {isUpdating ? (
+                    <ActivityIndicator size="small" color="#ffffff" style={{ paddingHorizontal: 12 }} />
+                  ) : (
+                    <>
+                      <Ionicons
+                        name={extraviada ? 'alert-circle-outline' : 'shield-checkmark-outline'}
+                        size={15}
+                        color="#ffffff"
+                        style={{ marginRight: 5 }}
+                      />
+                      <Text style={styles.btnToggleExtravioText}>
+                        {extraviada ? 'Extraviada' : 'En Casa'}
+                      </Text>
+                    </>
+                  )}
                 </TouchableOpacity>
               </View>
             );
@@ -492,6 +582,14 @@ export default function SosScreen() {
             Aplica presión constante y firme con gasas limpias sobre la herida para contener el sangrado y traslada de inmediato al centro de atención.
           </Text>
         </View>
+
+        {/* Banner cálido de cuidado y preparación ante emergencias */}
+        <FriendlyPetBanner
+          title="Su bienestar también depende de vos."
+          subtitle="Tener la información clínica y de contacto actualizada permite actuar rápido ante cualquier imprevisto."
+          variant="care"
+          style={{ marginTop: 16 }}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -871,6 +969,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Palette.borderLight,
   },
+  emptyPetsIllustration: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  emptyPetsTitle: {
+    fontSize: Typography.size.bodyLarge,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.greenDeep,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
   cardDark: {
     backgroundColor: '#18181b',
     borderColor: '#27272a',
@@ -950,6 +1062,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: Radius.md,
+  },
+  btnToggleDisabled: {
+    opacity: 0.6,
   },
   btnExtraviadaActive: {
     backgroundColor: Palette.redEmergency,

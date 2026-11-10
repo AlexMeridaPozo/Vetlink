@@ -335,7 +335,7 @@ export default function MapaScreen() {
           <View style={styles.subtitleRow}>
             <View style={[styles.liveIndicator, styles.liveIndicatorActive]} />
             <Text style={[styles.headerSubtitle, isDark && styles.textMutedDark]}>
-              Pilar Centro &bull; {veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length} en Huellapp &bull; {veterinarias.filter((v) => !(v.enHuellapp ?? v.enVetlink)).length} externas
+              Pilar Centro &bull; {veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length} en HuellaApp &bull; {veterinarias.filter((v) => !(v.enHuellapp ?? v.enVetlink)).length} externas
             </Text>
           </View>
         </View>
@@ -413,7 +413,7 @@ export default function MapaScreen() {
                 selectedFilter === 'huellapp' && styles.chipTextActiveHuellapp,
                 isDark && styles.chipTextDark,
               ]}>
-              En Huellapp ({veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length})
+              En HuellaApp ({veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length})
             </Text>
           </TouchableOpacity>
 
@@ -711,7 +711,7 @@ export default function MapaScreen() {
                         <Text
                           style={[styles.suggestionSubtitle, isDark && styles.textMutedDark]}
                           numberOfLines={1}>
-                          {(item.enHuellapp ?? item.enVetlink) ? 'En Huellapp' : 'Externa'} &bull; {item.direccion}
+                          {(item.enHuellapp ?? item.enVetlink) ? 'En HuellaApp' : 'Externa'} &bull; {item.direccion}
                         </Text>
                       </View>
                       {item.distanceText && (
@@ -755,7 +755,7 @@ export default function MapaScreen() {
                           (selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? styles.huellappTextOn : styles.huellappTextOff,
                           isDark && ((selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? styles.huellappTextOnDark : styles.huellappTextOffDark),
                         ]}>
-                        {(selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? 'En Red Huellapp' : 'No adherida'}
+                        {(selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? 'En Red HuellaApp' : 'No adherida'}
                       </Text>
                     </View>
 

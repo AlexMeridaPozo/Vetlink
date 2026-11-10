@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Palette } from '@/constants/theme';
+import { Palette, FontFamily, Radius } from '@/constants/theme';
 
 interface SplashScreenProps {
   onFinish?: () => void;
@@ -101,9 +101,9 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
           <Ionicons name="paw-outline" size={44} color={Palette.greenPrimary} />
         </View>
 
-        {/* Nombre / Logo HuellaApp matching brand style */}
+        {/* Nombre / Logo HuellaApp con estilo de marca (Huella en verde, App en carbón oscuro) */}
         <View style={styles.logoRow}>
-          <Text style={styles.logoTextGreen}>Huell</Text>
+          <Text style={styles.logoTextGreen}>Huella</Text>
           <Text style={styles.logoTextDark}>App</Text>
         </View>
 
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   logoBadge: {
     width: 80,
     height: 80,
-    borderRadius: 24,
+    borderRadius: Radius.xl,
     backgroundColor: Palette.surfaceLight,
     borderWidth: 1.5,
     borderColor: Palette.greenBorder,
@@ -175,18 +175,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   logoTextGreen: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 40,
     fontWeight: '800',
     color: Palette.greenPrimary,
     letterSpacing: -0.5,
   },
   logoTextDark: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 40,
     fontWeight: '800',
     color: Palette.textPrimary,
     letterSpacing: -0.5,
   },
   slogan: {
+    fontFamily: FontFamily.bodySemiBold,
     fontSize: 14,
     fontWeight: '600',
     color: Palette.textSecondary,
@@ -219,6 +222,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   percentText: {
+    fontFamily: FontFamily.bodyBold,
     fontSize: 14,
     fontWeight: '700',
     color: Palette.textPrimary,

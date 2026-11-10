@@ -1,11 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { getDownloadURL, getStorage, ref, uploadBytes, uploadString } from 'firebase/storage';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -24,12 +23,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { EmptyState } from '@/components/EmptyState';
 import QRMascotaCard from '@/components/QRMascotaCard';
 import VincularNfcModal from '@/components/VincularNfcModal';
 import { app } from '@/config/firebase';
+import { FontFamily, Palette } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
-import { Palette, FontFamily } from '@/constants/theme';
 import {
   getNextSuggestedPetId,
   registerPet,
@@ -38,8 +38,7 @@ import {
   type Pet,
 } from '@/services/petService';
 
-import { PetCard, type PetCardProps } from '@/components/PetCard';
-export { PetCard, type PetCardProps };
+import { PetCard } from '@/components/PetCard';
 
 // ── 2. Modal de Registro de Mascotas (Veterinarios) ───────────────────────────
 interface RegistrarMascotaModalProps {
@@ -555,9 +554,10 @@ export default function MascotasScreen() {
         especie: pet.especie,
         raza: pet.raza,
         sexo: pet.sexo,
-        peso: String(pet.peso ?? ''),
+        peso: pet.peso !== undefined && pet.peso !== 'N/A' ? String(pet.peso) : '',
         edad: String(pet.edad ?? pet.fechaNacimiento ?? ''),
-        fotoUrl: pet.fotoUrl || '',
+        // No pasar cadenas Base64 pesadas por los parámetros de navegación para evitar cuelgues de memoria
+        fotoUrl: pet.fotoUrl && !pet.fotoUrl.startsWith('data:') ? pet.fotoUrl : '',
         descripcion: pet.descripcion || '',
       },
     });
@@ -575,7 +575,7 @@ export default function MascotasScreen() {
     if (!isVeterinario) {
       Alert.alert(
         'Acceso Denegado (Seguridad)',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o reasignar etiquetas NFC en Huellapp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o reasignar etiquetas NFC en HuellaApp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
       );
       return;
     }
@@ -714,29 +714,18 @@ export default function MascotasScreen() {
   );
 
   const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <View style={[styles.emptyIconCircle, isDark && styles.emptyIconCircleDark]}>
-        <Ionicons name="paw-outline" size={50} color={Palette.greenDeep} />
-      </View>
-      <Text style={[styles.emptyTitle, isDark && styles.emptyTitleDark]}>
-        No tienes mascotas registradas
-      </Text>
-      <Text style={[styles.emptySubtitle, isDark && styles.emptySubtitleDark]}>
-        {isVeterinario
-          ? 'Registra pacientes clínicos para gestionar sus fichas y etiquetas NFC.'
-          : 'Registra a tu primera mascota o vincula su chapita para ver sus datos.'}
-      </Text>
-      <TouchableOpacity
-        style={styles.emptyButton}
-        onPress={handleRegisterPress}
-        activeOpacity={0.85}
-      >
-        <Ionicons name="add-circle-outline" size={20} color="#ffffff" style={{ marginRight: 6 }} />
-        <Text style={styles.emptyButtonText}>
-          {isVeterinario ? 'Registrar nuevo paciente' : 'Registrar mi primera mascota'}
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <EmptyState
+      variant="pets"
+      title="No hay mascotas registradas."
+      message={
+        isVeterinario
+          ? 'Agregá a tus pacientes clínicos para gestionar sus historiales y chapitas inteligentes.'
+          : 'Agregá a tu compañero para comenzar a cuidar su salud y vincular su chapita inteligente.'
+      }
+      actionLabel={isVeterinario ? 'Registrar nuevo paciente' : 'Registrar mi primera mascota'}
+      actionIcon={isVeterinario ? 'add-circle-outline' : 'qr-code-outline'}
+      onAction={handleRegisterPress}
+    />
   );
 
   return (
@@ -986,66 +975,6 @@ const styles = StyleSheet.create({
   },
   loadingTextDark: {
     color: Palette.textSecondaryDark,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 40,
-  },
-  emptyIconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: Palette.greenSoft,
-    borderWidth: 1.5,
-    borderColor: Palette.greenBorder,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  emptyIconCircleDark: {
-    backgroundColor: '#133324',
-    borderColor: '#1F543B',
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontFamily: FontFamily.headingBold,
-    color: Palette.textPrimary,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emptyTitleDark: {
-    color: Palette.textPrimaryDark,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    fontFamily: FontFamily.bodyRegular,
-    color: Palette.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
-  },
-  emptySubtitleDark: {
-    color: Palette.textSecondaryDark,
-  },
-  emptyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Palette.greenDeep,
-    paddingHorizontal: 22,
-    paddingVertical: 14,
-    borderRadius: 16,
-    shadowColor: Palette.greenDeep,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  emptyButtonText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontFamily: FontFamily.bodyBold,
   },
   fab: {
     position: 'absolute',

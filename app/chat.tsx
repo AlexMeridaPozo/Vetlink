@@ -193,7 +193,7 @@ export default function ChatScreen() {
 
         <View style={styles.headerInfo}>
           <View style={styles.avatarMini}>
-            <MaterialCommunityIcons name="chat-outline" size={18} color="#ffffff" />
+            <MaterialCommunityIcons name="robot-happy" size={20} color="#ffffff" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.screenTitle, isDark && styles.textDark]} numberOfLines={1}>
@@ -245,7 +245,7 @@ export default function ChatScreen() {
             /* Estado Inicial / Bienvenida */
             <View style={styles.welcomeContainer}>
               <View style={[styles.welcomeIconCircle, isDark && styles.welcomeIconCircleDark]}>
-                <MaterialCommunityIcons name="paw" size={40} color={Palette.greenDeep} />
+                <MaterialCommunityIcons name="robot" size={44} color={Palette.greenDeep} />
               </View>
               <Text style={[styles.welcomeTitle, isDark && styles.textDark]}>
                 Asistente Virtual HuellaApp
@@ -289,7 +289,7 @@ export default function ChatScreen() {
                 >
                   {!isUser && (
                     <View style={styles.assistantAvatar}>
-                      <MaterialCommunityIcons name="paw" size={15} color="#ffffff" />
+                      <MaterialCommunityIcons name="robot" size={15} color="#ffffff" />
                     </View>
                   )}
 

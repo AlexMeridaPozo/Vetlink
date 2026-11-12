@@ -220,7 +220,7 @@ export default function HomeScreen() {
             <Image
               source={require('@/assets/images/3d/hero_pets_art.png')}
               style={styles.heroPetsImage}
-              resizeMode="cover"
+              resizeMode="contain"
             />
           )}
 
@@ -673,11 +673,11 @@ const styles = StyleSheet.create({
   },
   heroPetsImage: {
     position: 'absolute',
-    right: 0,
-    top: 0,
+    right: 4,
     bottom: 0,
-    width: '54%',
-    height: '100%',
+    top: 4,
+    width: '52%',
+    height: '96%',
     zIndex: 1,
   },
   cardHeader: {
@@ -765,9 +765,10 @@ const styles = StyleSheet.create({
     width: '48%',
     backgroundColor: Palette.surfaceLight,
     borderRadius: 20,
-    padding: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     marginBottom: 12,
-    minHeight: 118,
+    minHeight: 124,
     borderWidth: 1,
     borderColor: Palette.borderLight,
     shadowColor: '#000',
@@ -786,15 +787,15 @@ const styles = StyleSheet.create({
   botonContentWrapper: {
     zIndex: 2,
     position: 'relative',
-    width: '78%',
+    width: '74%',
   },
   botonArtImage: {
     position: 'absolute',
-    right: -2,
-    top: 0,
-    bottom: 0,
-    width: '54%',
-    height: '100%',
+    right: 2,
+    top: 10,
+    bottom: 10,
+    width: '44%',
+    height: '80%',
     zIndex: 1,
   },
   botonPresionado: {
@@ -803,25 +804,25 @@ const styles = StyleSheet.create({
   },
   botonIconoContainer: {
     backgroundColor: Palette.greenSoft,
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
   },
   botonTitulo: {
     fontFamily: FontFamily.headingSemiBold,
-    fontSize: 14,
+    fontSize: 13.5,
     letterSpacing: -0.2,
     color: Palette.textPrimary,
   },
   botonSubtitulo: {
     color: Palette.textSecondary,
     fontFamily: FontFamily.bodyRegular,
-    fontSize: 11.5,
+    fontSize: 11,
     marginTop: 2,
-    lineHeight: 15,
+    lineHeight: 14,
   },
   // ── Estilos específicos del Perfil Veterinario ──────────────────────────────
   vetBadge: {

@@ -35,8 +35,18 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# IDE
+# IDE & Editors (not related to mobile app functionality)
 .idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.fleet/
+.sublime-*
+*.code-workspace
+*.swp
+*.swo
+*~
 
 # local env files
 .env
@@ -51,12 +61,14 @@ app-example
 /ios
 /android
 
-# Testing & QA (local only - excluded from repository)
+# Testing, QA & Automation reports (local only - excluded from repository)
 Testing/
 /Excel/
 /.maestro/
+maestro/
 /__tests__/
 /coverage/
+reports/
 firestore-debug.log
 jest.config.*
 jest.setup.*
@@ -65,6 +77,8 @@ postman/
 *.postman_collection.json
 *.postman_environment.json
 VetLink.postman_collection.json
+VetLink_Test_Results.xlsx
+generate_excel.js
 *.xlsx
 *.xls
 *.csv

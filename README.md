@@ -1,16 +1,16 @@
 # 🐾 HuellApp
 
 <p align="center">
-  <a href="https://alexmeridapozo.github.io/Huellapp/" title="Hacé clic para visitar el sitio web oficial de HuellApp">
+  <a href="https://alexmeridapozo.github.io/Vetlink/" title="Hacé clic para visitar el sitio web oficial de HuellApp">
     <img src="./docs/assets/banner.png" alt="HuellApp — El cuidado de tu mascota, conectado" width="100%">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://alexmeridapozo.github.io/Huellapp/">
+  <a href="https://alexmeridapozo.github.io/Vetlink/">
     <img src="https://img.shields.io/badge/🌐_Sitio_Web-Abrir_página_oficial-0BB35E?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Abrir el sitio web oficial de HuellApp">
   </a>
-  <a href="https://alexmeridapozo.github.io/Huellapp/">
+  <a href="https://alexmeridapozo.github.io/Vetlink/">
     <img src="https://img.shields.io/badge/GitHub_Pages-Activo-07884A?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Pages">
   </a>
   <a href="https://expo.dev/">
@@ -27,10 +27,10 @@
 <p align="center">
   <strong>El cuidado de tu mascota, conectado.</strong><br>
   App móvil para la gestión sanitaria, con ficha clínica digital y la identificación inteligente de mascotas mediante chapitas con código QR y tags NFC.<br><br>
-  👉 <strong><a href="https://alexmeridapozo.github.io/Huellapp/">Ingresá al sitio web oficial de HuellApp</a></strong> 👈
+  👉 <strong><a href="https://alexmeridapozo.github.io/Vetlink/">Ingresá al sitio web oficial de HuellApp</a></strong> 👈
 </p>
 
-> 🌐 **Sitio web:** https://alexmeridapozo.github.io/Huellapp/
+> 🌐 **Sitio web:** https://alexmeridapozo.github.io/Vetlink/
 
 ---
 

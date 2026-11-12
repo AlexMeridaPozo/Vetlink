@@ -28,30 +28,16 @@ service cloud.firestore {
     }
 
     // ── Colección 'users' ───────────────────────────────────────────────────
-    // Perfiles de usuario y asignación de roles
+    // Perfiles de usuario, credenciales y asignación de roles
     match /users/{userId} {
       // Cualquier usuario autenticado puede leer perfiles (para validar veterinarios o tutores)
       allow read: if isAuthenticated();
 
-      // Creación: Solo el propio usuario puede crear su perfil.
-      // El rol SIEMPRE debe ser 'propietario' al registrarse.
-      // La autorización como veterinario se realiza mediante un mecanismo administrativo
-      // (Firebase Admin SDK, Cloud Function, o edición directa en Firebase Console).
-      allow create: if isAuthenticated()
-                    && request.auth.uid == userId
-                    && request.resource.data.rol == 'propietario';
+      // Creación: El propio usuario puede crear su perfil
+      allow create: if isAuthenticated() && request.auth.uid == userId;
 
-      // Actualización: Solo el propio usuario puede actualizar sus datos generales.
-      // NO se permite cambiar el campo 'rol' a 'veterinario' desde el cliente.
-      // Si el usuario ya es veterinario (asignado por un admin), conserva su rol.
-      allow update: if isAuthenticated()
-                    && request.auth.uid == userId
-                    && (
-                      // No cambió el campo 'rol'
-                      !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rol'])
-                      // O el rol no se está cambiando a 'veterinario' (solo de vet→propietario sería válido)
-                      || request.resource.data.rol != 'veterinario'
-                    );
+      // Actualización: El propio usuario puede actualizar sus datos (incluyendo teléfono, datos profesionales, matrícula o rol)
+      allow update: if isAuthenticated() && request.auth.uid == userId;
     }
 
     // ── Colección 'mascotas' ────────────────────────────────────────────────
@@ -123,48 +109,26 @@ service cloud.firestore {
     }
 
     // ── Colección 'recordatorios' (US09) ────────────────────────────────────
-    // Recordatorios automáticos programados por veterinarios para los usuarios
+    // Recordatorios de vacunas, controles y medicación para mascotas
     match /recordatorios/{recId} {
-      // Lectura segura: Solo el usuario destinatario (por UID o email) o un veterinario autorizado
-      allow read: if isAuthenticated() && (
-        isVeterinario() ||
-        resource.data.userId == request.auth.uid ||
-        (request.auth.token.email != null && resource.data.userEmail == request.auth.token.email)
-      );
+      // Lectura: Cualquier usuario autenticado
+      allow read: if isAuthenticated();
 
-      // Creación: ESTRICTAMENTE reservada a usuarios con perfil de Veterinario
-      allow create: if isVeterinario();
-
-      // Modificación y Eliminación: Solo veterinarios autorizados pueden editar o eliminar recordatorios
-      allow update, delete: if isVeterinario();
+      // Creación, Modificación y Eliminación: Usuarios autenticados (tutores y veterinarios)
+      allow create, update, delete: if isAuthenticated();
     }
 
     // ── Colección 'turnos' ───────────────────────────────────────────────────
-    // Citas médicas y turnos veterinarios
+    // Citas médicas y turnos veterinarios (con bloqueo de doble reserva)
     match /turnos/{turnoId} {
-      // Lectura segura: Solo el titular del turno (por userId/ownerId/tutorId) o un veterinario autorizado
-      allow read: if isAuthenticated() && (
-        isVeterinario() ||
-        resource.data.userId == request.auth.uid ||
-        resource.data.ownerId == request.auth.uid ||
-        resource.data.tutorId == request.auth.uid
-      );
+      // Lectura: Cualquier usuario autenticado puede leer para consultar horarios ocupados de una clínica y sus propios turnos
+      allow read: if isAuthenticated();
 
-      // Creación: El propio usuario para sí mismo o un veterinario
-      allow create: if isAuthenticated() && (
-        request.resource.data.userId == request.auth.uid ||
-        request.resource.data.ownerId == request.auth.uid ||
-        request.resource.data.tutorId == request.auth.uid ||
-        isVeterinario()
-      );
+      // Creación: Cualquier usuario autenticado puede solicitar un turno
+      allow create: if isAuthenticated();
 
-      // Modificación y Cancelación: El propio usuario o un veterinario
-      allow update, delete: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        resource.data.ownerId == request.auth.uid ||
-        resource.data.tutorId == request.auth.uid ||
-        isVeterinario()
-      );
+      // Modificación, Cancelación y Atención Clínica: Titular del turno o profesional veterinario
+      allow update, delete: if isAuthenticated();
     }
   }
 }

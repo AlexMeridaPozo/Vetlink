@@ -9,3 +9,4 @@ export default function OnboardingRoute() {
 
   return <OnboardingScreen onFinish={handleFinish} />;
 }
+

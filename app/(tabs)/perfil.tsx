@@ -11,6 +11,7 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -26,7 +27,31 @@ export default function PerfilScreen() {
   const { isDark, toggleTheme } = useAppTheme();
   const [changingRole, setChangingRole] = useState(false);
 
+  const doLogout = async () => {
+    try {
+      await signOut(auth);
+      router.replace('/(auth)/login');
+    } catch (error: any) {
+      console.error('Error cerrando sesión:', error);
+      if (Platform.OS === 'web') {
+        window.alert(error?.message || 'No se pudo cerrar la sesión. Intenta nuevamente.');
+      } else {
+        Alert.alert('Error', error?.message || 'No se pudo cerrar la sesión. Intenta nuevamente.');
+      }
+    }
+  };
+
   const handleLogout = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = typeof window !== 'undefined' && window.confirm
+        ? window.confirm('¿Estás seguro de que deseas salir de tu cuenta en HuellaApp?')
+        : true;
+      if (confirmed) {
+        doLogout();
+      }
+      return;
+    }
+
     Alert.alert(
       'Cerrar sesión',
       '¿Estás seguro de que deseas salir de tu cuenta en HuellaApp?',
@@ -35,24 +60,56 @@ export default function PerfilScreen() {
         {
           text: 'Cerrar sesión',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut(auth);
-              router.replace('/(auth)/login');
-            } catch (error: any) {
-              console.error('Error cerrando sesión:', error);
-              Alert.alert('Error', error?.message || 'No se pudo cerrar la sesión. Intenta nuevamente.');
-            }
-          },
+          onPress: doLogout,
         },
       ]
     );
   };
 
-  const handleToggleRol = async () => {
+  const doToggleRol = async (nuevoRol: 'veterinario' | 'propietario', nuevoRolTexto: string) => {
+    if (!user) return;
+    setChangingRole(true);
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        rol: nuevoRol,
+        updatedAt: new Date().toISOString(),
+      });
+      await refreshProfile();
+      if (Platform.OS === 'web') {
+        window.alert(`Tu perfil ahora está configurado como ${nuevoRolTexto}. Las funciones y permisos se han adaptado.`);
+      } else {
+        Alert.alert(
+          'Rol Actualizado',
+          `Tu perfil ahora está configurado como ${nuevoRolTexto}. Las funciones y permisos se han adaptado.`
+        );
+      }
+    } catch (err: any) {
+      console.error('Error actualizando rol de usuario:', err);
+      if (Platform.OS === 'web') {
+        window.alert(err?.message || 'No se pudo actualizar el rol en Firestore.');
+      } else {
+        Alert.alert('Error', err?.message || 'No se pudo actualizar el rol en Firestore.');
+      }
+    } finally {
+      setChangingRole(false);
+    }
+  };
+
+  const handleToggleRol = () => {
     if (!user) return;
     const nuevoRol = isVeterinario ? 'propietario' : 'veterinario';
     const nuevoRolTexto = nuevoRol === 'veterinario' ? 'Profesional Veterinario' : 'Tutor / Propietario';
+
+    if (Platform.OS === 'web') {
+      const confirmed = typeof window !== 'undefined' && window.confirm
+        ? window.confirm(`¿Deseas cambiar tu rol actual a "${nuevoRolTexto}"? Podrás alternarlo nuevamente cuando lo desees para probar las funciones clínicas y de tutor.`)
+        : true;
+      if (confirmed) {
+        doToggleRol(nuevoRol, nuevoRolTexto);
+      }
+      return;
+    }
 
     Alert.alert(
       'Cambiar Modo de Cuenta',
@@ -61,26 +118,7 @@ export default function PerfilScreen() {
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Cambiar Rol',
-          onPress: async () => {
-            setChangingRole(true);
-            try {
-              const userRef = doc(db, 'users', user.uid);
-              await updateDoc(userRef, {
-                rol: nuevoRol,
-                updatedAt: new Date().toISOString(),
-              });
-              await refreshProfile();
-              Alert.alert(
-                'Rol Actualizado',
-                `Tu perfil ahora está configurado como ${nuevoRolTexto}. Las funciones y permisos se han adaptado.`
-              );
-            } catch (err: any) {
-              console.error('Error actualizando rol de usuario:', err);
-              Alert.alert('Error', err?.message || 'No se pudo actualizar el rol en Firestore.');
-            } finally {
-              setChangingRole(false);
-            }
-          },
+          onPress: () => doToggleRol(nuevoRol, nuevoRolTexto),
         },
       ]
     );

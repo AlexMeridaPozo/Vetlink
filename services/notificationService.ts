@@ -28,7 +28,6 @@ export async function initNotifications(): Promise<void> {
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#04b639',
-        sound: 'default',
         enableVibrate: true,
       });
     }

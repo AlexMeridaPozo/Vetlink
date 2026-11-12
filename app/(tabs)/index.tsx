@@ -63,7 +63,7 @@ export default function HomeScreen() {
             accessibilityLabel="Ver pacientes y fichas clínicas"
           >
             <Image
-              source={require('@/assets/images/3d/hero_pets_art.png')}
+              source={require('../../assets/images/3d/hero_pets_art.png')}
               style={styles.heroPetsImage}
               resizeMode="contain"
             />
@@ -132,7 +132,7 @@ export default function HomeScreen() {
               colorIcono={isDark ? '#38BDF8' : '#0284C7'}
               onPress={() => router.push('/turnos')}
               isDark={isDark}
-              artSource={require('@/assets/images/3d/calendar_art.png')}
+              artSource={require('../../assets/images/3d/calendar_art.png')}
               cardBgLight="#EBF5FB"
               cardBorderLight="#BEE3F8"
               cardBgDark="#072d47"
@@ -146,7 +146,7 @@ export default function HomeScreen() {
               colorIcono={isDark ? '#FB923C' : '#D97706'}
               onPress={() => router.push('/recordatorios')}
               isDark={isDark}
-              artSource={require('@/assets/images/3d/clock_art.png')}
+              artSource={require('../../assets/images/3d/clock_art.png')}
               cardBgLight="#FEF6EE"
               cardBorderLight="#FADEC9"
               cardBgDark="#331908"
@@ -160,7 +160,7 @@ export default function HomeScreen() {
               colorIcono={isDark ? '#4ade80' : '#087A43'}
               onPress={() => router.push('/veterinarias')}
               isDark={isDark}
-              artSource={require('@/assets/images/3d/clinic_art.png')}
+              artSource={require('../../assets/images/3d/clinic_art.png')}
               cardBgLight="#EAF8F0"
               cardBorderLight="#BCEAD0"
               cardBgDark="#042c16"
@@ -174,7 +174,7 @@ export default function HomeScreen() {
               colorIcono={isDark ? '#38BDF8' : '#0891B2'}
               onPress={() => router.push('/(tabs)/mapa')}
               isDark={isDark}
-              artSource={require('@/assets/images/3d/map_art.png')}
+              artSource={require('../../assets/images/3d/map_art.png')}
               cardBgLight="#EBF6FA"
               cardBorderLight="#BEE5F2"
               cardBgDark="#082c42"
@@ -188,7 +188,7 @@ export default function HomeScreen() {
               colorIcono={isDark ? '#4ade80' : '#087A43'}
               onPress={() => router.push('/(tabs)/mascotas')}
               isDark={isDark}
-              artSource={require('@/assets/images/3d/qr_tag_art.png')}
+              artSource={require('../../assets/images/3d/qr_tag_art.png')}
               cardBgLight="#EAF8F0"
               cardBorderLight="#BCEAD0"
               cardBgDark="#042313"
@@ -202,7 +202,7 @@ export default function HomeScreen() {
               colorIcono={isDark ? '#34D399' : '#059669'}
               onPress={() => router.push('/(tabs)/perfil')}
               isDark={isDark}
-              artSource={require('@/assets/images/3d/clipboard_art.png')}
+              artSource={require('../../assets/images/3d/clipboard_art.png')}
               cardBgLight="#EBF7F2"
               cardBorderLight="#BEE6D7"
               cardBgDark="#042d1b"
@@ -223,7 +223,7 @@ export default function HomeScreen() {
           >
             <View style={[styles.sosSecondaryIconWrapper, isDark && styles.sosSecondaryIconWrapperDark]}>
               <Image
-                source={require('@/assets/images/3d/sos_siren_art.png')}
+                source={require('../../assets/images/3d/sos_siren_art.png')}
                 resizeMode="contain"
                 style={{ width: 28, height: 28 }}
               />
@@ -284,7 +284,7 @@ export default function HomeScreen() {
           accessibilityLabel="Ver mis mascotas"
         >
           <Image
-            source={require('@/assets/images/3d/hero_pets_art.png')}
+            source={require('../../assets/images/3d/hero_pets_art.png')}
             style={styles.heroPetsImage}
             resizeMode="contain"
           />
@@ -351,7 +351,7 @@ export default function HomeScreen() {
             colorIcono={isDark ? '#4ade80' : '#087A43'}
             onPress={() => router.push('/(tabs)/scan')}
             isDark={isDark}
-            artSource={require('@/assets/images/3d/qr_tag_art.png')}
+            artSource={require('../../assets/images/3d/qr_tag_art.png')}
             cardBgLight="#EAF8F0"
             cardBorderLight="#BCEAD0"
             cardBgDark="#042313"
@@ -365,7 +365,7 @@ export default function HomeScreen() {
             colorIcono={isDark ? '#38BDF8' : '#0284C7'}
             onPress={() => router.push('/turnos')}
             isDark={isDark}
-            artSource={require('@/assets/images/3d/calendar_art.png')}
+            artSource={require('../../assets/images/3d/calendar_art.png')}
             cardBgLight="#EBF5FB"
             cardBorderLight="#BEE3F8"
             cardBgDark="#072d47"
@@ -379,7 +379,7 @@ export default function HomeScreen() {
             colorIcono={isDark ? '#FB923C' : '#D97706'}
             onPress={() => router.push('/recordatorios')}
             isDark={isDark}
-            artSource={require('@/assets/images/3d/clock_art.png')}
+            artSource={require('../../assets/images/3d/clock_art.png')}
             cardBgLight="#FEF6EE"
             cardBorderLight="#FADEC9"
             cardBgDark="#331908"
@@ -393,7 +393,7 @@ export default function HomeScreen() {
             colorIcono={isDark ? '#4ade80' : '#087A43'}
             onPress={() => router.push('/veterinarias')}
             isDark={isDark}
-            artSource={require('@/assets/images/3d/clinic_art.png')}
+            artSource={require('../../assets/images/3d/clinic_art.png')}
             cardBgLight="#EAF8F0"
             cardBorderLight="#BCEAD0"
             cardBgDark="#042c16"
@@ -407,7 +407,7 @@ export default function HomeScreen() {
             colorIcono={isDark ? '#38BDF8' : '#0891B2'}
             onPress={() => router.push('/(tabs)/mapa')}
             isDark={isDark}
-            artSource={require('@/assets/images/3d/map_art.png')}
+            artSource={require('../../assets/images/3d/map_art.png')}
             cardBgLight="#EBF6FA"
             cardBorderLight="#BEE5F2"
             cardBgDark="#082c42"
@@ -421,7 +421,7 @@ export default function HomeScreen() {
             colorIcono={isDark ? '#34D399' : '#059669'}
             onPress={() => router.push('/(tabs)/perfil')}
             isDark={isDark}
-            artSource={require('@/assets/images/3d/clipboard_art.png')}
+            artSource={require('../../assets/images/3d/clipboard_art.png')}
             cardBgLight="#EBF7F2"
             cardBorderLight="#BEE6D7"
             cardBgDark="#042d1b"
@@ -442,7 +442,7 @@ export default function HomeScreen() {
         >
           <View style={[styles.sosSecondaryIconWrapper, isDark && styles.sosSecondaryIconWrapperDark]}>
             <Image
-              source={require('@/assets/images/3d/sos_siren_art.png')}
+              source={require('../../assets/images/3d/sos_siren_art.png')}
               resizeMode="contain"
               style={{ width: 28, height: 28 }}
             />

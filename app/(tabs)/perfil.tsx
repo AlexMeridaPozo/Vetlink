@@ -1,15 +1,13 @@
 import { FriendlyPetBanner } from '@/components/FriendlyPetBanner';
-import { auth, db } from '@/config/firebase';
+import { auth } from '@/config/firebase';
 import { FontFamily, Palette } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Platform,
   ScrollView,
@@ -25,7 +23,6 @@ export default function PerfilScreen() {
   const router = useRouter();
   const { user, profile, isVeterinario, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useAppTheme();
-  const [changingRole, setChangingRole] = useState(false);
 
   const doLogout = async () => {
     try {
@@ -61,64 +58,6 @@ export default function PerfilScreen() {
           text: 'Cerrar sesión',
           style: 'destructive',
           onPress: doLogout,
-        },
-      ]
-    );
-  };
-
-  const doToggleRol = async (nuevoRol: 'veterinario' | 'propietario', nuevoRolTexto: string) => {
-    if (!user) return;
-    setChangingRole(true);
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        rol: nuevoRol,
-        updatedAt: new Date().toISOString(),
-      });
-      await refreshProfile();
-      if (Platform.OS === 'web') {
-        window.alert(`Tu perfil ahora está configurado como ${nuevoRolTexto}. Las funciones y permisos se han adaptado.`);
-      } else {
-        Alert.alert(
-          'Rol Actualizado',
-          `Tu perfil ahora está configurado como ${nuevoRolTexto}. Las funciones y permisos se han adaptado.`
-        );
-      }
-    } catch (err: any) {
-      console.error('Error actualizando rol de usuario:', err);
-      if (Platform.OS === 'web') {
-        window.alert(err?.message || 'No se pudo actualizar el rol en Firestore.');
-      } else {
-        Alert.alert('Error', err?.message || 'No se pudo actualizar el rol en Firestore.');
-      }
-    } finally {
-      setChangingRole(false);
-    }
-  };
-
-  const handleToggleRol = () => {
-    if (!user) return;
-    const nuevoRol = isVeterinario ? 'propietario' : 'veterinario';
-    const nuevoRolTexto = nuevoRol === 'veterinario' ? 'Profesional Veterinario' : 'Tutor / Propietario';
-
-    if (Platform.OS === 'web') {
-      const confirmed = typeof window !== 'undefined' && window.confirm
-        ? window.confirm(`¿Deseas cambiar tu rol actual a "${nuevoRolTexto}"? Podrás alternarlo nuevamente cuando lo desees para probar las funciones clínicas y de tutor.`)
-        : true;
-      if (confirmed) {
-        doToggleRol(nuevoRol, nuevoRolTexto);
-      }
-      return;
-    }
-
-    Alert.alert(
-      'Cambiar Modo de Cuenta',
-      `¿Deseas cambiar tu rol actual a "${nuevoRolTexto}"? Podrás alternarlo nuevamente cuando lo desees para probar las funciones clínicas y de tutor.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Cambiar Rol',
-          onPress: () => doToggleRol(nuevoRol, nuevoRolTexto),
         },
       ]
     );
@@ -183,27 +122,6 @@ export default function PerfilScreen() {
               </View>
             )}
           </View>
-
-          {/* Botón para alternar rol dinámicamente (Exclusivo para pruebas de veterinarios habilitados; los tutores nunca pueden cambiar su rol a veterinario) */}
-          {isVeterinario && (
-            <TouchableOpacity
-              style={[styles.switchRoleBtn, isDark && styles.switchRoleBtnDark]}
-              onPress={handleToggleRol}
-              disabled={changingRole}
-              activeOpacity={0.8}
-            >
-              {changingRole ? (
-                <ActivityIndicator size="small" color={Palette.greenDeep} />
-              ) : (
-                <>
-                  <Ionicons name="swap-horizontal-outline" size={16} color={Palette.greenDeep} />
-                  <Text style={styles.switchRoleBtnText}>
-                    Cambiar a modo Tutor (Vista Previa)
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-          )}
 
           {/* Datos Profesionales Exclusivos (Solo si existen datos reales) */}
           {isVeterinario && (
@@ -460,27 +378,6 @@ const styles = StyleSheet.create({
   },
   roleTextOwnerDark: {
     color: '#7DD3FC',
-  },
-  switchRoleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 14,
-    backgroundColor: Palette.greenSoft,
-    borderWidth: 1,
-    borderColor: Palette.greenBorder,
-  },
-  switchRoleBtnDark: {
-    backgroundColor: '#133324',
-    borderColor: '#1F543B',
-  },
-  switchRoleBtnText: {
-    fontSize: 13,
-    fontFamily: FontFamily.bodyBold,
-    color: Palette.greenDeep,
   },
   optionsContainer: {
     marginTop: 4,

@@ -17,8 +17,8 @@ export function generateLeafletHtml({
   userLocation,
   isDark = false,
 }: GenerateLeafletHtmlParams): string {
-  const veterinariasJson = JSON.stringify(veterinarias);
-  const userLocationJson = JSON.stringify(userLocation || null);
+  const veterinariasJson = JSON.stringify(veterinarias).replace(/</g, '\\u003c');
+  const userLocationJson = JSON.stringify(userLocation || null).replace(/</g, '\\u003c');
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -337,6 +337,16 @@ export function generateLeafletHtml({
       var veterinariasData = ${veterinariasJson};
       var initialUserLoc = ${userLocationJson};
 
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
       function notifyParent(data) {
         try {
           var payload = JSON.stringify(data);
@@ -450,7 +460,11 @@ export function generateLeafletHtml({
             return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2c0 1.1.9 2 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg>';
           })();
 
-          var iconHtml = '<div class="' + markerClass + '" id="pin-' + vet.id + '">' +
+          var safeId = escapeHtml(vet.id || '');
+          var safeNombre = escapeHtml(vet.nombre || 'Veterinaria');
+          var safeDireccion = escapeHtml(vet.direccion || '');
+
+          var iconHtml = '<div class="' + markerClass + '" id="pin-' + safeId + '">' +
             '<div class="vet-bubble">' + iconSvg + '</div>' +
             '<div class="vet-arrow"></div>' +
           '</div>';
@@ -464,13 +478,13 @@ export function generateLeafletHtml({
           });
 
           var popupContent = '' +
-            '<div class="popup-inner" onclick="window.selectVet(\\'' + vet.id + '\\')">' +
+            '<div class="popup-inner" data-vet-id="' + safeId + '" onclick="window.selectVet(this.getAttribute(\\'data-vet-id\\'))">' +
               '<div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;">' +
                 huellappBadgeHtml +
                 '<span class="popup-badge ' + badgeClass + '">' + badgeText + '</span>' +
               '</div>' +
-              '<h3 class="popup-title">' + (vet.nombre || 'Veterinaria') + '</h3>' +
-              '<p class="popup-address">📍 ' + (vet.direccion || '') + '</p>' +
+              '<h3 class="popup-title">' + safeNombre + '</h3>' +
+              '<p class="popup-address">📍 ' + safeDireccion + '</p>' +
             '</div>';
 
           var marker = L.marker([lat, lng], {

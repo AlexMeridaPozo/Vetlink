@@ -33,11 +33,24 @@ service cloud.firestore {
       // Cualquier usuario autenticado puede leer perfiles (para validar veterinarios o tutores)
       allow read: if isAuthenticated();
 
-      // Creación: El propio usuario puede crear su perfil
-      allow create: if isAuthenticated() && request.auth.uid == userId;
+      // Creación: El propio usuario puede crear su perfil únicamente con rol 'propietario'
+      // (Evita escalada de privilegios a 'veterinario' desde el cliente)
+      allow create: if isAuthenticated() &&
+        request.auth.uid == userId &&
+        (!('rol' in request.resource.data) || request.resource.data.rol == 'propietario') &&
+        (!('role' in request.resource.data) || request.resource.data.role == 'propietario');
 
-      // Actualización: El propio usuario puede actualizar sus datos (incluyendo teléfono, datos profesionales, matrícula o rol)
-      allow update: if isAuthenticated() && request.auth.uid == userId;
+      // Actualización: El propio usuario puede actualizar sus datos personales,
+      // pero NO puede auto-asignarse el rol 'veterinario' si no lo tenía previamente en Firestore
+      allow update: if isAuthenticated() &&
+        request.auth.uid == userId &&
+        (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rol', 'role']) ||
+          request.resource.data.rol == 'propietario' ||
+          resource.data.rol == 'veterinario'
+        );
+
+      allow delete: if false;
     }
 
     // ── Colección 'mascotas' ────────────────────────────────────────────────
@@ -58,20 +71,20 @@ service cloud.firestore {
       // 1. Un veterinario puede actualizar cualquier campo (incluyendo datos clínicos y NFC).
       // 2. Un propietario/tutor solo puede actualizar sus propios datos de contacto y estado de extravío
       //    y NO puede modificar los campos técnicos de NFC (nfcTagId, nfcStatus, nfcLinkedBy, nfcLinkedAt).
-      // 3. Un rescatista no autenticado puede actualizar ÚNICAMENTE el campo 'ultimoEscaneo' con su ubicación GPS.
+      // 3. Un usuario puede vincular una mascota huérfana (sin userId NI ownerId previos) a su propia cuenta.
+      // 4. Un rescatista no autenticado puede actualizar ÚNICAMENTE el campo 'ultimoEscaneo' con su ubicación GPS.
       allow update: if (
         isAuthenticated() && (
           isVeterinario() ||
           (
             isOwner(resource.data) &&
-            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['nfcTagId', 'nfcStatus', 'nfcLinkedBy', 'nfcLinkedAt'])
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['nfcTagId', 'nfcStatus', 'nfcLinkedBy', 'nfcLinkedAt', 'createdByVet'])
           ) ||
           (
-            (
-              !('userId' in resource.data) || resource.data.userId == null || resource.data.userId == '' ||
-              !('ownerId' in resource.data) || resource.data.ownerId == null || resource.data.ownerId == ''
-            ) &&
-            request.resource.data.userId == request.auth.uid
+            (!('userId' in resource.data) || resource.data.userId == null || resource.data.userId == '') &&
+            (!('ownerId' in resource.data) || resource.data.ownerId == null || resource.data.ownerId == '') &&
+            request.resource.data.userId == request.auth.uid &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['userId', 'ownerId', 'updatedAt'])
           )
         )
       ) || (
@@ -111,24 +124,50 @@ service cloud.firestore {
     // ── Colección 'recordatorios' (US09) ────────────────────────────────────
     // Recordatorios de vacunas, controles y medicación para mascotas
     match /recordatorios/{recId} {
-      // Lectura: Cualquier usuario autenticado
-      allow read: if isAuthenticated();
+      // Lectura: Solo el destinatario del recordatorio o un veterinario autorizado
+      allow read: if isAuthenticated() && (
+        isVeterinario() ||
+        resource.data.userId == request.auth.uid ||
+        (request.auth.token.email != null && (
+          resource.data.userEmail == request.auth.token.email ||
+          resource.data.userEmail == request.auth.token.email.lower()
+        ))
+      );
 
-      // Creación, Modificación y Eliminación: Usuarios autenticados (tutores y veterinarios)
-      allow create, update, delete: if isAuthenticated();
+      // Creación: Veterinarios autorizados o el propio tutor para su cuenta
+      allow create: if isAuthenticated() && (
+        isVeterinario() ||
+        request.resource.data.userId == request.auth.uid
+      );
+
+      // Modificación y Eliminación: Veterinarios autorizados o el propio titular
+      allow update, delete: if isAuthenticated() && (
+        isVeterinario() ||
+        resource.data.userId == request.auth.uid
+      );
     }
 
     // ── Colección 'turnos' ───────────────────────────────────────────────────
     // Citas médicas y turnos veterinarios (con bloqueo de doble reserva)
     match /turnos/{turnoId} {
-      // Lectura: Cualquier usuario autenticado puede leer para consultar horarios ocupados de una clínica y sus propios turnos
+      // Lectura: Usuarios autenticados (permite verificar disponibilidad horaria anti-doble-reserva y consultar turnos propios)
       allow read: if isAuthenticated();
 
-      // Creación: Cualquier usuario autenticado puede solicitar un turno
-      allow create: if isAuthenticated();
+      // Creación: El titular del turno o un profesional veterinario
+      allow create: if isAuthenticated() && (
+        isVeterinario() ||
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.tutorId == request.auth.uid ||
+        request.resource.data.ownerId == request.auth.uid
+      );
 
       // Modificación, Cancelación y Atención Clínica: Titular del turno o profesional veterinario
-      allow update, delete: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (
+        isVeterinario() ||
+        resource.data.userId == request.auth.uid ||
+        resource.data.tutorId == request.auth.uid ||
+        resource.data.ownerId == request.auth.uid
+      );
     }
   }
 }

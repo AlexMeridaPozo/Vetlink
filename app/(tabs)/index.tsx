@@ -6,7 +6,7 @@ import { FriendlyPetBanner } from '@/components/FriendlyPetBanner';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SosIcon } from '@/components/SosIcon';
 
@@ -216,88 +216,111 @@ export default function HomeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Ver mis mascotas"
         >
-          <View style={styles.cardHeader}>
+          {isDark && (
+            <Image
+              source={require('@/assets/images/3d/hero_pets_art.png')}
+              style={styles.heroPetsImage}
+              resizeMode="cover"
+            />
+          )}
+
+          <View style={styles.cardMascotasContent}>
             <View style={[styles.cardIconWrapper, isDark && styles.cardIconWrapperDark]}>
-              <Ionicons name="paw-outline" size={24} color={Palette.greenDeep} />
+              <Ionicons name="paw" size={22} color={isDark ? '#4ade80' : Palette.greenDeep} />
             </View>
-            <View style={styles.cardBadge}>
-              <Text style={styles.cardNumero}>{petCount}</Text>
+
+            <Text style={[styles.cardTitulo, isDark && styles.cardTituloDark]}>Mis mascotas</Text>
+            <Text style={[styles.cardDetalle, isDark && styles.cardDetalleDark]}>
+              {petCount === 1 ? '1 mascota registrada' : `${petCount} mascotas registradas`}
+            </Text>
+
+            <View style={[styles.cardFooter, isDark && styles.cardFooterDark]}>
+              <Text style={[styles.cardLink, isDark && styles.cardLinkDark]}>Ver perfiles y detalles</Text>
+              <Ionicons name="chevron-forward-outline" size={16} color={isDark ? '#4ade80' : Palette.greenDeep} />
             </View>
-          </View>
-
-          <Text style={[styles.cardTitulo, isDark && styles.cardTituloDark]}>Mis mascotas</Text>
-          <Text style={[styles.cardDetalle, isDark && styles.cardDetalleDark]}>
-            {petCount === 1 ? '1 mascota registrada' : `${petCount} mascotas registradas`}
-          </Text>
-
-          <View style={[styles.cardFooter, isDark && styles.cardFooterDark]}>
-            <Text style={[styles.cardLink, isDark && styles.cardLinkDark]}>Ver perfiles y detalles</Text>
-            <Ionicons name="chevron-forward-outline" size={16} color={isDark ? '#4ade80' : Palette.greenDeep} />
           </View>
         </Pressable>
 
         {/* Título de servicios diarios */}
         <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>Servicios y Accesos</Text>
 
-        {/* Grilla de accesos prioritarios para el tutor */}
+        {/* Grilla de accesos prioritarios para el tutor con ilustraciones 3D */}
         <View style={styles.grid}>
           <BotonMenu
             titulo="Escanear QR"
             subtitulo="Identificar chapita"
             icono="qr-code-outline"
-            colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
-            colorIcono={Palette.greenDeep}
+            colorFondoIcono={isDark ? '#143825' : Palette.greenSoft}
+            colorIcono={isDark ? '#4ade80' : Palette.greenDeep}
             onPress={() => router.push('/(tabs)/scan')}
             isDark={isDark}
+            artSource={require('@/assets/images/3d/qr_tag_art.png')}
+            cardBgDark="#042313"
+            cardBorderDark="#0d522c"
           />
           <BotonMenu
             titulo="Turnos"
             subtitulo="Agenda de citas"
             icono="calendar-outline"
-            colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
-            colorIcono={Palette.cyanDark}
+            colorFondoIcono={isDark ? '#12384D' : Palette.cyanLight}
+            colorIcono={isDark ? '#38BDF8' : Palette.cyanDark}
             onPress={() => router.push('/turnos')}
             isDark={isDark}
+            artSource={require('@/assets/images/3d/calendar_art.png')}
+            cardBgDark="#072d47"
+            cardBorderDark="#0e5e94"
           />
           <BotonMenu
             titulo="Recordatorios"
             subtitulo="Vacunas y controles"
             icono="notifications-outline"
-            colorFondoIcono={isDark ? '#381E10' : Palette.peachSoft}
-            colorIcono={Palette.peachDark}
+            colorFondoIcono={isDark ? '#42240C' : Palette.peachSoft}
+            colorIcono={isDark ? '#FB923C' : Palette.peachDark}
             onPress={() => router.push('/recordatorios')}
             isDark={isDark}
+            artSource={require('@/assets/images/3d/clock_art.png')}
+            cardBgDark="#331908"
+            cardBorderDark="#733b16"
           />
           <BotonMenu
             titulo="Veterinarias"
             subtitulo="Cercanas a vos"
             icono="medkit-outline"
-            colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
-            colorIcono={Palette.greenDeep}
+            colorFondoIcono={isDark ? '#143825' : Palette.greenSoft}
+            colorIcono={isDark ? '#4ade80' : Palette.greenDeep}
             onPress={() => router.push('/veterinarias')}
             isDark={isDark}
+            artSource={require('@/assets/images/3d/clinic_art.png')}
+            cardBgDark="#042c16"
+            cardBorderDark="#0c6332"
           />
           <BotonMenu
             titulo="Mapa Pilar"
             subtitulo="15 lugares reales"
             icono="compass-outline"
-            colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
-            colorIcono={Palette.cyanDark}
+            colorFondoIcono={isDark ? '#12384D' : Palette.cyanLight}
+            colorIcono={isDark ? '#38BDF8' : Palette.cyanDark}
             onPress={() => router.push('/(tabs)/mapa')}
             isDark={isDark}
+            artSource={require('@/assets/images/3d/map_art.png')}
+            cardBgDark="#082c42"
+            cardBorderDark="#115c8c"
           />
           <BotonMenu
             titulo="Mi Perfil"
             subtitulo="Datos y ajustes"
             icono="person-outline"
-            colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
-            colorIcono={Palette.greenDeep}
+            colorFondoIcono={isDark ? '#133D2F' : Palette.greenSoft}
+            colorIcono={isDark ? '#34D399' : Palette.greenDeep}
             onPress={() => router.push('/(tabs)/perfil')}
             isDark={isDark}
+            artSource={require('@/assets/images/3d/clipboard_art.png')}
+            cardBgDark="#042d1b"
+            cardBorderDark="#0e623b"
           />
         </View>
 
-        {/* ACCESO SECUNDARIO SOS: Calmo y no invasivo */}
+        {/* ACCESO SECUNDARIO SOS: Diseño con iluminación y badge */}
         <Pressable
           style={({ pressed }) => [
             styles.sosSecondaryCard,
@@ -309,7 +332,10 @@ export default function HomeScreen() {
           accessibilityLabel="Acceso a centro de emergencias SOS y guardias 24 horas"
         >
           <View style={[styles.sosSecondaryIconWrapper, isDark && styles.sosSecondaryIconWrapperDark]}>
-            <Ionicons name="alert-circle-outline" size={22} color={Palette.redEmergency} />
+            <Image
+              source={require('@/assets/images/3d/sos_siren_art.png')}
+              style={{ width: 28, height: 28, resizeMode: 'contain' }}
+            />
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -321,7 +347,7 @@ export default function HomeScreen() {
               </View>
             </View>
             <Text style={[styles.sosSecondarySubtitle, isDark && styles.subtituloDark]}>
-              Hospital San Roque y centros veterinarios activos en Pilar
+              Hospital San Roque y centros veterinarios activos en Pilar.
             </Text>
           </View>
           <Ionicons name="chevron-forward-outline" size={18} color={Palette.redEmergency} />
@@ -331,7 +357,7 @@ export default function HomeScreen() {
         <FriendlyPetBanner
           title="Cada huellita tiene una historia."
           subtitle="Acompañamos cada etapa de su vida con cuidado, dedicación y amor."
-          variant="both"
+          variant="paw"
           style={{ marginTop: 6, marginBottom: 20 }}
         />
       </ScrollView>
@@ -348,6 +374,9 @@ function BotonMenu({
   onPress,
   isDark,
   isAlert,
+  artSource,
+  cardBgDark,
+  cardBorderDark,
 }: {
   titulo: string;
   subtitulo: string;
@@ -357,12 +386,17 @@ function BotonMenu({
   onPress: () => void;
   isDark?: boolean;
   isAlert?: boolean;
+  artSource?: any;
+  cardBgDark?: string;
+  cardBorderDark?: string;
 }) {
   return (
     <Pressable
       style={({ pressed }) => [
         styles.boton,
         isDark && styles.botonDark,
+        isDark && cardBgDark ? { backgroundColor: cardBgDark } : undefined,
+        isDark && cardBorderDark ? { borderColor: cardBorderDark } : undefined,
         isAlert && (isDark ? styles.botonAlertDark : styles.botonAlert),
         pressed && styles.botonPresionado,
       ]}
@@ -370,20 +404,35 @@ function BotonMenu({
       accessibilityRole="button"
       accessibilityLabel={titulo}
     >
-      <View
-        style={[
-          styles.botonIconoContainer,
-          colorFondoIcono && { backgroundColor: colorFondoIcono },
-        ]}
-      >
-        <Ionicons name={icono} size={20} color={colorIcono || Palette.greenDeep} />
+      {isDark && artSource && (
+        <Image
+          source={artSource}
+          style={styles.botonArtImage}
+          resizeMode="contain"
+        />
+      )}
+      <View style={artSource ? styles.botonContentWrapper : undefined}>
+        <View
+          style={[
+            styles.botonIconoContainer,
+            colorFondoIcono && { backgroundColor: colorFondoIcono },
+          ]}
+        >
+          <Ionicons name={icono} size={20} color={colorIcono || Palette.greenDeep} />
+        </View>
+        <Text
+          numberOfLines={1}
+          style={[styles.botonTitulo, isDark && styles.textDark, isAlert && styles.botonAlertTitulo]}
+        >
+          {titulo}
+        </Text>
+        <Text
+          numberOfLines={1}
+          style={[styles.botonSubtitulo, isDark && styles.subtituloDark, isAlert && styles.botonAlertSubtitulo]}
+        >
+          {subtitulo}
+        </Text>
       </View>
-      <Text style={[styles.botonTitulo, isDark && styles.textDark, isAlert && styles.botonAlertTitulo]}>
-        {titulo}
-      </Text>
-      <Text style={[styles.botonSubtitulo, isDark && styles.subtituloDark, isAlert && styles.botonAlertSubtitulo]}>
-        {subtitulo}
-      </Text>
     </Pressable>
   );
 }
@@ -402,7 +451,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Palette.surfaceLight,
     borderRadius: 18,
-    padding: 14,
+    padding: 12,
     borderWidth: 1,
     borderColor: Palette.borderLight,
     gap: 12,
@@ -415,8 +464,8 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   sosSecondaryCardDark: {
-    backgroundColor: Palette.surfaceDark,
-    borderColor: Palette.borderDark,
+    backgroundColor: '#1E0B0F',
+    borderColor: '#4A151C',
   },
   sosSecondaryIconWrapper: {
     width: 42,
@@ -427,18 +476,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sosSecondaryIconWrapperDark: {
-    backgroundColor: '#381616',
+    backgroundColor: '#301116',
   },
   sosSecondaryTitle: {
-    fontSize: 15,
+    fontSize: 13.5,
     fontFamily: FontFamily.headingSemiBold,
+    letterSpacing: -0.2,
     color: Palette.textPrimary,
   },
   sosSecondarySubtitle: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontFamily: FontFamily.bodyRegular,
     color: Palette.textSecondary,
     marginTop: 2,
+    lineHeight: 15,
   },
   sosSecondaryBadge: {
     backgroundColor: Palette.redEmergency,
@@ -596,8 +647,8 @@ const styles = StyleSheet.create({
   cardMascotas: {
     backgroundColor: Palette.surfaceLight,
     borderRadius: 22,
-    padding: 20,
-    marginBottom: 24,
+    padding: 18,
+    marginBottom: 22,
     borderWidth: 1,
     borderColor: Palette.borderLight,
     shadowColor: Palette.greenDeep,
@@ -605,11 +656,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 2,
+    position: 'relative',
+    overflow: 'hidden',
+    minHeight: 146,
+    justifyContent: 'center',
   },
   cardMascotasDark: {
-    backgroundColor: Palette.surfaceDark,
-    borderColor: Palette.borderDark,
-    shadowOpacity: 0.25,
+    backgroundColor: '#072417',
+    borderColor: '#174E33',
+    shadowOpacity: 0.3,
+  },
+  cardMascotasContent: {
+    zIndex: 2,
+    position: 'relative',
+    width: '56%',
+  },
+  heroPetsImage: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: '54%',
+    height: '100%',
+    zIndex: 1,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -624,6 +693,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 10,
   },
   cardIconWrapperDark: {
     backgroundColor: '#133324',
@@ -661,13 +731,15 @@ const styles = StyleSheet.create({
   cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 14,
-    paddingTop: 12,
+    marginTop: 12,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: Palette.borderSubtle,
   },
   cardFooterDark: {
-    borderTopColor: Palette.borderDark,
+    borderTopWidth: 0,
+    paddingTop: 4,
+    marginTop: 8,
   },
   cardLink: {
     fontSize: 13,
@@ -692,9 +764,10 @@ const styles = StyleSheet.create({
   boton: {
     width: '48%',
     backgroundColor: Palette.surfaceLight,
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
+    borderRadius: 20,
+    padding: 12,
+    marginBottom: 12,
+    minHeight: 118,
     borderWidth: 1,
     borderColor: Palette.borderLight,
     shadowColor: '#000',
@@ -702,10 +775,27 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 4,
     elevation: 1,
+    position: 'relative',
+    overflow: 'hidden',
+    justifyContent: 'center',
   },
   botonDark: {
-    backgroundColor: Palette.surfaceDark,
-    borderColor: Palette.borderDark,
+    backgroundColor: '#0A1811',
+    borderColor: '#163C2A',
+  },
+  botonContentWrapper: {
+    zIndex: 2,
+    position: 'relative',
+    width: '78%',
+  },
+  botonArtImage: {
+    position: 'absolute',
+    right: -2,
+    top: 0,
+    bottom: 0,
+    width: '54%',
+    height: '100%',
+    zIndex: 1,
   },
   botonPresionado: {
     opacity: 0.75,
@@ -713,24 +803,25 @@ const styles = StyleSheet.create({
   },
   botonIconoContainer: {
     backgroundColor: Palette.greenSoft,
-    width: 42,
-    height: 42,
-    borderRadius: 14,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   botonTitulo: {
     fontFamily: FontFamily.headingSemiBold,
-    fontSize: 15,
+    fontSize: 14,
+    letterSpacing: -0.2,
     color: Palette.textPrimary,
   },
   botonSubtitulo: {
     color: Palette.textSecondary,
     fontFamily: FontFamily.bodyRegular,
-    fontSize: 12,
-    marginTop: 4,
-    lineHeight: 16,
+    fontSize: 11.5,
+    marginTop: 2,
+    lineHeight: 15,
   },
   // ── Estilos específicos del Perfil Veterinario ──────────────────────────────
   vetBadge: {

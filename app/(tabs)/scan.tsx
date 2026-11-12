@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   scannerOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
   },

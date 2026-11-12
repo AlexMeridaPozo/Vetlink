@@ -6,7 +6,7 @@ import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 export interface FriendlyPetBannerProps {
   title: string;
   subtitle?: string;
-  variant?: 'dog' | 'cat' | 'both' | 'care';
+  variant?: 'dog' | 'cat' | 'both' | 'care' | 'paw';
   compact?: boolean;
   style?: StyleProp<ViewStyle>;
 }
@@ -33,6 +33,16 @@ export function FriendlyPetBanner({
     >
       {/* Composición de ilustraciones vectoriales amigables */}
       <View style={styles.artWrapper}>
+        {variant === 'paw' && (
+          <View style={[styles.avatarCircle, styles.avatarPaw, isDark && styles.avatarDark]}>
+            <MaterialCommunityIcons
+              name="paw"
+              size={compact ? 24 : 30}
+              color={isDark ? '#4ade80' : Palette.greenDeep}
+            />
+          </View>
+        )}
+
         {variant === 'both' && (
           <View style={styles.pairContainer}>
             <View style={[styles.avatarCircle, styles.avatarDog, isDark && styles.avatarDark]}>
@@ -121,8 +131,8 @@ const styles = StyleSheet.create({
     ...Shadows.sm,
   },
   containerDark: {
-    backgroundColor: Palette.surfaceDark,
-    borderColor: Palette.borderDark,
+    backgroundColor: '#072417',
+    borderColor: '#174E33',
     shadowColor: '#000000',
   },
   containerCompact: {
@@ -176,6 +186,13 @@ const styles = StyleSheet.create({
     height: 46,
     borderRadius: 23,
     backgroundColor: Palette.peachSoft,
+  },
+  avatarPaw: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#123D2B',
+    borderColor: '#174E33',
   },
   avatarCareSolo: {
     width: 46,

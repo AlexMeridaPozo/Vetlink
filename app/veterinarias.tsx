@@ -133,9 +133,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 14,
   },
-  iconCircleDark: {
-    backgroundColor: '#27272a',
-  },
   badgeAsociada: {
     backgroundColor: Palette.greenDeep,
     paddingHorizontal: 12,

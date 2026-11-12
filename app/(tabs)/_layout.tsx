@@ -12,9 +12,10 @@ export default function TabLayout() {
   const { isDark, colors } = useAppTheme();
   const insets = useSafeAreaInsets();
 
+  const isWeb = Platform.OS === 'web';
   const safeBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 8);
-  const tabPaddingBottom = safeBottom > 0 ? safeBottom + (Platform.OS === 'android' ? 4 : 2) : 8;
-  const tabHeight = 60 + safeBottom + (Platform.OS === 'android' && insets.bottom > 0 ? 4 : 0);
+  const tabPaddingBottom = isWeb ? 10 : (safeBottom > 0 ? safeBottom + (Platform.OS === 'android' ? 4 : 2) : 8);
+  const tabHeight = isWeb ? 70 : (62 + safeBottom + (Platform.OS === 'android' && insets.bottom > 0 ? 4 : 0));
 
   return (
     <View style={{ flex: 1 }}>
@@ -25,12 +26,12 @@ export default function TabLayout() {
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: isDark ? colors.textSecondary : '#5C6B64',
           tabBarStyle: {
-            backgroundColor: isDark ? colors.surface : '#FFFFFF',
+            backgroundColor: isDark ? '#090E0C' : '#FFFFFF',
             borderTopWidth: 1,
-            borderTopColor: isDark ? colors.border : '#E2EFE7',
+            borderTopColor: isDark ? '#141E19' : '#E2EFE7',
             height: tabHeight,
             paddingBottom: tabPaddingBottom,
-            paddingTop: 8,
+            paddingTop: 6,
             overflow: 'visible',
             elevation: 10,
             shadowColor: '#000',
@@ -149,22 +150,22 @@ const styles = StyleSheet.create({
   sosSquareButton: {
     width: 52,
     height: 52,
-    borderRadius: 18,
-    backgroundColor: Palette.redEmergency,
+    borderRadius: 26,
+    backgroundColor: '#EF4444',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2.5,
     borderColor: '#ffffff',
-    shadowColor: Palette.redEmergency,
+    shadowColor: '#EF4444',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
     elevation: 8,
   },
   sosSquareButtonDark: {
     backgroundColor: '#EF4444',
-    borderColor: '#381616',
+    borderColor: '#3D1515',
     shadowColor: '#000000',
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.6,
   },
 });

@@ -184,24 +184,26 @@ export default function PerfilScreen() {
             )}
           </View>
 
-          {/* Botón para alternar rol dinámicamente */}
-          <TouchableOpacity
-            style={[styles.switchRoleBtn, isDark && styles.switchRoleBtnDark]}
-            onPress={handleToggleRol}
-            disabled={changingRole}
-            activeOpacity={0.8}
-          >
-            {changingRole ? (
-              <ActivityIndicator size="small" color={Palette.greenDeep} />
-            ) : (
-              <>
-                <Ionicons name="swap-horizontal-outline" size={16} color={Palette.greenDeep} />
-                <Text style={styles.switchRoleBtnText}>
-                  Cambiar a modo {isVeterinario ? 'Tutor' : 'Veterinario'}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
+          {/* Botón para alternar rol dinámicamente (Exclusivo para pruebas de veterinarios habilitados; los tutores nunca pueden cambiar su rol a veterinario) */}
+          {isVeterinario && (
+            <TouchableOpacity
+              style={[styles.switchRoleBtn, isDark && styles.switchRoleBtnDark]}
+              onPress={handleToggleRol}
+              disabled={changingRole}
+              activeOpacity={0.8}
+            >
+              {changingRole ? (
+                <ActivityIndicator size="small" color={Palette.greenDeep} />
+              ) : (
+                <>
+                  <Ionicons name="swap-horizontal-outline" size={16} color={Palette.greenDeep} />
+                  <Text style={styles.switchRoleBtnText}>
+                    Cambiar a modo Tutor (Vista Previa)
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
 
           {/* Datos Profesionales Exclusivos (Solo si existen datos reales) */}
           {isVeterinario && (

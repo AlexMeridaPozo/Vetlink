@@ -36,13 +36,13 @@ export default function HomeScreen() {
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
               <View style={[styles.vetBadge, isDark && styles.vetBadgeDark]}>
-                <Ionicons name="shield-checkmark-outline" size={14} color={isDark ? '#4ade80' : Palette.greenDeep} />
+                <Ionicons name="shield-checkmark" size={14} color={isDark ? '#4ade80' : Palette.greenDeep} />
                 <Text style={[styles.vetBadgeText, isDark && styles.vetBadgeTextDark]}>
-                  Perfil Veterinario
+                  Perfil Profesional Veterinario
                 </Text>
               </View>
               <Text style={[styles.saludo, isDark && styles.textDark]}>
-                ¡Hola, Dr. {nombreUsuario}!
+                ¡Hola, Dr. {nombreUsuario}! 🩺
               </Text>
               <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>
                 Panel de atención y gestión clínica
@@ -51,138 +51,205 @@ export default function HomeScreen() {
             <ThemeToggleButton />
           </View>
 
-          {/* ACCESO PRINCIPAL Y DESTACADO: Escanear Mascota */}
+          {/* TARJETA DESTACADA CLÍNICA: Gestión de Pacientes */}
           <Pressable
             style={({ pressed }) => [
-              styles.heroCardVet,
-              isDark && styles.heroCardVetDark,
-              pressed && styles.botonPresionado,
-            ]}
-            onPress={() => router.push('/(tabs)/scan')}
-            accessibilityRole="button"
-            accessibilityLabel="Escanear mascota mediante QR o NFC"
-          >
-            <View style={styles.heroVetTop}>
-              <View style={[styles.heroIconCircle, isDark && styles.heroIconCircleDark]}>
-                <Ionicons name="qr-code-outline" size={28} color={Palette.greenPrimary} />
-              </View>
-              <View style={[styles.heroActionBadge, isDark && styles.heroActionBadgeDark]}>
-                <Text style={[styles.heroActionBadgeText, isDark && styles.heroActionBadgeTextDark]}>
-                  Acción principal
-                </Text>
-              </View>
-            </View>
-
-            <Text style={[styles.heroVetTitle, isDark && styles.heroVetTitleDark]}>
-              Escanear Paciente
-            </Text>
-            <Text style={[styles.heroVetSubtitle, isDark && styles.heroVetSubtitleDark]}>
-              Identificación inmediata por código QR o etiqueta NFC para consultar o actualizar la ficha clínica.
-            </Text>
-
-            <View style={[styles.heroVetFooter, isDark && styles.heroVetFooterDark]}>
-              <View style={styles.heroCtaButton}>
-                <Ionicons name="camera-outline" size={17} color="#ffffff" />
-                <Text style={styles.heroCtaText}>Abrir Escáner</Text>
-              </View>
-              <Ionicons name="chevron-forward-outline" size={20} color={isDark ? '#4ade80' : Palette.greenDeep} />
-            </View>
-          </Pressable>
-
-          {/* ACCESO SECUNDARIO: Buscar Mascota */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.searchCardVet,
-              isDark && styles.searchCardVetDark,
+              styles.cardMascotas,
+              isDark && styles.cardMascotasDark,
               pressed && styles.botonPresionado,
             ]}
             onPress={() => router.push('/(tabs)/mascotas')}
             accessibilityRole="button"
-            accessibilityLabel="Buscar mascota por nombre o identificador"
+            accessibilityLabel="Ver pacientes y fichas clínicas"
           >
-            <View style={[styles.searchIconWrapper, isDark && styles.searchIconWrapperDark]}>
-              <Ionicons name="search-outline" size={20} color={Palette.greenDeep} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.searchCardTitle, isDark && styles.textDark]}>
-                Buscar Mascota
+            <Image
+              source={require('@/assets/images/3d/hero_pets_art.png')}
+              style={styles.heroPetsImage}
+              resizeMode="contain"
+            />
+
+            <View style={styles.cardMascotasContent}>
+              <View style={[styles.cardIconWrapper, isDark && styles.cardIconWrapperDark]}>
+                <Ionicons name="medkit" size={22} color={isDark ? '#4ade80' : Palette.greenDeep} />
+              </View>
+
+              <Text style={[styles.cardTitulo, isDark && styles.cardTituloDark]}>Pacientes Clínicos</Text>
+              <Text style={[styles.cardDetalle, isDark && styles.cardDetalleDark]}>
+                {petCount === 1 ? '1 paciente registrado' : `${petCount} pacientes en sistema`}
               </Text>
-              <Text style={[styles.searchCardSubtitle, isDark && styles.subtituloDark]}>
-                Localizar paciente por nombre o ID clínico
-              </Text>
+
+              <View style={[styles.cardFooter, isDark && styles.cardFooterDark]}>
+                <Text style={[styles.cardLink, isDark && styles.cardLinkDark]}>Ver historias clínicas</Text>
+                <Ionicons name="chevron-forward-outline" size={16} color={isDark ? '#4ade80' : Palette.greenDeep} />
+              </View>
             </View>
-            <Ionicons name="arrow-forward-outline" size={18} color={isDark ? '#4ade80' : Palette.greenDeep} />
           </Pressable>
 
-          {/* Sección de Gestión y Servicios Profesionales */}
+          {/* ACCESO RÁPIDO CLÍNICO: Escanear Paciente (QR / NFC) */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.scanActionCard,
+              isDark && styles.scanActionCardDark,
+              pressed && styles.botonPresionado,
+            ]}
+            onPress={() => router.push('/(tabs)/scan')}
+            accessibilityRole="button"
+            accessibilityLabel="Escanear paciente mediante QR o NFC"
+          >
+            <View style={[styles.scanActionIconWrapper, isDark && styles.scanActionIconWrapperDark]}>
+              <Ionicons name="qr-code" size={20} color={isDark ? '#4ade80' : Palette.greenDeep} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={[styles.scanActionTitle, isDark && styles.textDark]}>
+                  Escanear Paciente
+                </Text>
+                <View style={[styles.scanActionBadge, isDark && styles.scanActionBadgeDark]}>
+                  <Text style={[styles.scanActionBadgeText, isDark && styles.scanActionBadgeTextDark]}>
+                    QR / NFC
+                  </Text>
+                </View>
+              </View>
+              <Text style={[styles.scanActionSubtitle, isDark && styles.subtituloDark]}>
+                Identificación inmediata para consultar o actualizar su historia clínica.
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={18} color={isDark ? '#4ade80' : Palette.greenDeep} />
+          </Pressable>
+
+          {/* Título de sección de servicios clínicos */}
           <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
-            Accesos y Servicios
+            Gestión y Servicios Clínicos
           </Text>
 
+          {/* Grilla moderna con ilustraciones 3D (paridad total con diseño de usuario, sin cupones) */}
           <View style={styles.grid}>
             <BotonMenu
-              titulo="Turnos"
-              subtitulo="Agenda de citas"
+              titulo="Turnos Clínicos"
+              subtitulo="Agenda y citas"
               icono="calendar-outline"
-              colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
-              colorIcono={Palette.cyanDark}
+              colorFondoIcono={isDark ? '#12384D' : '#D6EDFA'}
+              colorIcono={isDark ? '#38BDF8' : '#0284C7'}
               onPress={() => router.push('/turnos')}
               isDark={isDark}
+              artSource={require('@/assets/images/3d/calendar_art.png')}
+              cardBgLight="#EBF5FB"
+              cardBorderLight="#BEE3F8"
+              cardBgDark="#072d47"
+              cardBorderDark="#0e5e94"
             />
             <BotonMenu
               titulo="Recordatorios"
-              subtitulo="Avisos sanitarios"
+              subtitulo="Avisos y vacunas"
               icono="notifications-outline"
-              colorFondoIcono={isDark ? '#381E10' : Palette.peachSoft}
-              colorIcono={Palette.peachDark}
+              colorFondoIcono={isDark ? '#42240C' : '#FCE9D8'}
+              colorIcono={isDark ? '#FB923C' : '#D97706'}
               onPress={() => router.push('/recordatorios')}
               isDark={isDark}
+              artSource={require('@/assets/images/3d/clock_art.png')}
+              cardBgLight="#FEF6EE"
+              cardBorderLight="#FADEC9"
+              cardBgDark="#331908"
+              cardBorderDark="#733b16"
             />
             <BotonMenu
               titulo="Mi Veterinaria"
               subtitulo="Clínica asociada"
               icono="medkit-outline"
-              colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
-              colorIcono={Palette.greenDeep}
+              colorFondoIcono={isDark ? '#143825' : '#D1F2DE'}
+              colorIcono={isDark ? '#4ade80' : '#087A43'}
               onPress={() => router.push('/veterinarias')}
               isDark={isDark}
+              artSource={require('@/assets/images/3d/clinic_art.png')}
+              cardBgLight="#EAF8F0"
+              cardBorderLight="#BCEAD0"
+              cardBgDark="#042c16"
+              cardBorderDark="#0c6332"
             />
             <BotonMenu
               titulo="Mapa Pilar"
-              subtitulo="Clínicas y guardias"
+              subtitulo="Red y guardias"
               icono="compass-outline"
-              colorFondoIcono={isDark ? '#162F3B' : Palette.cyanLight}
-              colorIcono={Palette.cyanDark}
+              colorFondoIcono={isDark ? '#12384D' : '#D6EFF8'}
+              colorIcono={isDark ? '#38BDF8' : '#0891B2'}
               onPress={() => router.push('/(tabs)/mapa')}
               isDark={isDark}
+              artSource={require('@/assets/images/3d/map_art.png')}
+              cardBgLight="#EBF6FA"
+              cardBorderLight="#BEE5F2"
+              cardBgDark="#082c42"
+              cardBorderDark="#115c8c"
+            />
+            <BotonMenu
+              titulo="Buscar Mascota"
+              subtitulo="Localizar paciente"
+              icono="search-outline"
+              colorFondoIcono={isDark ? '#143825' : '#D1F2DE'}
+              colorIcono={isDark ? '#4ade80' : '#087A43'}
+              onPress={() => router.push('/(tabs)/mascotas')}
+              isDark={isDark}
+              artSource={require('@/assets/images/3d/qr_tag_art.png')}
+              cardBgLight="#EAF8F0"
+              cardBorderLight="#BCEAD0"
+              cardBgDark="#042313"
+              cardBorderDark="#0d522c"
             />
             <BotonMenu
               titulo="Mi Perfil"
-              subtitulo="Datos profesionales"
+              subtitulo="Matrícula y datos"
               icono="person-outline"
-              colorFondoIcono={isDark ? '#133324' : Palette.greenSoft}
-              colorIcono={Palette.greenDeep}
+              colorFondoIcono={isDark ? '#133D2F' : '#D3EFE4'}
+              colorIcono={isDark ? '#34D399' : '#059669'}
               onPress={() => router.push('/(tabs)/perfil')}
               isDark={isDark}
-            />
-            <BotonMenu
-              titulo="Atención SOS"
-              subtitulo="Guardias de turno"
-              icono="alert-circle-outline"
-              colorFondoIcono={isDark ? '#381616' : Palette.redSoft}
-              colorIcono={Palette.redEmergency}
-              onPress={() => router.push('/(tabs)/sos')}
-              isDark={isDark}
-              isAlert={true}
+              artSource={require('@/assets/images/3d/clipboard_art.png')}
+              cardBgLight="#EBF7F2"
+              cardBorderLight="#BEE6D7"
+              cardBgDark="#042d1b"
+              cardBorderDark="#0e623b"
             />
           </View>
 
+          {/* ACCESO SECUNDARIO SOS: Diseño con iluminación y badge */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.sosSecondaryCard,
+              isDark && styles.sosSecondaryCardDark,
+              pressed && styles.botonPresionado,
+            ]}
+            onPress={() => router.push('/(tabs)/sos')}
+            accessibilityRole="button"
+            accessibilityLabel="Acceso a centro de emergencias SOS y guardias 24 horas"
+          >
+            <View style={[styles.sosSecondaryIconWrapper, isDark && styles.sosSecondaryIconWrapperDark]}>
+              <Image
+                source={require('@/assets/images/3d/sos_siren_art.png')}
+                resizeMode="contain"
+                style={{ width: 28, height: 28 }}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={[styles.sosSecondaryTitle, isDark && styles.textDark]}>
+                  Guardias 24hs y Atención de Urgencias
+                </Text>
+                <View style={styles.sosSecondaryBadge}>
+                  <Text style={styles.sosSecondaryBadgeText}>SOS</Text>
+                </View>
+              </View>
+              <Text style={[styles.sosSecondarySubtitle, isDark && styles.subtituloDark]}>
+                Hospital San Roque y centros veterinarios activos en Pilar.
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={18} color={Palette.redEmergency} />
+          </Pressable>
+
           {/* Mensaje cálido de cuidado profesional */}
           <FriendlyPetBanner
-            title="Su bienestar también depende de vos."
-            subtitle="Compromiso profesional y atención médica de excelencia para cada paciente."
+            title="Compromiso con la salud y bienestar animal."
+            subtitle="Atención médica y excelencia clínica para cada paciente y su familia."
             variant="care"
-            style={{ marginTop: 12, marginBottom: 20 }}
+            style={{ marginTop: 6, marginBottom: 20 }}
           />
         </ScrollView>
       </SafeAreaView>
@@ -559,6 +626,72 @@ const styles = StyleSheet.create({
   },
   beneficiosBadgeTextDark: {
     color: '#FBBF24',
+  },
+  // ── Tarjeta Rápida Escanear Paciente (Veterinario) ────────
+  scanActionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EAF8F0',
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#BCEAD0',
+    gap: 12,
+    marginTop: 0,
+    marginBottom: 18,
+    shadowColor: Palette.greenDeep,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  scanActionCardDark: {
+    backgroundColor: '#072417',
+    borderColor: '#174E33',
+  },
+  scanActionIconWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#D1F2DE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanActionIconWrapperDark: {
+    backgroundColor: '#143825',
+  },
+  scanActionTitle: {
+    fontSize: 13.5,
+    fontFamily: FontFamily.headingSemiBold,
+    letterSpacing: -0.2,
+    color: '#0A3B22',
+  },
+  scanActionSubtitle: {
+    fontSize: 11.5,
+    fontFamily: FontFamily.bodyRegular,
+    color: '#38634E',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  scanActionBadge: {
+    backgroundColor: '#D1F2DE',
+    borderWidth: 1,
+    borderColor: '#BCEAD0',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  scanActionBadgeDark: {
+    backgroundColor: '#143825',
+    borderColor: '#174E33',
+  },
+  scanActionBadgeText: {
+    color: '#087A43',
+    fontSize: 9,
+    fontFamily: FontFamily.bodyBold,
+  },
+  scanActionBadgeTextDark: {
+    color: '#4ade80',
   },
   // ── Tarjeta de Emergencia SOS Secundaria y no invasiva ────────
   sosSecondaryCard: {

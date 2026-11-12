@@ -29,21 +29,21 @@ const ONBOARDING_SLIDES: OnboardingSlideData[] = [
     title: 'Todo sobre tus mascotas',
     description:
       'Encontrá y gestioná la información de tus mascotas de manera sencilla, desde un solo lugar.',
-    image: require('@/assets/images/onboarding/slide1.png'),
+    image: require('../../assets/images/onboarding/slide1.png'),
   },
   {
     id: '2',
     title: 'Su salud, siempre a tu alcance',
     description:
       'Consultá los antecedentes, diagnósticos y tratamientos de tus mascotas en un solo lugar.',
-    image: require('@/assets/images/onboarding/slide2.png'),
+    image: require('../../assets/images/onboarding/slide2.png'),
   },
   {
     id: '3',
     title: 'Conectá con tu veterinaria',
     description:
       'Mantené un seguimiento de las consultas y accedé a la información clínica de tus mascotas.',
-    image: require('@/assets/images/onboarding/slide3.png'),
+    image: require('../../assets/images/onboarding/slide3.png'),
   },
 ];
 

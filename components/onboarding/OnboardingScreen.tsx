@@ -142,8 +142,8 @@ export function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
             color={Palette.greenPrimary}
             style={{ marginRight: 6 }}
           />
-          <Text style={styles.brandTitleGreen}>Sobre </Text>
-          <Text style={styles.brandTitleLime}>Huellapp</Text>
+          <Text style={styles.brandTitleGreen}>Huell</Text>
+          <Text style={styles.brandTitleLime}>app</Text>
         </View>
 
         <View style={styles.headerRightActions}>

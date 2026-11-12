@@ -239,6 +239,38 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
+        {/* ACCESO A BENEFICIOS: Directamente debajo de Mis Mascotas */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.beneficiosCard,
+            isDark && styles.beneficiosCardDark,
+            pressed && styles.botonPresionado,
+          ]}
+          onPress={() => router.push('/beneficios')}
+          accessibilityRole="button"
+          accessibilityLabel="Club de Beneficios: Descuentos para tu mascota en comercios adheridos"
+        >
+          <View style={[styles.beneficiosIconWrapper, isDark && styles.beneficiosIconWrapperDark]}>
+            <Ionicons name="pricetag" size={20} color={isDark ? '#FBBF24' : '#D97706'} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[styles.beneficiosTitle, isDark && styles.textDark]}>
+                Club de Beneficios
+              </Text>
+              <View style={[styles.beneficiosBadge, isDark && styles.beneficiosBadgeDark]}>
+                <Text style={[styles.beneficiosBadgeText, isDark && styles.beneficiosBadgeTextDark]}>
+                  Hasta 25% OFF
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.beneficiosSubtitle, isDark && styles.subtituloDark]}>
+              Cupones reales en veterinarias y petshops de Pilar.
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={18} color={isDark ? '#FBBF24' : '#D97706'} />
+        </Pressable>
+
         {/* Título de servicios diarios */}
         <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>Servicios y Accesos</Text>
 
@@ -461,6 +493,72 @@ const styles = StyleSheet.create({
   containerDark: {
     backgroundColor: Palette.backgroundDark,
   },
+  // ── Tarjeta de Beneficios y Descuentos Exclusivos ─────────────
+  beneficiosCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFDF5',
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    gap: 12,
+    marginTop: 0,
+    marginBottom: 18,
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  beneficiosCardDark: {
+    backgroundColor: '#1E180A',
+    borderColor: '#4D3B14',
+  },
+  beneficiosIconWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#FEF3C7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  beneficiosIconWrapperDark: {
+    backgroundColor: '#382B0E',
+  },
+  beneficiosTitle: {
+    fontSize: 13.5,
+    fontFamily: FontFamily.headingSemiBold,
+    letterSpacing: -0.2,
+    color: '#92400E',
+  },
+  beneficiosSubtitle: {
+    fontSize: 11.5,
+    fontFamily: FontFamily.bodyRegular,
+    color: '#B45309',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  beneficiosBadge: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  beneficiosBadgeDark: {
+    backgroundColor: '#382B0E',
+    borderColor: '#785A17',
+  },
+  beneficiosBadgeText: {
+    color: '#92400E',
+    fontSize: 9,
+    fontFamily: FontFamily.bodyBold,
+  },
+  beneficiosBadgeTextDark: {
+    color: '#FBBF24',
+  },
   // ── Tarjeta de Emergencia SOS Secundaria y no invasiva ────────
   sosSecondaryCard: {
     flexDirection: 'row',
@@ -664,7 +762,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF8F0',
     borderRadius: 22,
     padding: 18,
-    marginBottom: 22,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: '#BCEAD0',
     shadowColor: Palette.greenDeep,

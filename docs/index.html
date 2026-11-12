@@ -97,8 +97,8 @@
       <figure class="photo photo--hero" data-depth="26">
         <img src="https://images.unsplash.com/photo-1601758260651-32188a43c9b3?auto=format&fit=crop&w=700&h=880&q=75&crop=faces,entropy" alt="Mujer con campera negra abrazando a su perro marrón" width="350" height="440" onerror="this.src='./assets/perrocatpng.webp';this.classList.add('is-fallback')">
       </figure>
-      <div class="phone phone--back" data-depth="14"><div class="phone__screen"><img src="./assets/mapa.webp" alt="Mapa de veterinarias de Pilar en HuellApp" width="560" height="1341"></div></div>
-      <div class="phone phone--front" data-depth="40"><div class="phone__screen"><img src="./assets/inicio.webp" alt="Pantalla de inicio de HuellApp con servicios y accesos" width="560" height="1219"></div></div>
+      <div class="phone phone--back" data-depth="14"><div class="phone__screen"><img src="./assets/veterinaria-cercana.webp" alt="Panel de veterinaria más cercana por GPS en HuellApp" width="720" height="1425"></div></div>
+      <div class="phone phone--front" data-depth="40"><div class="phone__screen"><img src="./assets/inicio.webp" alt="Pantalla de inicio de HuellApp con servicios, mascotas y Club de Beneficios" width="720" height="1425"></div></div>
       <div class="glass g1" data-depth="60"><span class="gi"><svg><use href="#i-shield"/></svg></span><span><b>Ficha al día</b><small>Vacunas y controles</small></span></div>
       <div class="glass g2" data-depth="52"><span class="gi gi--cy"><svg><use href="#i-nfc"/></svg></span><span><b>Chapita NFC + QR</b><small>Identificación activa</small></span></div>
       <div class="glass g3" data-depth="46"><span class="gi gi--red"><svg><use href="#i-sos"/></svg></span><span><b>SOS 24 hs</b><small>Un toque para llamar</small></span></div>
@@ -127,22 +127,32 @@
       <div class="tabs" id="tabs" role="tablist" aria-label="Pantallas de la app">
         <button class="tab is-on" role="tab" aria-selected="true" data-i="0">
           <span class="tab__ico"><svg><use href="#i-paw"/></svg></span>
-          <span class="tab__txt"><b>Inicio</b><small>Tus mascotas y todos los accesos en una sola pantalla: escanear, turnos, recordatorios, veterinarias y SOS.</small></span>
+          <span class="tab__txt"><b>Inicio y Beneficios</b><small>Tus mascotas, el Club de Beneficios con descuentos reales en Pilar y todos los accesos rápidos en una sola pantalla.</small></span>
           <span class="tab__bar"><i></i></span>
         </button>
         <button class="tab" role="tab" aria-selected="false" data-i="1">
-          <span class="tab__ico"><svg><use href="#i-doc"/></svg></span>
-          <span class="tab__txt"><b>Ficha clínica</b><small>Datos vitales, historial, seguridad y chip NFC de cada mascota, con su foto y estado.</small></span>
+          <span class="tab__ico"><svg><use href="#i-nfc"/></svg></span>
+          <span class="tab__txt"><b>Mis Mascotas (QR y NFC)</b><small>Como tutor registrás a tu mascota, generás su QR / Chapita 3D, vinculás o desvinculás su collar NFC y podés eliminarla si está desvinculada.</small></span>
           <span class="tab__bar"><i></i></span>
         </button>
         <button class="tab" role="tab" aria-selected="false" data-i="2">
-          <span class="tab__ico"><svg><use href="#i-qr"/></svg></span>
-          <span class="tab__txt"><b>Identificar</b><small>Escaneá el QR de la chapita con la cámara o acercá el celular al collar con NFC.</small></span>
+          <span class="tab__ico"><svg><use href="#i-doc"/></svg></span>
+          <span class="tab__txt"><b>Ficha clínica</b><small>Datos vitales, historial médico, seguridad y chip NFC de cada mascota, con su foto y código único.</small></span>
           <span class="tab__bar"><i></i></span>
         </button>
         <button class="tab" role="tab" aria-selected="false" data-i="3">
+          <span class="tab__ico"><svg><use href="#i-qr"/></svg></span>
+          <span class="tab__txt"><b>Escaneo profesional y rescate</b><small>El veterinario o quien encuentre a tu mascota escanea el código QR o acerca el celular al collar NFC para ver su información al instante.</small></span>
+          <span class="tab__bar"><i></i></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-i="4">
+          <span class="tab__ico"><svg><use href="#i-med"/></svg></span>
+          <span class="tab__txt"><b>Veterinaria más cercana</b><small>Con acceso a tu ubicación GPS te muestra en un panel único la veterinaria más cercana (sea de HuellApp o externa) para abrirla en el mapa.</small></span>
+          <span class="tab__bar"><i></i></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-i="5">
           <span class="tab__ico"><svg><use href="#i-map"/></svg></span>
-          <span class="tab__txt"><b>Mapa de locales</b><small>Veterinarias y comercios de Pilar con filtros, búsqueda y ubicación GPS.</small></span>
+          <span class="tab__txt"><b>Explorar / Mapa Pilar</b><small>Al tocar la veterinaria más cercana te lleva directo al Mapa de Pilar con zoom automático sobre su ubicación.</small></span>
           <span class="tab__bar"><i></i></span>
         </button>
       </div>
@@ -151,10 +161,12 @@
         <div class="stage__glow" aria-hidden="true"></div>
         <div class="phone phone--stage">
           <div class="phone__screen">
-            <img class="shot is-on" src="./assets/inicio.webp" alt="Pantalla de inicio" width="560" height="1219">
-            <img class="shot" src="./assets/ficha.webp" alt="Ficha clínica de Milo, Golden Retriever" width="560" height="1334" loading="lazy">
-            <img class="shot" src="./assets/escanear.webp" alt="Identificar mascota por QR o NFC" width="560" height="1336" loading="lazy">
-            <img class="shot" src="./assets/mapa.webp" alt="Mapa de locales de Pilar" width="560" height="1341" loading="lazy">
+            <img class="shot is-on" src="./assets/inicio.webp" alt="Pantalla de inicio real de HuellApp" width="720" height="1425">
+            <img class="shot" src="./assets/mascotas.webp" alt="Mis Mascotas con registro, QR/3D, Vincular NFC y eliminar" width="720" height="1425" loading="lazy">
+            <img class="shot" src="./assets/ficha.webp" alt="Ficha clínica de Mateo en HuellApp" width="720" height="1425" loading="lazy">
+            <img class="shot" src="./assets/escanear.webp" alt="Identificar mascota por QR o NFC" width="720" height="1425" loading="lazy">
+            <img class="shot" src="./assets/veterinaria-cercana.webp" alt="Panel de veterinaria más cercana según ubicación GPS" width="720" height="1425" loading="lazy">
+            <img class="shot" src="./assets/mapa.webp" alt="Mapa de Pilar con zoom a la clínica veterinaria" width="720" height="1425" loading="lazy">
           </div>
         </div>
       </div>
@@ -182,29 +194,29 @@
 
       <article class="bcard b-b reveal" data-spot>
         <div class="qrdemo" aria-hidden="true"><span></span><span></span><span></span><svg><use href="#i-qr"/></svg></div>
-        <h3>Chapita inteligente</h3>
-        <p>Generá el QR de tu mascota y descargá el archivo 3D para imprimir su chapita.</p>
+        <h3>Chapita QR y 3D</h3>
+        <p>Registrá a tu mascota, generá su código QR y descargá el modelo 3D listo para imprimir su chapita.</p>
       </article>
 
       <article class="bcard b-c reveal" data-spot>
         <span class="ico ico--cy"><svg><use href="#i-nfc"/></svg></span>
-        <h3>Lectura NFC</h3>
-        <p>Acercá el celular al collar con chip y accedé a la ficha al instante.</p>
+        <h3>Vincular y Desvincular NFC</h3>
+        <p>Asociá o desvinculá el collar NFC desde tu perfil de tutor. El veterinario solo escanea para ver su ficha.</p>
       </article>
 
       <article class="bcard bcard--sos b-d reveal" data-spot>
         <span class="ping" aria-hidden="true"><i></i><svg><use href="#i-sos"/></svg></span>
         <h3>SOS 24 hs</h3>
-        <p>Guardias y llamada de socorro con un solo botón, siempre visible en el menú.</p>
+        <p>Guardias permanentes, estado de extravío y llamada de urgencia con un solo botón siempre visible.</p>
       </article>
 
       <article class="bcard b-e reveal" data-spot>
         <div class="bcard__text">
           <span class="ico"><svg><use href="#i-map"/></svg></span>
-          <h3>Mapa de Pilar</h3>
-          <p>15 lugares reales: clínicas, hospitales y comercios, con filtro de los que ya usan HuellApp.</p>
+          <h3>Veterinaria más cercana y Mapa Pilar</h3>
+          <p>Detecta por GPS la veterinaria más cercana (de HuellApp o externa) en un panel directo y al tocarla hace zoom en el Mapa de Pilar.</p>
         </div>
-        <div class="peek"><img src="./assets/mapa.webp" alt="" loading="lazy"></div>
+        <div class="peek"><img src="./assets/mapa.webp" alt="Mapa de Pilar en HuellApp" loading="lazy"></div>
       </article>
 
       <article class="bcard b-f reveal" data-spot>
@@ -325,7 +337,8 @@
     <div class="faq">
       <details class="reveal" open><summary>¿Cómo identifico a mi mascota?<svg><use href="#i-plus"/></svg></summary><p>Con la chapita inteligente: tiene un código QR que se escanea con la cámara y, si el collar lo trae, un chip NFC que se lee acercando el celular. Los dos abren la ficha de tu mascota.</p></details>
       <details class="reveal"><summary>¿Qué pasa si se pierde?<svg><use href="#i-plus"/></svg></summary><p>Quien la encuentre escanea la chapita y ve la ficha de rescate. Desde ahí puede llamarte, escribirte por WhatsApp y enviarte la ubicación del hallazgo.</p></details>
-      <details class="reveal"><summary>¿Sirve para veterinarias?<svg><use href="#i-plus"/></svg></summary><p>Sí. Los veterinarios pueden dar de alta pacientes, cargar historiales, vincular o reasignar chips NFC y programar avisos para los tutores.</p></details>
+      <details class="reveal"><summary>¿Cómo funciona para tutores y veterinarios?<svg><use href="#i-plus"/></svg></summary><p>El tutor registra a su mascota, gestiona su perfil y vincula o desvincula su chapita NFC/QR (pudiendo eliminar la mascota cuando no tenga un NFC vinculado). El perfil profesional veterinario únicamente escanea el QR o acerca el collar NFC para consultar al instante la información clínica de la mascota.</p></details>
+      <details class="reveal"><summary>¿Cómo encuentro la veterinaria más cercana?<svg><use href="#i-plus"/></svg></summary><p>Al entrar a «Veterinarias, cercanas a vos», la app solicita permiso de ubicación GPS y te muestra un panel directo con la veterinaria más cercana según tu ubicación (sin importar si es de HuellApp o externa). Al tocarlo, te lleva a «Explorar / Mapa Pilar» y hace zoom sobre la clínica.</p></details>
       <details class="reveal"><summary>¿El asistente virtual reemplaza a mi veterinario?<svg><use href="#i-plus"/></svg></summary><p>No. Orienta sobre cuidados y sobre cómo usar la app, pero ante cualquier duda de salud la consulta veterinaria es siempre lo primero.</p></details>
       <details class="reveal"><summary>¿Dónde la descargo?<svg><use href="#i-plus"/></svg></summary><p>Los botones de descarga de la sección final se activan cuando la app esté publicada. Mientras tanto podés seguir el proyecto en GitHub.</p></details>
     </div>

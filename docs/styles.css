@@ -177,10 +177,7 @@ h3{font-size:1.25rem;line-height:1.2}
 .stage{position:relative;display:grid;place-items:center;min-height:700px}
 .stage__glow{position:absolute;width:90%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,var(--soft2),transparent 68%);filter:blur(10px)}
 .phone--stage{position:relative;width:min(300px,72vw);box-shadow:var(--sh-lg),inset 0 0 0 2px #2a3a31}
-.phone--stage .phone__screen{aspect-ratio:560/1219;transition:aspect-ratio .6s var(--ease)}
-.phone--stage .phone__screen[data-i="1"]{aspect-ratio:560/1334}
-.phone--stage .phone__screen[data-i="2"]{aspect-ratio:560/1336}
-.phone--stage .phone__screen[data-i="3"]{aspect-ratio:560/1341}
+.phone--stage .phone__screen{aspect-ratio:720/1425;transition:aspect-ratio .6s var(--ease)}
 .shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;scale:1.04;transition:opacity .6s,scale .8s var(--ease)}
 .shot.is-on{opacity:1;scale:1}
 

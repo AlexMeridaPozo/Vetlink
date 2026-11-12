@@ -68,10 +68,10 @@ function RootLayoutNav() {
   }, []);
 
   useEffect(() => {
-    if (fontsLoaded) {
+    if (fontsLoaded && onboardingChecked) {
       SplashScreen.hideAsync().catch(() => { });
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, onboardingChecked]);
 
   // Al finalizar u omitir "Sobre Huellapp", recién pasa a la pantalla de carga (Splash)
   const handleOnboardingFinish = () => {
@@ -83,6 +83,10 @@ function RootLayoutNav() {
   const handleSplashFinish = () => {
     setShowSplash(false);
   };
+
+  if (!fontsLoaded || !onboardingChecked) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>

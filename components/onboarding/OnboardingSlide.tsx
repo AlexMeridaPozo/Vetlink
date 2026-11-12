@@ -105,13 +105,16 @@ const styles = StyleSheet.create({
     maxHeight: '100%',
   },
   textContainer: {
+    width: '100%',
     alignItems: 'center',
     paddingHorizontal: 16,
     marginTop: 4,
   },
   title: {
+    width: '100%',
     fontSize: 24,
     fontFamily: FontFamily.headingBold,
+    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 10,
     letterSpacing: -0.4,
@@ -120,6 +123,7 @@ const styles = StyleSheet.create({
     color: '#0A3B22',
   },
   description: {
+    width: '100%',
     fontSize: 15,
     fontFamily: FontFamily.bodyRegular,
     textAlign: 'center',

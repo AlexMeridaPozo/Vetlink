@@ -163,13 +163,15 @@ export const Colors = {
  * 🔤 Sistema Tipográfico
  * Headings: Quicksand (redondeada, cálida y geométrica)
  * Body: Nunito Sans (ultra legible para interfaces y formularios)
+ * En Android (Fabric / New Architecture) se utiliza la fuente nativa del sistema (undefined)
+ * para evitar que TextLayoutManager recorte el último carácter en textos auto-ajustados.
  */
 export const FontFamily = {
-  headingSemiBold: 'Quicksand_600SemiBold',
-  headingBold: 'Quicksand_700Bold',
-  bodyRegular: 'NunitoSans_400Regular',
-  bodySemiBold: 'NunitoSans_600SemiBold',
-  bodyBold: 'NunitoSans_700Bold',
+  headingSemiBold: Platform.select({ web: 'Quicksand_600SemiBold', ios: 'Quicksand_600SemiBold', default: undefined }),
+  headingBold: Platform.select({ web: 'Quicksand_700Bold', ios: 'Quicksand_700Bold', default: undefined }),
+  bodyRegular: Platform.select({ web: 'NunitoSans_400Regular', ios: 'NunitoSans_400Regular', default: undefined }),
+  bodySemiBold: Platform.select({ web: 'NunitoSans_600SemiBold', ios: 'NunitoSans_600SemiBold', default: undefined }),
+  bodyBold: Platform.select({ web: 'NunitoSans_700Bold', ios: 'NunitoSans_700Bold', default: undefined }),
 };
 
 export const Typography = {

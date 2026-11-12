@@ -101,9 +101,9 @@ export function AnimatedSplashScreen({ onFinish }: SplashScreenProps) {
           <Ionicons name="paw-outline" size={44} color={Palette.greenPrimary} />
         </View>
 
-        {/* Nombre / Logo HuellaApp con estilo de marca (Huella en verde, App en carbón oscuro) */}
+        {/* Nombre / Logo HuellApp con estilo de marca (Huell en verde, App en carbón oscuro) */}
         <View style={styles.logoRow}>
-          <Text style={styles.logoTextGreen}>Huella</Text>
+          <Text style={styles.logoTextGreen}>Huell</Text>
           <Text style={styles.logoTextDark}>App</Text>
         </View>
 

@@ -285,14 +285,17 @@ const styles = StyleSheet.create({
   brandSmallGreen: {
     fontSize: 20,
     fontFamily: FontFamily.headingBold,
+    fontWeight: '700',
     color: Palette.greenPrimary,
     letterSpacing: -0.3,
   },
   brandSmallDark: {
     fontSize: 20,
     fontFamily: FontFamily.headingBold,
+    fontWeight: '700',
     color: Palette.textPrimary,
     letterSpacing: -0.3,
+    paddingRight: 4,
   },
   keyboardView: {
     flex: 1,
@@ -343,13 +346,16 @@ const styles = StyleSheet.create({
     borderColor: '#1F543B',
   },
   title: {
+    width: '100%',
     fontSize: 24,
     fontFamily: FontFamily.headingBold,
+    fontWeight: '700',
     color: Palette.textPrimary,
     marginBottom: 6,
     textAlign: 'center',
   },
   subtitle: {
+    width: '100%',
     fontSize: 14,
     fontFamily: FontFamily.bodyRegular,
     color: Palette.textSecondary,
@@ -430,6 +436,8 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontFamily: FontFamily.bodyBold,
+    fontWeight: '700',
+    paddingHorizontal: 4,
   },
   dividerRow: {
     flexDirection: 'row',
@@ -470,7 +478,9 @@ const styles = StyleSheet.create({
   footerLink: {
     fontSize: 14,
     fontFamily: FontFamily.bodyBold,
+    fontWeight: '700',
     color: Palette.greenDeep,
+    paddingRight: 4,
   },
   introContainer: {
     alignItems: 'center',
@@ -488,7 +498,9 @@ const styles = StyleSheet.create({
   introLink: {
     fontSize: 13,
     fontFamily: FontFamily.bodySemiBold,
+    fontWeight: '600',
     color: Palette.greenDeep,
+    paddingRight: 4,
   },
   introLinkDark: {
     color: Palette.greenPrimary,

@@ -283,14 +283,17 @@ const styles = StyleSheet.create({
   brandTitleGreen: {
     fontSize: 22,
     fontFamily: FontFamily.headingBold,
+    fontWeight: '700',
     color: Palette.greenDeep,
     letterSpacing: -0.4,
   },
   brandTitleLime: {
     fontSize: 22,
     fontFamily: FontFamily.headingBold,
+    fontWeight: '700',
     color: Palette.greenPrimary,
     letterSpacing: -0.4,
+    paddingRight: 4,
   },
   headerRightActions: {
     flexDirection: 'row',
@@ -305,7 +308,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#EAF8F0',
     paddingVertical: 7,
-    paddingHorizontal: 13,
+    paddingHorizontal: 14,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#BCEAD0',
@@ -318,7 +321,9 @@ const styles = StyleSheet.create({
   skipText: {
     fontSize: 13,
     fontFamily: FontFamily.bodySemiBold,
+    fontWeight: '600',
     color: '#087A43',
+    paddingHorizontal: 2,
   },
   skipTextDark: {
     color: '#A1A1AA',
@@ -385,7 +390,9 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 16,
     fontFamily: FontFamily.bodyBold,
+    fontWeight: '700',
     color: '#FFFFFF',
+    paddingHorizontal: 4,
   },
   actionButtonIcon: {
     marginLeft: 8,

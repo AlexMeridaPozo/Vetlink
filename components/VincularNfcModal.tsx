@@ -329,9 +329,9 @@ export default function VincularNfcModal({
                 <MaterialIcons name="nfc" size={24} color="#04b639" />
               </View>
               <View>
-                <Text style={[styles.headerTitle, isDark && styles.textDark]}>Vincular Etiqueta NFC</Text>
+                <Text style={[styles.headerTitle, isDark && styles.textDark]}>Vincular Collar NFC</Text>
                 <Text style={[styles.headerSubtitle, isDark && styles.headerSubtitleDark]}>
-                  Mascota: {mascota.nombre} ({mascota.id})
+                  Mascota: {mascota.nombre}
                 </Text>
               </View>
             </View>
@@ -345,14 +345,9 @@ export default function VincularNfcModal({
             {paso === 'idle' && (
               <View style={styles.stepContainer}>
                 <View style={[styles.infoBox, isDark && styles.infoBoxDark]}>
-                  <Text style={[styles.infoBoxTitle, isDark && styles.textDark]}>📋 Proceso de Vinculación</Text>
+                  <Text style={[styles.infoBoxTitle, isDark && styles.textDark]}>Collar o Chapita Inteligente</Text>
                   <Text style={[styles.infoBoxText, isDark && styles.infoBoxTextDark]}>
-                    1. La app solicitará acercar la etiqueta o collar NFC.{'\n'}
-                    2. Se comprobará que la etiqueta no esté asignada a otra mascota.{'\n'}
-                    3. Se grabará el enlace de identificación oficial:{'\n'}
-                    <Text style={[styles.codeText, isDark && styles.codeTextDark]}>https://huellapp.app/pet?id={mascota.id}</Text>
-                    {'\n'}
-                    4. Se guardará la vinculación y se actualizará la ficha médica de la mascota.
+                    Presiona el botón de abajo y acerca la parte trasera de tu teléfono al collar o chapita NFC para asociarlo a {mascota.nombre}.
                   </Text>
                 </View>
 
@@ -360,8 +355,7 @@ export default function VincularNfcModal({
                   <View style={[styles.alreadyLinkedNotice, isDark && styles.alreadyLinkedNoticeDark]}>
                     <Ionicons name="information-circle" size={20} color="#0284c7" />
                     <Text style={[styles.alreadyLinkedText, isDark && styles.alreadyLinkedTextDark]}>
-                      Esta mascota ya cuenta con un tag vinculado ({mascota.nfcTagId || 'N/A'}).
-                      Si vinculas otra etiqueta, la anterior será reemplazada.
+                      {mascota.nombre} ya tiene un collar NFC vinculado. Si acercas uno nuevo, se actualizará automáticamente.
                     </Text>
                   </View>
                 )}
@@ -379,7 +373,7 @@ export default function VincularNfcModal({
                   activeOpacity={0.8}
                 >
                   <MaterialIcons name="nfc" size={20} color="#ffffff" style={{ marginRight: 8 }} />
-                  <Text style={styles.primaryBtnText}>Acercar y Vincular Tag NFC</Text>
+                  <Text style={styles.primaryBtnText}>Vincular Collar NFC</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -491,9 +485,9 @@ export default function VincularNfcModal({
               <View style={styles.stepContainer}>
                 <View style={styles.successBadge}>
                   <Ionicons name="checkmark-circle" size={56} color="#04b639" />
-                  <Text style={styles.successTitle}>¡Vinculación Verificada!</Text>
+                  <Text style={styles.successTitle}>¡Collar Vinculado!</Text>
                   <Text style={[styles.successSubtitle, isDark && styles.headerSubtitleDark]}>
-                    La etiqueta NFC y la ficha de la mascota están sincronizadas con éxito.
+                    El collar NFC de {mascota.nombre} ya se encuentra activo.
                   </Text>
                 </View>
 
@@ -501,37 +495,19 @@ export default function VincularNfcModal({
                   <View style={[styles.receiptRow, isDark && styles.receiptRowDark]}>
                     <Text style={[styles.receiptLabel, isDark && styles.headerSubtitleDark]}>Mascota:</Text>
                     <Text style={[styles.receiptValue, isDark && styles.textDark]}>
-                      {mascota.nombre} ({mascota.id})
+                      {mascota.nombre}
                     </Text>
-                  </View>
-                  <View style={[styles.receiptRow, isDark && styles.receiptRowDark]}>
-                    <Text style={[styles.receiptLabel, isDark && styles.headerSubtitleDark]}>ID de Etiqueta:</Text>
-                    <Text style={[styles.receiptValue, isDark && styles.textDark]}>{tagTecnicoId || 'N/A'}</Text>
-                  </View>
-                  <View style={[styles.receiptRow, isDark && styles.receiptRowDark]}>
-                    <Text style={[styles.receiptLabel, isDark && styles.headerSubtitleDark]}>Enlace de Identificación:</Text>
-                    <Text style={[styles.receiptValue, styles.codeSmall, isDark && styles.textDark]}>
-                      {urlGrabada || `https://huellapp.app/pet?id=${mascota.id}`}
-                    </Text>
-                  </View>
-                  <View style={[styles.receiptRow, isDark && styles.receiptRowDark]}>
-                    <Text style={[styles.receiptLabel, isDark && styles.headerSubtitleDark]}>Veterinario:</Text>
-                    <Text style={[styles.receiptValue, isDark && styles.textDark]}>{user?.displayName || user?.email || user?.uid}</Text>
-                  </View>
-                  <View style={[styles.receiptRow, isDark && styles.receiptRowDark]}>
-                    <Text style={[styles.receiptLabel, isDark && styles.headerSubtitleDark]}>Registro:</Text>
-                    <Text style={[styles.receiptValue, isDark && styles.textDark]}>Identificación y Ficha Clínica</Text>
                   </View>
                   <View style={[styles.receiptRow, { borderBottomWidth: 0 }]}>
                     <Text style={[styles.receiptLabel, isDark && styles.headerSubtitleDark]}>Estado:</Text>
                     <Text style={[styles.receiptValue, { color: '#04b639', fontWeight: 'bold' }]}>
-                      ACTIVO / VINCULADO
+                       Vinculado
                     </Text>
                   </View>
                 </View>
 
                 <TouchableOpacity style={styles.primaryBtn} onPress={handleCerrar}>
-                  <Text style={styles.primaryBtnText}>Finalizar</Text>
+                  <Text style={styles.primaryBtnText}>Listo</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -543,26 +519,8 @@ export default function VincularNfcModal({
                   <MaterialIcons name="phonelink-erase" size={44} color={isDark ? '#9ca3af' : '#6b7280'} style={{ marginBottom: 8 }} />
                   <Text style={[styles.noHardwareTitle, isDark && styles.textDark]}>NFC No Disponible</Text>
                   <Text style={[styles.noHardwareText, isDark && styles.headerSubtitleDark]}>
-                    La lectura y escritura de etiquetas NFC requiere un teléfono móvil compatible con sensor NFC habilitado.
+                    Para vincular un collar NFC necesitas usar un teléfono que cuente con lector NFC activado.
                   </Text>
-                  <Text style={[styles.noHardwareText, isDark && styles.headerSubtitleDark, { marginTop: 8 }]}>
-                    Esta función no se encuentra disponible en navegadores web o dispositivos sin sensor.
-                  </Text>
-                </View>
-
-                <View style={[styles.testSection, isDark && styles.testSectionDark]}>
-                  <Text style={[styles.testSectionTitle, isDark && styles.testSectionTitleDark]}>🧪 Modo de Simulación de Prueba</Text>
-                  <Text style={[styles.testSectionText, isDark && styles.testSectionTextDark]}>
-                    Para verificar la vinculación en el sistema sin necesidad del sensor físico, puedes realizar una prueba de registro:
-                  </Text>
-
-                  <TouchableOpacity
-                    style={[styles.primaryBtn, { backgroundColor: '#15803d', marginTop: 10 }]}
-                    onPress={handleSimularPruebaFirestore}
-                  >
-                    <Ionicons name="checkmark-done" size={18} color="#ffffff" style={{ marginRight: 6 }} />
-                    <Text style={styles.primaryBtnText}>Realizar vinculación de prueba</Text>
-                  </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity style={[styles.secondaryBtn, isDark && styles.secondaryBtnDark]} onPress={handleCerrar}>

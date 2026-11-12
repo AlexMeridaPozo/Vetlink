@@ -334,23 +334,6 @@ export function EditarMascotaModal({
               )}
             </View>
 
-            {/* Código Oficial (Solo lectura - preserva Firestore e integridad) */}
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.formLabel, isDark && styles.textDark]}>Identificador Oficial</Text>
-                <Text style={[styles.formBadgeLabel, isDark && { backgroundColor: '#133324', color: '#4ade80' }]}>
-                  Inalterable
-                </Text>
-              </View>
-              <View style={[styles.idReadOnlyBox, isDark && styles.idReadOnlyBoxDark]}>
-                <Ionicons name="shield-checkmark-outline" size={18} color={Palette.greenDeep} />
-                <Text style={[styles.idReadOnlyText, isDark && styles.textDark]}>{pet.id}</Text>
-              </View>
-              <Text style={[styles.formHint, isDark && styles.formSubtitleDark]}>
-                El código clínico único no se modifica para preservar la vinculación con chapitas QR y chips NFC.
-              </Text>
-            </View>
-
             {/* Nombre */}
             <View style={styles.inputGroup}>
               <Text style={[styles.formLabel, isDark && styles.textDark]}>Nombre de la Mascota *</Text>

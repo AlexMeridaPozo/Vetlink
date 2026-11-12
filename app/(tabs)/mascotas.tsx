@@ -316,34 +316,6 @@ function RegistrarMascotaModal({
               )}
             </View>
 
-            {/* ID Estable */}
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.formLabel, isDark && styles.textDark]}>Identificador Estable Único</Text>
-                <Text style={[styles.formBadgeLabel, isDark && { backgroundColor: '#133324', color: '#4ade80' }]}>Código oficial</Text>
-              </View>
-              <View style={styles.idRow}>
-                <TextInput
-                  style={[styles.formInput, styles.idInput, isDark && styles.formInputDark]}
-                  value={petId}
-                  onChangeText={setPetId}
-                  autoCapitalize="characters"
-                  placeholder="PET-001"
-                  placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
-                />
-                <TouchableOpacity
-                  style={[styles.suggestBtn, isDark && { backgroundColor: '#133324', borderColor: Palette.greenDeep }]}
-                  onPress={() => getNextSuggestedPetId().then((sug) => setPetId(sug))}
-                >
-                  <Ionicons name="refresh-outline" size={16} color={Palette.greenDeep} />
-                  <Text style={[styles.suggestBtnText, isDark && { color: '#4ade80' }]}>Auto</Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={[styles.formHint, isDark && styles.formSubtitleDark]}>
-                Este código identifica a la mascota y se vinculará a su etiqueta o collar NFC.
-              </Text>
-            </View>
-
             {/* Nombre */}
             <View style={styles.inputGroup}>
               <Text style={[styles.formLabel, isDark && styles.textDark]}>Nombre de la Mascota *</Text>

@@ -235,18 +235,6 @@ export default function QRMascotaCard({ petId, petName, isDark = false }: QRMasc
         )}
       </View>
 
-      {/* Info de impresión 3D */}
-      <View style={[styles.infoBox, isDark && styles.infoBoxDark]}>
-        <Text style={[styles.infoText, isDark && styles.textSecDark]}>
-          📐 El STL genera una placa {'\n'}lista para imprimir en 3D
-        </Text>
-        <View style={styles.dimensionsRow}>
-          <DimBadge label="Módulo" value="2mm" isDark={isDark} />
-          <DimBadge label="Relieve" value="1.5mm" isDark={isDark} />
-          <DimBadge label="Base" value="1.5mm" isDark={isDark} />
-        </View>
-      </View>
-
       {/* Botones */}
       <View style={styles.botonesRow}>
         <TouchableOpacity
@@ -259,8 +247,8 @@ export default function QRMascotaCard({ petId, petName, isDark = false }: QRMasc
             <ActivityIndicator size="small" color="#ffffff" />
           ) : (
             <>
-              <Ionicons name="image-outline" size={18} color="#ffffff" />
-              <Text style={styles.botonTexto}>Imagen SVG</Text>
+              <Ionicons name="share-outline" size={18} color="#ffffff" />
+              <Text style={styles.botonTexto}>Compartir QR</Text>
             </>
           )}
         </TouchableOpacity>
@@ -276,15 +264,11 @@ export default function QRMascotaCard({ petId, petName, isDark = false }: QRMasc
           ) : (
             <>
               <Ionicons name="cube-outline" size={18} color="#ffffff" />
-              <Text style={styles.botonTexto}>STL 3D</Text>
+              <Text style={styles.botonTexto}>Chapita 3D</Text>
             </>
           )}
         </TouchableOpacity>
       </View>
-
-      <Text style={[styles.hint, isDark && styles.textSecDark]}>
-        El STL puede abrirse en Cura, PrusaSlicer o cualquier laminador 3D
-      </Text>
     </View>
   );
 }

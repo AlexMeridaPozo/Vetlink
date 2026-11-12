@@ -723,17 +723,11 @@ export default function MascotaDetalleScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Ionicons name="location-outline" size={18} color="#2563eb" />
                   <Text style={[styles.scanDetectedTitle, isDark && styles.textDark]}>
-                    Último Escaneo Detectado
+                    Última ubicación registrada
                   </Text>
                 </View>
                 <Text style={[styles.scanDetectedDate, isDark && styles.textSecondaryDark]}>
-                  {pet.ultimoEscaneo.fecha ? new Date(pet.ultimoEscaneo.fecha).toLocaleString() : 'Fecha no disponible'}
-                </Text>
-                <Text style={[styles.scanDetectedCoords, isDark && styles.textSecondaryDark]}>
-                  GPS:{' '}
-                  {typeof pet.ultimoEscaneo.lat === 'number' && typeof pet.ultimoEscaneo.lng === 'number'
-                    ? `${pet.ultimoEscaneo.lat.toFixed(5)}, ${pet.ultimoEscaneo.lng.toFixed(5)}`
-                    : 'Coordenadas no disponibles'}
+                  {pet.ultimoEscaneo.fecha ? new Date(pet.ultimoEscaneo.fecha).toLocaleString() : 'Fecha reciente'}
                 </Text>
 
                 {typeof pet.ultimoEscaneo.lat === 'number' && typeof pet.ultimoEscaneo.lng === 'number' && (
@@ -746,24 +740,15 @@ export default function MascotaDetalleScreen() {
                     }
                   >
                     <Ionicons name="map-outline" size={16} color="#ffffff" />
-                    <Text style={styles.btnOpenMapText}>Ver Ubicación en Google Maps</Text>
+                    <Text style={styles.btnOpenMapText}>Ver ubicación en Google Maps</Text>
                   </TouchableOpacity>
                 )}
               </View>
             ) : (
               <Text style={[styles.noScansText, isDark && styles.textSecondaryDark]}>
-                Aún no se registran escaneos de rescate para esta mascota.
+                Aún no se registran alertas de ubicación para esta mascota.
               </Text>
             )}
-
-            {/* Enlace para probar la ficha pública */}
-            <TouchableOpacity
-              style={styles.btnPreviewPublic}
-              onPress={() => router.push({ pathname: '/pet', params: { id: displayId } } as any)}
-            >
-              <Ionicons name="open-outline" size={16} color={Palette.greenDeep} />
-              <Text style={styles.btnPreviewPublicText}>Ver Ficha Pública de Rescate (Web)</Text>
-            </TouchableOpacity>
           </View>
         )}
 
@@ -774,7 +759,7 @@ export default function MascotaDetalleScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <MaterialCommunityIcons name="nfc" size={22} color={Palette.greenDeep} />
                 <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
-                  Identificación NFC
+                  Collar NFC
                 </Text>
               </View>
 
@@ -799,62 +784,55 @@ export default function MascotaDetalleScreen() {
                       : (isDark ? styles.nfcStatusTextUnlinkedDark : styles.nfcStatusTextUnlinked),
                   ]}
                 >
-                  {isNfcLinked ? 'Vinculada' : 'No vinculada'}
+                  {isNfcLinked ? 'Vinculado' : 'No vinculado'}
                 </Text>
               </View>
             </View>
 
             {isNfcLinked ? (
               <View style={[styles.nfcDetailsBox, isDark && styles.nfcDetailsBoxDark]}>
-                <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
-                  <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>ID de Etiqueta:</Text>
-                  <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>{pet?.nfcTagId || 'N/A'}</Text>
-                </View>
-                <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
-                  <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Enlace Oficial:</Text>
-                  <Text style={[styles.nfcDetailValue, styles.monospace, isDark && styles.textDark]}>
-                    {pet?.nfcUrl || `https://huellapp.app/pet?id=${displayId}`}
-                  </Text>
-                </View>
+                <Text style={[styles.unlinkedNfcDesc, isDark && styles.textSecondaryDark, { marginBottom: pet?.nfcLinkedAt ? 8 : 0 }]}>
+                  El collar o chapita NFC de {displayNombre} está activo y listo para ser leído acercando un teléfono.
+                </Text>
                 {pet?.nfcLinkedAt && (
-                  <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
-                    <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Fecha de vinculación:</Text>
+                  <View style={[styles.nfcDetailRow, { borderBottomWidth: 0 }]}>
+                    <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Vinculado el:</Text>
                     <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>
-                      {new Date(pet.nfcLinkedAt).toLocaleString('es-AR')}
+                      {new Date(pet.nfcLinkedAt).toLocaleDateString('es-AR')}
                     </Text>
                   </View>
                 )}
-                {pet?.nfcLinkedBy && (
-                  <View style={[styles.nfcDetailRow, { borderBottomWidth: 0 }]}>
-                    <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Veterinario Emisor:</Text>
-                    <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>{pet.nfcLinkedBy}</Text>
-                  </View>
-                )}
 
-                <TouchableOpacity
-                  style={[styles.relinkNfcBtn, isDark && styles.relinkNfcBtnDark]}
-                  onPress={handleOpenVincularNfc}
-                  activeOpacity={0.8}
-                >
-                  <MaterialCommunityIcons name="nfc" size={18} color={Palette.greenDeep} style={{ marginRight: 6 }} />
-                  <Text style={[styles.relinkNfcBtnText, isDark && styles.relinkNfcBtnTextDark]}>
-                    Reasignar o Reescribir Etiqueta NFC
-                  </Text>
-                </TouchableOpacity>
+                {isVeterinario && (
+                  <TouchableOpacity
+                    style={[styles.relinkNfcBtn, isDark && styles.relinkNfcBtnDark]}
+                    onPress={handleOpenVincularNfc}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialCommunityIcons name="nfc" size={18} color={Palette.greenDeep} style={{ marginRight: 6 }} />
+                    <Text style={[styles.relinkNfcBtnText, isDark && styles.relinkNfcBtnTextDark]}>
+                      Cambiar Collar NFC
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             ) : (
               <View style={[styles.unlinkedNfcBox, isDark && styles.unlinkedNfcBoxDark]}>
                 <Text style={[styles.unlinkedNfcDesc, isDark && styles.textSecondaryDark]}>
-                  Esta mascota aún no tiene una etiqueta NFC asociada. Acerca una etiqueta compatible para vincularla a este registro oficial.
+                  {isVeterinario
+                    ? `Acerca un collar o chapita NFC para asociarlo a la ficha de ${displayNombre}.`
+                    : `${displayNombre} aún no tiene un collar NFC vinculado. Podés solicitar su vinculación en tu veterinaria adherida.`}
                 </Text>
-                <TouchableOpacity
-                  style={styles.linkNfcPrimaryBtn}
-                  onPress={handleOpenVincularNfc}
-                  activeOpacity={0.8}
-                >
-                  <MaterialCommunityIcons name="nfc" size={18} color="#ffffff" style={{ marginRight: 8 }} />
-                  <Text style={styles.linkNfcPrimaryBtnText}>Vincular Etiqueta NFC</Text>
-                </TouchableOpacity>
+                {isVeterinario && (
+                  <TouchableOpacity
+                    style={styles.linkNfcPrimaryBtn}
+                    onPress={handleOpenVincularNfc}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialCommunityIcons name="nfc" size={18} color="#ffffff" style={{ marginRight: 8 }} />
+                    <Text style={styles.linkNfcPrimaryBtnText}>Vincular Collar NFC</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           </View>

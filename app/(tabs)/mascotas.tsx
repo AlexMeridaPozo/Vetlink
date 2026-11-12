@@ -561,7 +561,7 @@ export default function MascotasScreen() {
       if (pet.nfcStatus === 'linked' || Boolean(pet.nfcTagId)) {
         Alert.alert(
           'Desvincular NFC/QR requerido',
-          `Antes de borrar a ${pet.nombre}, primero debes desvincular la mascota de su NFC/QR y dejarlo en blanco.`,
+          `Antes de borrar a ${pet.nombre}, primero debes desvincular la mascota del NFC/QR.`,
           [
             { text: 'Cancelar', style: 'cancel' },
             {

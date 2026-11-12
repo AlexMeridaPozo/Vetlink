@@ -234,7 +234,7 @@ export default function MascotaDetalleScreen() {
     if (isNfcLinked) {
       Alert.alert(
         'Desvincular NFC/QR requerido',
-        `Antes de borrar a ${displayNombre}, primero debes desvincular la mascota de su NFC/QR y dejarlo en blanco.`,
+        `Antes de borrar a ${displayNombre}, primero debes desvincular la mascota del NFC/QR.`,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -867,7 +867,7 @@ export default function MascotaDetalleScreen() {
                   >
                     <MaterialCommunityIcons name="nfc" size={18} color={Palette.greenDeep} style={{ marginRight: 6 }} />
                     <Text style={[styles.relinkNfcBtnText, isDark && styles.relinkNfcBtnTextDark]}>
-                      Gestionar o Desvincular Collar NFC
+                      Desvincular NFC
                     </Text>
                   </TouchableOpacity>
                 )}

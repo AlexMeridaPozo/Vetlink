@@ -216,13 +216,11 @@ export default function HomeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Ver mis mascotas"
         >
-          {isDark && (
-            <Image
-              source={require('@/assets/images/3d/hero_pets_art.png')}
-              style={styles.heroPetsImage}
-              resizeMode="contain"
-            />
-          )}
+          <Image
+            source={require('@/assets/images/3d/hero_pets_art.png')}
+            style={styles.heroPetsImage}
+            resizeMode="contain"
+          />
 
           <View style={styles.cardMascotasContent}>
             <View style={[styles.cardIconWrapper, isDark && styles.cardIconWrapperDark]}>
@@ -250,11 +248,13 @@ export default function HomeScreen() {
             titulo="Escanear QR"
             subtitulo="Identificar chapita"
             icono="qr-code-outline"
-            colorFondoIcono={isDark ? '#143825' : Palette.greenSoft}
-            colorIcono={isDark ? '#4ade80' : Palette.greenDeep}
+            colorFondoIcono={isDark ? '#143825' : '#D1F2DE'}
+            colorIcono={isDark ? '#4ade80' : '#087A43'}
             onPress={() => router.push('/(tabs)/scan')}
             isDark={isDark}
             artSource={require('@/assets/images/3d/qr_tag_art.png')}
+            cardBgLight="#EAF8F0"
+            cardBorderLight="#BCEAD0"
             cardBgDark="#042313"
             cardBorderDark="#0d522c"
           />
@@ -262,11 +262,13 @@ export default function HomeScreen() {
             titulo="Turnos"
             subtitulo="Agenda de citas"
             icono="calendar-outline"
-            colorFondoIcono={isDark ? '#12384D' : Palette.cyanLight}
-            colorIcono={isDark ? '#38BDF8' : Palette.cyanDark}
+            colorFondoIcono={isDark ? '#12384D' : '#D6EDFA'}
+            colorIcono={isDark ? '#38BDF8' : '#0284C7'}
             onPress={() => router.push('/turnos')}
             isDark={isDark}
             artSource={require('@/assets/images/3d/calendar_art.png')}
+            cardBgLight="#EBF5FB"
+            cardBorderLight="#BEE3F8"
             cardBgDark="#072d47"
             cardBorderDark="#0e5e94"
           />
@@ -274,11 +276,13 @@ export default function HomeScreen() {
             titulo="Recordatorios"
             subtitulo="Vacunas y controles"
             icono="notifications-outline"
-            colorFondoIcono={isDark ? '#42240C' : Palette.peachSoft}
-            colorIcono={isDark ? '#FB923C' : Palette.peachDark}
+            colorFondoIcono={isDark ? '#42240C' : '#FCE9D8'}
+            colorIcono={isDark ? '#FB923C' : '#D97706'}
             onPress={() => router.push('/recordatorios')}
             isDark={isDark}
             artSource={require('@/assets/images/3d/clock_art.png')}
+            cardBgLight="#FEF6EE"
+            cardBorderLight="#FADEC9"
             cardBgDark="#331908"
             cardBorderDark="#733b16"
           />
@@ -286,11 +290,13 @@ export default function HomeScreen() {
             titulo="Veterinarias"
             subtitulo="Cercanas a vos"
             icono="medkit-outline"
-            colorFondoIcono={isDark ? '#143825' : Palette.greenSoft}
-            colorIcono={isDark ? '#4ade80' : Palette.greenDeep}
+            colorFondoIcono={isDark ? '#143825' : '#D1F2DE'}
+            colorIcono={isDark ? '#4ade80' : '#087A43'}
             onPress={() => router.push('/veterinarias')}
             isDark={isDark}
             artSource={require('@/assets/images/3d/clinic_art.png')}
+            cardBgLight="#EAF8F0"
+            cardBorderLight="#BCEAD0"
             cardBgDark="#042c16"
             cardBorderDark="#0c6332"
           />
@@ -298,11 +304,13 @@ export default function HomeScreen() {
             titulo="Mapa Pilar"
             subtitulo="15 lugares reales"
             icono="compass-outline"
-            colorFondoIcono={isDark ? '#12384D' : Palette.cyanLight}
-            colorIcono={isDark ? '#38BDF8' : Palette.cyanDark}
+            colorFondoIcono={isDark ? '#12384D' : '#D6EFF8'}
+            colorIcono={isDark ? '#38BDF8' : '#0891B2'}
             onPress={() => router.push('/(tabs)/mapa')}
             isDark={isDark}
             artSource={require('@/assets/images/3d/map_art.png')}
+            cardBgLight="#EBF6FA"
+            cardBorderLight="#BEE5F2"
             cardBgDark="#082c42"
             cardBorderDark="#115c8c"
           />
@@ -310,11 +318,13 @@ export default function HomeScreen() {
             titulo="Mi Perfil"
             subtitulo="Datos y ajustes"
             icono="person-outline"
-            colorFondoIcono={isDark ? '#133D2F' : Palette.greenSoft}
-            colorIcono={isDark ? '#34D399' : Palette.greenDeep}
+            colorFondoIcono={isDark ? '#133D2F' : '#D3EFE4'}
+            colorIcono={isDark ? '#34D399' : '#059669'}
             onPress={() => router.push('/(tabs)/perfil')}
             isDark={isDark}
             artSource={require('@/assets/images/3d/clipboard_art.png')}
+            cardBgLight="#EBF7F2"
+            cardBorderLight="#BEE6D7"
             cardBgDark="#042d1b"
             cardBorderDark="#0e623b"
           />
@@ -375,6 +385,8 @@ function BotonMenu({
   isDark,
   isAlert,
   artSource,
+  cardBgLight,
+  cardBorderLight,
   cardBgDark,
   cardBorderDark,
 }: {
@@ -387,6 +399,8 @@ function BotonMenu({
   isDark?: boolean;
   isAlert?: boolean;
   artSource?: any;
+  cardBgLight?: string;
+  cardBorderLight?: string;
   cardBgDark?: string;
   cardBorderDark?: string;
 }) {
@@ -394,6 +408,8 @@ function BotonMenu({
     <Pressable
       style={({ pressed }) => [
         styles.boton,
+        !isDark && cardBgLight ? { backgroundColor: cardBgLight } : undefined,
+        !isDark && cardBorderLight ? { borderColor: cardBorderLight } : undefined,
         isDark && styles.botonDark,
         isDark && cardBgDark ? { backgroundColor: cardBgDark } : undefined,
         isDark && cardBorderDark ? { borderColor: cardBorderDark } : undefined,
@@ -404,7 +420,7 @@ function BotonMenu({
       accessibilityRole="button"
       accessibilityLabel={titulo}
     >
-      {isDark && artSource && (
+      {artSource && (
         <Image
           source={artSource}
           style={styles.botonArtImage}
@@ -449,17 +465,17 @@ const styles = StyleSheet.create({
   sosSecondaryCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Palette.surfaceLight,
+    backgroundColor: '#FEF2F2',
     borderRadius: 18,
     padding: 12,
     borderWidth: 1,
-    borderColor: Palette.borderLight,
+    borderColor: '#FECACA',
     gap: 12,
     marginTop: 4,
     marginBottom: 10,
-    shadowColor: '#000000',
+    shadowColor: '#EF4444',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
+    shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 1,
   },
@@ -471,7 +487,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 14,
-    backgroundColor: Palette.redSoft,
+    backgroundColor: '#FEE2E2',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -482,12 +498,12 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontFamily: FontFamily.headingSemiBold,
     letterSpacing: -0.2,
-    color: Palette.textPrimary,
+    color: '#991B1B',
   },
   sosSecondarySubtitle: {
     fontSize: 11.5,
     fontFamily: FontFamily.bodyRegular,
-    color: Palette.textSecondary,
+    color: '#7F1D1D',
     marginTop: 2,
     lineHeight: 15,
   },
@@ -645,15 +661,15 @@ const styles = StyleSheet.create({
     color: Palette.textPrimaryDark,
   },
   cardMascotas: {
-    backgroundColor: Palette.surfaceLight,
+    backgroundColor: '#EAF8F0',
     borderRadius: 22,
     padding: 18,
     marginBottom: 22,
     borderWidth: 1,
-    borderColor: Palette.borderLight,
+    borderColor: '#BCEAD0',
     shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 2,
     position: 'relative',
@@ -687,16 +703,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cardIconWrapper: {
-    backgroundColor: Palette.greenSoft,
+    backgroundColor: '#FFFFFF',
     width: 44,
     height: 44,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#BCEAD0',
   },
   cardIconWrapperDark: {
     backgroundColor: '#133324',
+    borderColor: '#174E33',
   },
   cardBadge: {
     backgroundColor: Palette.greenPrimary,
@@ -714,13 +733,13 @@ const styles = StyleSheet.create({
   cardTitulo: {
     fontFamily: FontFamily.headingBold,
     fontSize: 18,
-    color: Palette.textPrimary,
+    color: '#0A3B22',
   },
   cardTituloDark: {
     color: Palette.textPrimaryDark,
   },
   cardDetalle: {
-    color: Palette.textSecondary,
+    color: '#38634E',
     fontFamily: FontFamily.bodyRegular,
     marginTop: 4,
     fontSize: 14,
@@ -734,7 +753,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: Palette.borderSubtle,
+    borderTopColor: '#CBEBD8',
   },
   cardFooterDark: {
     borderTopWidth: 0,

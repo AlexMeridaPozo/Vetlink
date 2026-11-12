@@ -34,7 +34,7 @@ export function FriendlyPetBanner({
       {/* Composición de ilustraciones vectoriales amigables */}
       <View style={styles.artWrapper}>
         {variant === 'paw' && (
-          <View style={[styles.avatarCircle, styles.avatarPaw, isDark && styles.avatarDark]}>
+          <View style={[styles.avatarCircle, styles.avatarPaw, isDark && styles.avatarPawDark]}>
             <MaterialCommunityIcons
               name="paw"
               size={compact ? 24 : 30}
@@ -121,11 +121,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Palette.surfaceLight,
+    backgroundColor: Palette.greenSoft,
     borderRadius: Radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: Palette.borderLight,
+    borderColor: Palette.greenBorder,
     gap: 14,
     marginVertical: 10,
     ...Shadows.sm,
@@ -191,6 +191,10 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
+    backgroundColor: Palette.greenSoft,
+    borderColor: Palette.greenBorder,
+  },
+  avatarPawDark: {
     backgroundColor: '#123D2B',
     borderColor: '#174E33',
   },

@@ -18,6 +18,7 @@ import { nfcService } from '@/services/nfcService';
 import {
   checkNfcTagInFirestore,
   linkNfcTagToPet,
+  unlinkNfcTagFromPet,
   type Pet,
   type NfcTagDocument,
 } from '@/services/petService';
@@ -40,9 +41,11 @@ type PasoVinculacion =
   | 'waiting_tag'
   | 'tag_conflict'
   | 'writing_nfc'
+  | 'unlinking_nfc'
   | 'saving_firestore'
   | 'firestore_error'
   | 'success'
+  | 'unlinked_success'
   | 'no_hardware';
 
 export default function VincularNfcModal({
@@ -310,6 +313,110 @@ export default function VincularNfcModal({
     }
   };
 
+  /**
+   * Desvincula la mascota en el sistema y deja su estado en blanco (sin collar NFC)
+   */
+  const ejecutarDesvinculacionEnSistema = async () => {
+    if (!mascota || !user) return;
+    try {
+      setPaso('saving_firestore');
+      setMensajeEstado('Desvinculando collar NFC de la mascota...');
+      await unlinkNfcTagFromPet(mascota.id, mascota.nfcTagId, user.uid);
+
+      const mascotaDesvinculada: Pet = {
+        ...mascota,
+        nfcTagId: undefined,
+        nfcStatus: 'unlinked',
+        nfcUrl: undefined,
+        nfcLinkedAt: undefined,
+        nfcLinkedBy: undefined,
+      };
+
+      setPaso('unlinked_success');
+      onSuccess(mascotaDesvinculada);
+    } catch (err: any) {
+      setPaso('idle');
+      setErrorDetalle(err?.message || 'No se pudo desvincular el collar NFC.');
+      Alert.alert('Error', err?.message || 'No se pudo desvincular el collar NFC.');
+    }
+  };
+
+  /**
+   * Inicia el flujo para borrar físicamente el collar NFC (dejarlo en blanco) y desvincular la mascota
+   */
+  const handleDesvincularCollar = async () => {
+    if (!mascota || !user) return;
+
+    const tieneNfcModulo = nfcService.isModuleAvailable();
+    const soportado = tieneNfcModulo ? await nfcService.isSupported() : false;
+
+    if (!soportado) {
+      Alert.alert(
+        'Desvincular Collar NFC',
+        `¿Confirmas que deseas desvincular el collar NFC de ${mascota.nombre} y dejar la ficha sin collar asignado?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Desvincular',
+            style: 'destructive',
+            onPress: ejecutarDesvinculacionEnSistema,
+          },
+        ]
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Desvincular y Dejar en Blanco',
+      `Elige cómo deseas desvincular el collar NFC de ${mascota.nombre}:`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Solo desvincular en la app',
+          onPress: ejecutarDesvinculacionEnSistema,
+        },
+        {
+          text: 'Acercar collar y dejar en blanco',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const encendido = await nfcService.isEnabled();
+              if (!encendido) {
+                Alert.alert(
+                  'NFC desactivado',
+                  'Activa el NFC en los ajustes de tu teléfono para borrar el collar físico, o usa la opción "Solo desvincular en la app".',
+                  [
+                    { text: 'Ir a Ajustes', onPress: () => nfcService.goToSettings() },
+                    { text: 'Cancelar', style: 'cancel' },
+                  ]
+                );
+                return;
+              }
+
+              setPaso('unlinking_nfc');
+              setMensajeEstado('Acerca el collar NFC al reverso de tu teléfono para dejarlo en blanco...');
+
+              const borrado = await nfcService.clearNfcTag();
+              if (!borrado.success) {
+                throw new Error(borrado.error || 'No se pudo borrar la etiqueta física.');
+              }
+
+              await ejecutarDesvinculacionEnSistema();
+            } catch (err: any) {
+              if (err?.message !== 'cancelled') {
+                setPaso('idle');
+                setErrorDetalle(err?.message || 'Error al dejar en blanco el collar NFC.');
+                Alert.alert('Error NFC', err?.message || 'No se pudo borrar el collar físico.');
+              } else {
+                setPaso('idle');
+              }
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (!mascota) return null;
 
   return (
@@ -351,11 +458,11 @@ export default function VincularNfcModal({
                   </Text>
                 </View>
 
-                {mascota.nfcStatus === 'linked' && (
+                {(mascota.nfcStatus === 'linked' || Boolean(mascota.nfcTagId)) && (
                   <View style={[styles.alreadyLinkedNotice, isDark && styles.alreadyLinkedNoticeDark]}>
                     <Ionicons name="information-circle" size={20} color="#0284c7" />
                     <Text style={[styles.alreadyLinkedText, isDark && styles.alreadyLinkedTextDark]}>
-                      {mascota.nombre} ya tiene un collar NFC vinculado. Si acercas uno nuevo, se actualizará automáticamente.
+                      {mascota.nombre} tiene un collar NFC activo. Puedes acercar uno nuevo para reemplazarlo o desvincularlo y dejarlo en blanco.
                     </Text>
                   </View>
                 )}
@@ -373,8 +480,35 @@ export default function VincularNfcModal({
                   activeOpacity={0.8}
                 >
                   <MaterialIcons name="nfc" size={20} color="#ffffff" style={{ marginRight: 8 }} />
-                  <Text style={styles.primaryBtnText}>Vincular Collar NFC</Text>
+                  <Text style={styles.primaryBtnText}>
+                    {mascota.nfcStatus === 'linked' || Boolean(mascota.nfcTagId)
+                      ? 'Vincular Nuevo Collar NFC'
+                      : 'Vincular Collar NFC'}
+                  </Text>
                 </TouchableOpacity>
+
+                {(mascota.nfcStatus === 'linked' || Boolean(mascota.nfcTagId)) && (
+                  <TouchableOpacity
+                    style={[
+                      styles.secondaryBtn,
+                      {
+                        backgroundColor: isDark ? 'rgba(220, 38, 38, 0.14)' : '#fef2f2',
+                        borderColor: isDark ? 'rgba(220, 38, 38, 0.4)' : '#fecaca',
+                        borderWidth: 1,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      },
+                    ]}
+                    onPress={handleDesvincularCollar}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="unlink-outline" size={18} color="#dc2626" style={{ marginRight: 8 }} />
+                    <Text style={{ color: '#dc2626', fontWeight: '700', fontSize: 14 }}>
+                      Desvincular NFC y Dejar en Blanco
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
 
@@ -382,14 +516,15 @@ export default function VincularNfcModal({
             {(paso === 'checking' ||
               paso === 'waiting_tag' ||
               paso === 'writing_nfc' ||
+              paso === 'unlinking_nfc' ||
               paso === 'saving_firestore') && (
               <View style={styles.progressContainer}>
                 <View style={[styles.radarCircle, isDark && styles.radarCircleDark]}>
-                  <ActivityIndicator size="large" color="#04b639" />
+                  <ActivityIndicator size="large" color={paso === 'unlinking_nfc' ? '#dc2626' : '#04b639'} />
                   <MaterialIcons
                     name="nfc"
                     size={42}
-                    color="#04b639"
+                    color={paso === 'unlinking_nfc' ? '#dc2626' : '#04b639'}
                     style={{ position: 'absolute' }}
                   />
                 </View>
@@ -399,7 +534,9 @@ export default function VincularNfcModal({
                     ? 'Acerca la Etiqueta NFC'
                     : paso === 'writing_nfc'
                     ? 'Escribiendo en Etiqueta NFC'
-                    : 'Guardando vinculación'}
+                    : paso === 'unlinking_nfc'
+                    ? 'Dejando Collar en Blanco'
+                    : 'Guardando cambios'}
                 </Text>
 
                 <Text style={[styles.progressSubtitle, isDark && styles.headerSubtitleDark]}>{mensajeEstado}</Text>
@@ -504,6 +641,23 @@ export default function VincularNfcModal({
                        Vinculado
                     </Text>
                   </View>
+                </View>
+
+                <TouchableOpacity style={styles.primaryBtn} onPress={handleCerrar}>
+                  <Text style={styles.primaryBtnText}>Listo</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Estado: COLLAR DESVINCULADO CON ÉXITO */}
+            {paso === 'unlinked_success' && (
+              <View style={styles.stepContainer}>
+                <View style={styles.successBadge}>
+                  <Ionicons name="checkmark-circle" size={56} color="#04b639" />
+                  <Text style={styles.successTitle}>¡Collar Desvinculado!</Text>
+                  <Text style={[styles.successSubtitle, isDark && styles.headerSubtitleDark]}>
+                    El collar NFC quedó en blanco y {mascota.nombre} ya no tiene ningún collar vinculado. Ahora puedes eliminar la mascota si lo deseas.
+                  </Text>
                 </View>
 
                 <TouchableOpacity style={styles.primaryBtn} onPress={handleCerrar}>

@@ -281,7 +281,7 @@ export async function linkNfcTagToPet(
 }
 
 /**
- * 8. Desvincula una etiqueta NFC en Firestore
+ * 8. Desvincula una etiqueta NFC en Firestore y deja a la mascota sin collar vinculado
  */
 export async function unlinkNfcTagFromPet(
   petId: string,
@@ -289,24 +289,52 @@ export async function unlinkNfcTagFromPet(
   vetUid: string
 ): Promise<void> {
   try {
-    const cleanPetId = petId.trim().toUpperCase();
+    const rawId = petId.trim();
+    let targetDocRef = doc(db, 'mascotas', rawId.toUpperCase());
+    let currentTagId = tagId;
+
+    try {
+      const snap = await getDoc(targetDocRef);
+      if (snap.exists()) {
+        const data = snap.data() as Pet;
+        if (!currentTagId && data.nfcTagId) {
+          currentTagId = data.nfcTagId;
+        }
+      } else {
+        const altRef = doc(db, 'mascotas', rawId);
+        const altSnap = await getDoc(altRef);
+        if (altSnap.exists()) {
+          targetDocRef = altRef;
+          const data = altSnap.data() as Pet;
+          if (!currentTagId && data.nfcTagId) {
+            currentTagId = data.nfcTagId;
+          }
+        }
+      }
+    } catch {
+      // Continuar con referencia estándar
+    }
+
     const now = new Date().toISOString();
 
-    if (tagId) {
-      const cleanTagId = tagId.trim();
+    if (currentTagId) {
+      const cleanTagId = currentTagId.trim();
       const tagDocRef = doc(db, 'nfcTags', cleanTagId);
       await updateDoc(tagDocRef, {
         status: 'unlinked',
+        petId: '',
+        ndefPayload: '',
         updatedAt: now,
         unlinkedBy: vetUid,
-      }).catch(() => { });
+      }).catch(() => {});
     }
 
-    const petDocRef = doc(db, 'mascotas', cleanPetId);
-    await updateDoc(petDocRef, {
+    await updateDoc(targetDocRef, {
       nfcTagId: null,
       nfcStatus: 'unlinked',
       nfcUrl: null,
+      nfcLinkedAt: null,
+      nfcLinkedBy: null,
       updatedAt: now,
     });
   } catch (error) {

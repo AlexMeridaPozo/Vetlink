@@ -174,10 +174,10 @@ export default function MascotaDetalleScreen() {
   };
 
   const handleOpenVincularNfc = () => {
-    if (!isVeterinario) {
+    if (!isVeterinario && !isNfcLinked) {
       Alert.alert(
         'Acceso Restringido',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en HuellApp.'
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular etiquetas NFC nuevas en HuellApp.'
       );
       return;
     }
@@ -233,8 +233,15 @@ export default function MascotaDetalleScreen() {
   const handleEliminarMascota = () => {
     if (isNfcLinked) {
       Alert.alert(
-        'No se puede eliminar',
-        'Esta mascota ya tiene un collar NFC/QR vinculado y no puede ser eliminada.'
+        'Desvincular NFC/QR requerido',
+        `Antes de borrar a ${displayNombre}, primero debes desvincular la mascota de su NFC/QR y dejarlo en blanco.`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Desvincular NFC',
+            onPress: () => setNfcModalVisible(true),
+          },
+        ]
       );
       return;
     }
@@ -555,8 +562,8 @@ export default function MascotaDetalleScreen() {
                 </TouchableOpacity>
               )}
 
-              {/* Botón Eliminar Mascota (solo si NO está vinculada a collar NFC) */}
-              {canEdit && !isNfcLinked && (
+              {/* Botón Eliminar Mascota (siempre visible; pide desvincular NFC antes si tiene collar activo) */}
+              {canEdit && (
                 <TouchableOpacity
                   style={[styles.btnDeleteMain, isDark && styles.btnDeleteMainDark]}
                   onPress={handleEliminarMascota}
@@ -852,7 +859,7 @@ export default function MascotaDetalleScreen() {
                   </View>
                 )}
 
-                {isVeterinario && (
+                {canEdit && (
                   <TouchableOpacity
                     style={[styles.relinkNfcBtn, isDark && styles.relinkNfcBtnDark]}
                     onPress={handleOpenVincularNfc}
@@ -860,7 +867,7 @@ export default function MascotaDetalleScreen() {
                   >
                     <MaterialCommunityIcons name="nfc" size={18} color={Palette.greenDeep} style={{ marginRight: 6 }} />
                     <Text style={[styles.relinkNfcBtnText, isDark && styles.relinkNfcBtnTextDark]}>
-                      Cambiar Collar NFC
+                      Gestionar o Desvincular Collar NFC
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -923,7 +930,6 @@ export default function MascotaDetalleScreen() {
         onClose={() => setNfcModalVisible(false)}
         onSuccess={(updatedPet) => {
           setPet(updatedPet);
-          setNfcModalVisible(false);
           onRefresh();
         }}
       />

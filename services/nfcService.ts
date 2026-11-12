@@ -338,4 +338,49 @@ export const nfcService = {
       await this.cancelSession();
     }
   },
+
+  /**
+   * Deja en blanco una etiqueta NFC física sobrescribiendo su contenido con un registro vacío
+   */
+  async clearNfcTag(): Promise<{ success: boolean; tagId: string | null; error?: string }> {
+    if (!this.isModuleAvailable()) {
+      return {
+        success: false,
+        tagId: null,
+        error: 'La función NFC requiere un dispositivo móvil compatible.',
+      };
+    }
+
+    try {
+      await this.init();
+      await NfcManager.requestTechnology(NfcTech.Ndef);
+
+      const tag = await NfcManager.getTag();
+      const tagId = tag?.id || null;
+
+      if (!NfcManager.ndefHandler?.writeNdefMessage) {
+        throw new Error('Este dispositivo no soporta escritura en etiquetas NFC.');
+      }
+
+      const emptyRecord = Ndef.textRecord('');
+      const bytes = Ndef.encodeMessage([emptyRecord]);
+      await NfcManager.ndefHandler.writeNdefMessage(bytes);
+
+      return {
+        success: true,
+        tagId,
+      };
+    } catch (err: any) {
+      if (err?.message === 'cancelled') {
+        throw err;
+      }
+      return {
+        success: false,
+        tagId: null,
+        error: err?.message || 'Error al borrar la etiqueta NFC.',
+      };
+    } finally {
+      await this.cancelSession();
+    }
+  },
 };

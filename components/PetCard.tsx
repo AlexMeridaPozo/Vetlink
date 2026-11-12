@@ -226,7 +226,7 @@ export const PetCard = React.memo(function PetCard({
           </Text>
         </TouchableOpacity>
 
-        {!isNfcLinked && onDeletePress && (
+        {onDeletePress && (
           <TouchableOpacity
             style={[styles.deleteQuickBtn, isDark && styles.deleteQuickBtnDark]}
             onPress={(e) => {

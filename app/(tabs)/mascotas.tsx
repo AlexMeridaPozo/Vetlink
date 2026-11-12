@@ -545,10 +545,11 @@ export default function MascotasScreen() {
   };
 
   const handleVincularNfcPress = (pet: Pet) => {
-    if (!isVeterinario) {
+    const isLinked = pet.nfcStatus === 'linked' || Boolean(pet.nfcTagId);
+    if (!isVeterinario && !isLinked) {
       Alert.alert(
-        'Acceso Denegado (Seguridad)',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o reasignar etiquetas NFC en HuellApp.'
+        'Acceso Restringido',
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular etiquetas NFC nuevas en HuellApp.'
       );
       return;
     }
@@ -559,8 +560,15 @@ export default function MascotasScreen() {
     (pet: Pet) => {
       if (pet.nfcStatus === 'linked' || Boolean(pet.nfcTagId)) {
         Alert.alert(
-          'No disponible',
-          'Esta mascota ya tiene un collar NFC/QR vinculado y no puede eliminarse.'
+          'Desvincular NFC/QR requerido',
+          `Antes de borrar a ${pet.nombre}, primero debes desvincular la mascota de su NFC/QR y dejarlo en blanco.`,
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Desvincular NFC',
+              onPress: () => setNfcMascota(pet),
+            },
+          ]
         );
         return;
       }
@@ -868,8 +876,8 @@ export default function MascotasScreen() {
           visible={!!nfcMascota}
           mascota={nfcMascota}
           onClose={() => setNfcMascota(null)}
-          onSuccess={() => {
-            setNfcMascota(null);
+          onSuccess={(updatedPet) => {
+            setNfcMascota(updatedPet);
             refresh();
           }}
         />

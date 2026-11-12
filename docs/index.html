@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HuellApp — El cuidado de tu mascota, conectado</title>
+  <meta name="description" content="HuellApp es la app para cuidar a tu mascota: ficha clínica digital, chapita inteligente con QR y NFC, veterinarias de guardia en Pilar y recordatorios de vacunas.">
+  <meta name="theme-color" content="#0BB35E">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="HuellApp — El cuidado de tu mascota, conectado">
+  <meta property="og:description" content="Ficha clínica digital, chapita inteligente con QR y NFC, veterinarias de guardia y recordatorios.">
+  <meta property="og:image" content="./assets/brand/logo.png">
+  <link rel="icon" href="./assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <script>
+    /* aplica el tema guardado antes de pintar, para evitar parpadeo */
+    try{var t=localStorage.getItem('huella-theme');if(t){document.documentElement.setAttribute('data-theme',t)}}catch(e){}
+  </script>
+</head>
+<body>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- Íconos -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-paw" viewBox="0 0 24 24"><path fill="currentColor" d="M8.2 10.4c1.1 0 1.9-1.2 1.9-2.7S9.3 5 8.2 5 6.3 6.2 6.3 7.7s.8 2.7 1.9 2.7Zm7.6 0c1.1 0 1.9-1.2 1.9-2.7S16.9 5 15.8 5s-1.9 1.2-1.9 2.7.8 2.7 1.9 2.7ZM4.4 14.2c1 0 1.8-1.1 1.8-2.4S5.4 9.4 4.4 9.4 2.6 10.5 2.6 11.8s.8 2.4 1.8 2.4Zm15.2 0c1 0 1.8-1.1 1.8-2.4s-.8-2.4-1.8-2.4-1.8 1.1-1.8 2.4.8 2.4 1.8 2.4ZM12 11.2c-2.6 0-5.6 3.3-5.6 5.8 0 1.7 1.3 2.5 2.8 2.5 1 0 1.9-.5 2.8-.5s1.8.5 2.8.5c1.5 0 2.8-.8 2.8-2.5 0-2.5-3-5.8-5.6-5.8Z"/></symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h3M20 17v4"/></g></symbol>
+    <symbol id="i-nfc" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 15V9l6 6V9"/></g></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></g></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.7-7-11a7 7 0 0 1 14 0c0 5.3-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></g></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 20a2 2 0 0 1-3.4 0"/></g></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></g></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="4"/><path d="M12 8V4M9 13v1M15 13v1"/><circle cx="12" cy="3.5" r="1"/></g></symbol>
+    <symbol id="i-sos" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></g></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></g></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g></symbol>
+    <symbol id="i-med" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="3"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M12 11v6M9 14h6"/></g></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></g></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></g></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></g></symbol>
+    <symbol id="i-gh" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.7.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></g></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></g></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></g></symbol>
+    <symbol id="i-wa" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.6-4.6A8.5 8.5 0 1 1 8 19.6z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-.8.8a4 4 0 0 1-1.8-1.8l.8-.8-1-2z"/></g></symbol>
+  </defs>
+</svg>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="nav__in">
+    <a href="#inicio" class="brand" aria-label="HuellApp, ir al inicio">
+      <span class="brand__mark"><img src="./assets/brand/emblem.png" alt="" width="40" height="33"></span>
+      <span class="brand__name">Huell<b>App</b></span>
+    </a>
+    <nav class="nav__links" id="navLinks" aria-label="Principal">
+      <a href="#app">La app</a>
+      <a href="#funciones">Funciones</a>
+      <a href="#rescate">Rescate</a>
+      <a href="#comunidad">Comunidad</a>
+      <a href="#faq">Preguntas</a>
+    </nav>
+    <button class="theme" id="themeBtn" aria-label="Cambiar a modo oscuro"><svg class="t-sun"><use href="#i-sun"/></svg><svg class="t-moon"><use href="#i-moon"/></svg></button>
+    <a href="#descargar" class="btn btn--primary btn--sm nav__cta">Descargar</a>
+    <button class="nav__toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks"><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="inicio">
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="hero">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="hero__in wrap">
+    <div class="hero__copy">
+      <span class="chip reveal"><span class="dot"></span> Hecha para tutores y veterinarias de Pilar</span>
+      <h1 class="reveal">El cuidado de tu mascota, <span class="grad">conectado.</span></h1>
+      <p class="lead reveal">Su ficha clínica, su chapita inteligente y las veterinarias de guardia, todo en tu celular. Y si algún día se pierde, quien la encuentre puede avisarte en segundos.</p>
+      <div class="stores reveal" data-stores></div>
+      <div class="proof reveal">
+        <div class="avatars" aria-hidden="true">
+          <img src="https://images.unsplash.com/photo-1601758260651-32188a43c9b3?auto=format&fit=crop&w=120&h=120&q=70" alt="" onerror="this.src='./assets/pets/doghuellappng.webp'">
+          <img src="https://images.unsplash.com/photo-1581217184298-f88b12171fb2?auto=format&fit=crop&w=120&h=120&q=70" alt="" onerror="this.src='./assets/pets/cathuellappng.webp'">
+          <img src="https://images.unsplash.com/photo-1629925057384-4e031bc8d049?auto=format&fit=crop&w=120&h=120&q=70" alt="" onerror="this.src='./assets/pets/perrocatpng.webp'">
+        </div>
+        <p><b>Perros y gatos</b> con identificación QR y NFC</p>
+      </div>
+    </div>
+
+    <div class="hero__visual" id="tilt">
+      <div class="ring ring--1" aria-hidden="true"></div>
+      <div class="ring ring--2" aria-hidden="true"></div>
+      <figure class="photo photo--hero" data-depth="26">
+        <img src="https://images.unsplash.com/photo-1601758260651-32188a43c9b3?auto=format&fit=crop&w=700&h=880&q=75&crop=faces,entropy" alt="Mujer con campera negra abrazando a su perro marrón" width="350" height="440" onerror="this.src='./assets/pets/perrocatpng.webp';this.classList.add('is-fallback')">
+      </figure>
+      <div class="phone phone--back" data-depth="14"><div class="phone__screen"><img src="./assets/screens/mapa.webp" alt="Mapa de veterinarias de Pilar en HuellApp" width="560" height="1341"></div></div>
+      <div class="phone phone--front" data-depth="40"><div class="phone__screen"><img src="./assets/screens/inicio.webp" alt="Pantalla de inicio de HuellApp con servicios y accesos" width="560" height="1219"></div></div>
+      <div class="glass g1" data-depth="60"><span class="gi"><svg><use href="#i-shield"/></svg></span><span><b>Ficha al día</b><small>Vacunas y controles</small></span></div>
+      <div class="glass g2" data-depth="52"><span class="gi gi--cy"><svg><use href="#i-nfc"/></svg></span><span><b>Chapita NFC + QR</b><small>Identificación activa</small></span></div>
+      <div class="glass g3" data-depth="46"><span class="gi gi--red"><svg><use href="#i-sos"/></svg></span><span><b>SOS 24 hs</b><small>Un toque para llamar</small></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <span>Ficha clínica</span><i></i><span>Chapita QR</span><i></i><span>Lectura NFC</span><i></i><span>Mapa de Pilar</span><i></i><span>Guardias 24 hs</span><i></i><span>Recordatorios</span><i></i><span>Turnos</span><i></i><span>Asistente virtual</span><i></i>
+    <span>Ficha clínica</span><i></i><span>Chapita QR</span><i></i><span>Lectura NFC</span><i></i><span>Mapa de Pilar</span><i></i><span>Guardias 24 hs</span><i></i><span>Recordatorios</span><i></i><span>Turnos</span><i></i><span>Asistente virtual</span><i></i>
+  </div>
+</div>
+
+<!-- ============ LA APP (tabs interactivos) ============ -->
+<section class="sec" id="app">
+  <div class="wrap">
+    <header class="sec__head reveal">
+      <span class="eyebrow">Conocé la app</span>
+      <h2>Tocá y mirá cómo <span class="grad">funciona por dentro</span></h2>
+      <p>Elegí una pantalla y recorré la app real, con sus colores, íconos y datos.</p>
+    </header>
+
+    <div class="showcase">
+      <div class="tabs" id="tabs" role="tablist" aria-label="Pantallas de la app">
+        <button class="tab is-on" role="tab" aria-selected="true" data-i="0">
+          <span class="tab__ico"><svg><use href="#i-paw"/></svg></span>
+          <span class="tab__txt"><b>Inicio</b><small>Tus mascotas y todos los accesos en una sola pantalla: escanear, turnos, recordatorios, veterinarias y SOS.</small></span>
+          <span class="tab__bar"><i></i></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-i="1">
+          <span class="tab__ico"><svg><use href="#i-doc"/></svg></span>
+          <span class="tab__txt"><b>Ficha clínica</b><small>Datos vitales, historial, seguridad y chip NFC de cada mascota, con su foto y estado.</small></span>
+          <span class="tab__bar"><i></i></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-i="2">
+          <span class="tab__ico"><svg><use href="#i-qr"/></svg></span>
+          <span class="tab__txt"><b>Identificar</b><small>Escaneá el QR de la chapita con la cámara o acercá el celular al collar con NFC.</small></span>
+          <span class="tab__bar"><i></i></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-i="3">
+          <span class="tab__ico"><svg><use href="#i-map"/></svg></span>
+          <span class="tab__txt"><b>Mapa de locales</b><small>Veterinarias y comercios de Pilar con filtros, búsqueda y ubicación GPS.</small></span>
+          <span class="tab__bar"><i></i></span>
+        </button>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="stage__glow" aria-hidden="true"></div>
+        <div class="phone phone--stage">
+          <div class="phone__screen">
+            <img class="shot is-on" src="./assets/screens/inicio.webp" alt="Pantalla de inicio" width="560" height="1219">
+            <img class="shot" src="./assets/screens/ficha.webp" alt="Ficha clínica de Milo, Golden Retriever" width="560" height="1334" loading="lazy">
+            <img class="shot" src="./assets/screens/escanear.webp" alt="Identificar mascota por QR o NFC" width="560" height="1336" loading="lazy">
+            <img class="shot" src="./assets/screens/mapa.webp" alt="Mapa de locales de Pilar" width="560" height="1341" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BENTO ============ -->
+<section class="sec sec--tint" id="funciones">
+  <div class="wrap">
+    <header class="sec__head reveal">
+      <span class="eyebrow">Funciones</span>
+      <h2>Todo lo que necesita tu mascota, <span class="grad">a un toque</span></h2>
+    </header>
+
+    <div class="bento">
+      <article class="bcard bcard--photo b-a reveal" data-spot>
+        <img src="https://images.unsplash.com/photo-1629925057384-4e031bc8d049?auto=format&fit=crop&w=900&h=900&q=75&crop=faces,entropy" alt="Madre, hija y su perro abrazados" loading="lazy" onerror="this.style.display='none'">
+        <div class="bcard__over">
+          <span class="ico ico--glass"><svg><use href="#i-doc"/></svg></span>
+          <h3>Su ficha, siempre con vos</h3>
+          <p>Historial, vacunas, peso y notas del veterinario. Sin libretas de papel ni fotos perdidas en el celular.</p>
+        </div>
+      </article>
+
+      <article class="bcard b-b reveal" data-spot>
+        <div class="qrdemo" aria-hidden="true"><span></span><span></span><span></span><svg><use href="#i-qr"/></svg></div>
+        <h3>Chapita inteligente</h3>
+        <p>Generá el QR de tu mascota y descargá el archivo 3D para imprimir su chapita.</p>
+      </article>
+
+      <article class="bcard b-c reveal" data-spot>
+        <span class="ico ico--cy"><svg><use href="#i-nfc"/></svg></span>
+        <h3>Lectura NFC</h3>
+        <p>Acercá el celular al collar con chip y accedé a la ficha al instante.</p>
+      </article>
+
+      <article class="bcard bcard--sos b-d reveal" data-spot>
+        <span class="ping" aria-hidden="true"><i></i><svg><use href="#i-sos"/></svg></span>
+        <h3>SOS 24 hs</h3>
+        <p>Guardias y llamada de socorro con un solo botón, siempre visible en el menú.</p>
+      </article>
+
+      <article class="bcard b-e reveal" data-spot>
+        <div class="bcard__text">
+          <span class="ico"><svg><use href="#i-map"/></svg></span>
+          <h3>Mapa de Pilar</h3>
+          <p>15 lugares reales: clínicas, hospitales y comercios, con filtro de los que ya usan HuellApp.</p>
+        </div>
+        <div class="peek"><img src="./assets/screens/mapa.webp" alt="" loading="lazy"></div>
+      </article>
+
+      <article class="bcard b-f reveal" data-spot>
+        <span class="ico ico--pe"><svg><use href="#i-bell"/></svg></span>
+        <h3>Recordatorios y turnos</h3>
+        <ul class="mini">
+          <li><svg><use href="#i-cal"/></svg> Antirrábica <em>Mañana</em></li>
+          <li><svg><use href="#i-cal"/></svg> Control <em>2 sem.</em></li>
+        </ul>
+      </article>
+
+      <article class="bcard b-g reveal" data-spot>
+        <span class="ico"><svg><use href="#i-chat"/></svg></span>
+        <h3>Asistente virtual</h3>
+        <div class="chat" aria-hidden="true">
+          <p class="me">¿Cada cuánto se vacuna un cachorro?</p>
+          <p class="bot"><span class="typing"><i></i><i></i><i></i></span></p>
+        </div>
+        <small class="note">Orienta, no reemplaza la consulta veterinaria.</small>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESCATE (demo interactiva) ============ -->
+<section class="rescue" id="rescate">
+  <div class="wrap rescue__in">
+    <div class="rescue__copy reveal">
+      <span class="eyebrow eyebrow--lt">Si se pierde</span>
+      <h2>Quien la encuentre <span class="grad grad--lt">te avisa en segundos</span></h2>
+      <p>La chapita abre una ficha de rescate pensada para actuar rápido. Probalo vos: elegí cómo escanear y mirá qué ve quien la encuentra.</p>
+      <div class="seg" id="seg" role="tablist" aria-label="Modo de escaneo">
+        <button class="is-on" role="tab" aria-selected="true" data-mode="qr"><svg><use href="#i-qr"/></svg> Escanear QR</button>
+        <button role="tab" aria-selected="false" data-mode="nfc"><svg><use href="#i-nfc"/></svg> Leer NFC</button>
+      </div>
+      <ol class="steps-lt">
+        <li><span>1</span><div><b>Escanean la chapita</b> con la cámara o acercan el celular.</div></li>
+        <li><span>2</span><div><b>Ven la ficha de rescate</b> con los datos de emergencia.</div></li>
+        <li><span>3</span><div><b>Te contactan</b> por llamada o WhatsApp y te mandan la ubicación del hallazgo.</div></li>
+      </ol>
+    </div>
+
+    <div class="demo reveal" id="demo">
+      <div class="demo__phone">
+        <div class="scene" id="scene">
+          <div class="collar" id="collar" aria-hidden="true">
+            <div class="tag"><svg class="tag__qr"><use href="#i-qr"/></svg><svg class="tag__nfc"><use href="#i-nfc"/></svg></div>
+            <span class="scanline"></span>
+          </div>
+          <button class="btn btn--primary scan-btn" id="scanBtn"><svg><use href="#i-phone"/></svg><span id="scanTxt">Escanear chapita</span></button>
+          <p class="scan-hint" id="scanHint">Tocá el botón para simular el escaneo</p>
+        </div>
+        <div class="rcard" id="rcard" aria-live="polite">
+          <div class="rcard__top">
+            <img src="https://images.unsplash.com/photo-1601758260651-32188a43c9b3?auto=format&fit=crop&w=200&h=200&q=70&crop=faces,entropy" alt="" onerror="this.src='./assets/pets/doghuellappng.webp'">
+            <div><b>Milo</b><small>Perro · Golden Retriever · Macho</small></div>
+            <span class="badge"><svg><use href="#i-shield"/></svg> Ficha activa</span>
+          </div>
+          <p class="rcard__msg">Hola, soy Milo y me perdí. Por favor, avisale a mi tutor.</p>
+          <div class="rcard__btns">
+            <button data-demo="Llamando al tutor…"><svg><use href="#i-sos"/></svg>Llamar al tutor</button>
+            <button data-demo="Abriendo WhatsApp…"><svg><use href="#i-wa"/></svg>WhatsApp</button>
+            <button class="full" data-demo="Ubicación enviada al tutor"><svg><use href="#i-map"/></svg>Enviar mi ubicación</button>
+          </div>
+          <button class="reset" id="resetBtn">Volver a probar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMUNIDAD (fotos) ============ -->
+<section class="sec" id="comunidad">
+  <div class="wrap">
+    <header class="sec__head reveal">
+      <span class="eyebrow">Comunidad</span>
+      <h2>Cada huella <span class="grad">cuenta una historia</span></h2>
+      <p>Perros y gatos que merecen volver siempre a casa.</p>
+    </header>
+    <div class="gallery">
+      <figure class="gal gal--tall reveal"><img src="https://images.unsplash.com/photo-1601758260651-32188a43c9b3?auto=format&fit=crop&w=800&h=1100&q=75&crop=faces,entropy" alt="Mujer abrazando a su perro" loading="lazy" onerror="this.onerror=null;this.src=\'./assets/pets/doghuellappng.webp\';this.classList.add(\'is-fallback\')"><figcaption>Compañeros de vida</figcaption></figure>
+      <figure class="gal reveal"><img src="https://images.unsplash.com/photo-1493101561740-e745892775b2?auto=format&fit=crop&w=800&h=700&q=75&crop=faces,entropy" alt="Mujer cargando a su gato" loading="lazy" onerror="this.onerror=null;this.src=\'./assets/pets/cathuellappng.webp\';this.classList.add(\'is-fallback\')"><figcaption>Mimos en casa</figcaption></figure>
+      <figure class="gal reveal"><img src="https://images.unsplash.com/photo-1581217184298-f88b12171fb2?auto=format&fit=crop&w=800&h=700&q=75&crop=entropy" alt="Persona sosteniendo a un gato atigrado" loading="lazy" onerror="this.onerror=null;this.src=\'./assets/pets/cathuellappng.webp\';this.classList.add(\'is-fallback\')"><figcaption>Siempre identificado</figcaption></figure>
+      <figure class="gal gal--wide reveal"><img src="https://images.unsplash.com/photo-1629925057384-4e031bc8d049?auto=format&fit=crop&w=1200&h=700&q=75&crop=faces,entropy" alt="Madre, hija y su perro" loading="lazy" onerror="this.onerror=null;this.src=\'./assets/pets/perrocatpng.webp\';this.classList.add(\'is-fallback\')"><figcaption>Familia completa</figcaption></figure>
+    </div>
+
+    <div class="stats">
+      <div class="stat reveal"><b data-count="15">0</b><span>lugares reales en el mapa de Pilar</span></div>
+      <div class="stat reveal"><b data-count="24" data-suffix=" hs">0</b><span>guardias y atención SOS</span></div>
+      <div class="stat reveal"><b data-count="2">0</b><span>formas de identificar: QR y NFC</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PASOS ============ -->
+<section class="sec sec--tint" id="como-funciona">
+  <div class="wrap">
+    <header class="sec__head reveal">
+      <span class="eyebrow">Cómo empezar</span>
+      <h2>Tres pasos y <span class="grad">tu mascota ya está conectada</span></h2>
+    </header>
+    <div class="steps" id="steps">
+      <div class="steps__line" aria-hidden="true"><i></i></div>
+      <article class="step reveal"><span class="step__n">1</span><h3>Descargá y registrate</h3><p>Creá tu cuenta y elegí si sos tutor o veterinario.</p></article>
+      <article class="step reveal"><span class="step__n">2</span><h3>Sumá a tu compañero</h3><p>Cargá su foto, raza, peso y datos de contacto.</p></article>
+      <article class="step reveal"><span class="step__n">3</span><h3>Vinculá su chapita</h3><p>Escaneá el QR o leé el chip NFC y listo.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="sec" id="faq">
+  <div class="wrap wrap--narrow">
+    <header class="sec__head reveal">
+      <span class="eyebrow">Preguntas frecuentes</span>
+      <h2>Lo que más nos preguntan</h2>
+    </header>
+    <div class="faq">
+      <details class="reveal" open><summary>¿Cómo identifico a mi mascota?<svg><use href="#i-plus"/></svg></summary><p>Con la chapita inteligente: tiene un código QR que se escanea con la cámara y, si el collar lo trae, un chip NFC que se lee acercando el celular. Los dos abren la ficha de tu mascota.</p></details>
+      <details class="reveal"><summary>¿Qué pasa si se pierde?<svg><use href="#i-plus"/></svg></summary><p>Quien la encuentre escanea la chapita y ve la ficha de rescate. Desde ahí puede llamarte, escribirte por WhatsApp y enviarte la ubicación del hallazgo.</p></details>
+      <details class="reveal"><summary>¿Sirve para veterinarias?<svg><use href="#i-plus"/></svg></summary><p>Sí. Los veterinarios pueden dar de alta pacientes, cargar historiales, vincular o reasignar chips NFC y programar avisos para los tutores.</p></details>
+      <details class="reveal"><summary>¿El asistente virtual reemplaza a mi veterinario?<svg><use href="#i-plus"/></svg></summary><p>No. Orienta sobre cuidados y sobre cómo usar la app, pero ante cualquier duda de salud la consulta veterinaria es siempre lo primero.</p></details>
+      <details class="reveal"><summary>¿Dónde la descargo?<svg><use href="#i-plus"/></svg></summary><p>Los botones de descarga de la sección final se activan cuando la app esté publicada. Mientras tanto podés seguir el proyecto en GitHub.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DESCARGA ============ -->
+<section class="download" id="descargar">
+  <div class="wrap">
+    <div class="download__card reveal">
+      <div class="download__bg" aria-hidden="true"><i></i><i></i></div>
+      <div class="download__copy">
+        <h2>Llevá a HuellApp <span>en tu bolsillo</span></h2>
+        <p>Descargala y empezá a cuidar a tu mascota de forma conectada.</p>
+        <div class="stores" data-stores></div>
+        <p class="soon" id="soonNote" hidden>Las descargas se habilitan pronto.</p>
+        <a class="link" id="repoLink" href="https://github.com/AlexMeridaPozo/Vetlink" target="_blank" rel="noopener"><svg><use href="#i-gh"/></svg> Ver el proyecto en GitHub</a>
+      </div>
+      <div class="download__art" aria-hidden="true">
+        <div class="phone phone--dl"><div class="phone__screen"><img src="./assets/screens/inicio.webp" alt="" loading="lazy"></div></div>
+        <img class="dl-pet dl-pet--a" src="./assets/pets/doghuellappng.webp" alt="" loading="lazy">
+        <img class="dl-pet dl-pet--b" src="./assets/pets/cathuellappng.webp" alt="" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="wrap foot__in">
+    <div class="foot__brand">
+      <span class="logo-card"><img src="./assets/brand/logo.png" alt="Logo de HuellApp" width="210" height="157"></span>
+      <p>Proyecto Integrador Final de Aplicaciones Móviles. Hecho con React Native, Expo, TypeScript y Firebase.</p>
+    </div>
+    <nav class="foot__nav" aria-label="Pie">
+      <a href="#app">La app</a><a href="#funciones">Funciones</a><a href="#rescate">Rescate</a><a href="#faq">Preguntas</a><a href="#descargar">Descargar</a>
+    </nav>
+    <p class="foot__c">© <span id="year">2026</span> Equipo HuellApp · Fotos de <a href="https://unsplash.com/@catalinpop" target="_blank" rel="noopener">Catalin Pop</a>, <a href="https://unsplash.com/@chewy" target="_blank" rel="noopener">Chewy</a>, <a href="https://unsplash.com/@cuartodeiibra" target="_blank" rel="noopener">Mel Elías</a> y <a href="https://unsplash.com/@priscilladupreez" target="_blank" rel="noopener">Priscilla Du Preez</a> en <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a></p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="./script.js"></script>
+</body>
+</html>

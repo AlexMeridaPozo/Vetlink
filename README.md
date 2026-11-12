@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://alexmeridapozo.github.io/Huellapp/" title="Hacé clic para visitar el sitio web oficial de HuellApp">
-    <img src="./docs/assets/assets/banner.png" alt="HuellApp — El cuidado de tu mascota, conectado" width="100%">
+    <img src="./docs/assets/banner.png" alt="HuellApp — El cuidado de tu mascota, conectado" width="100%">
   </a>
 </p>
 

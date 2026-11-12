@@ -195,6 +195,26 @@ async function guardarTurnosCache(turnos: Turno[]): Promise<void> {
   }
 }
 
+// ── Consulta de Horarios Ocupados (Anti-Double Booking) ───────────────────────
+/**
+ * Retorna la lista de horarios ya reservados para una veterinaria y fecha específica.
+ * Un turno bloquea el horario si su estado es 'solicitado' o 'confirmado'.
+ */
+export async function getHorariosOcupados(
+  veterinariaId: string,
+  fecha: string
+): Promise<string[]> {
+  const turnos = await obtenerTurnosCache();
+  return turnos
+    .filter(
+      (t) =>
+        t.veterinariaId === veterinariaId &&
+        t.fecha === fecha &&
+        (t.estado === 'solicitado' || t.estado === 'confirmado')
+    )
+    .map((t) => t.hora);
+}
+
 // ── Sincronización y Consulta con Firestore ──────────────────────────────────
 export async function fetchTurnos(options?: {
   tutorId?: string;
@@ -235,8 +255,7 @@ export async function fetchTurnos(options?: {
       return filtrarTurnos(merged, options);
     }
   } catch {
-    // Si Firestore no tiene la colección creada aún o faltan permisos en la nube,
-    // se mantiene la operación 100% funcional y fluida con el caché local
+    // Si Firestore está sin conexión o pendiente de inicialización, opera 100% con cache
   }
 
   return filtrarTurnos(cached, options);
@@ -267,8 +286,26 @@ function filtrarTurnos(
   });
 }
 
-// ── Crear / Solicitar Turno ──────────────────────────────────────────────────
+// ── Crear / Solicitar Turno con Validación Anti-Duplicados ───────────────────
 export async function solicitarTurno(input: SolicitarTurnoInput): Promise<Turno> {
+  const cache = await obtenerTurnosCache();
+
+  // Validación estricta anti-duplicados para producción:
+  // Impide que 2 usuarios reserven el mismo horario en la misma clínica
+  const turnoExistente = cache.find(
+    (t) =>
+      t.veterinariaId === input.veterinariaId &&
+      t.fecha === input.fecha &&
+      t.hora === input.hora &&
+      (t.estado === 'solicitado' || t.estado === 'confirmado')
+  );
+
+  if (turnoExistente) {
+    throw new Error(
+      `El horario de las ${input.hora} hs del día ${input.fecha} ya ha sido reservado por otro usuario. Por favor elegí otro horario disponible.`
+    );
+  }
+
   const nuevoId = `TUR-${Date.now().toString().slice(-6)}`;
   const fechaCreacion = new Date().toISOString();
   const uid = input.tutorId || auth.currentUser?.uid || 'tutor-default';
@@ -301,7 +338,6 @@ export async function solicitarTurno(input: SolicitarTurnoInput): Promise<Turno>
   };
 
   // 1. Guardar localmente de inmediato para respuesta instantánea
-  const cache = await obtenerTurnosCache();
   const actualizados = [nuevoTurno, ...cache.filter((t) => t.id !== nuevoId)];
   await guardarTurnosCache(actualizados);
 

@@ -18,7 +18,7 @@ import { useAppTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { usePets } from '@/services/petService';
 import { PUNTOS_VETERINARIOS_PILAR, type LugarMascotas } from '@/constants/veterinarias';
-import { SolicitarTurnoInput, Turno } from '@/services/turnoService';
+import { SolicitarTurnoInput, Turno, getHorariosOcupados } from '@/services/turnoService';
 
 interface Props {
   visible: boolean;
@@ -104,9 +104,32 @@ export default function SolicitarTurnoModal({
   const [motivoPersonalizado, setMotivoPersonalizado] = useState('');
   const [fechaSeleccionada, setFechaSeleccionada] = useState(dias[0]?.iso || '');
   const [horaSeleccionada, setHoraSeleccionada] = useState('10:30');
+  const [horariosOcupados, setHorariosOcupados] = useState<string[]>([]);
   const [notas, setNotas] = useState('');
 
   const [enviando, setEnviando] = useState(false);
+
+  // Consultar horarios ocupados cada vez que cambia la clínica o la fecha seleccionada
+  React.useEffect(() => {
+    let activo = true;
+    if (veterinariaSeleccionada?.id && fechaSeleccionada) {
+      getHorariosOcupados(veterinariaSeleccionada.id, fechaSeleccionada).then((ocupados) => {
+        if (activo) {
+          setHorariosOcupados(ocupados);
+          // Si la hora actual seleccionada está ocupada, seleccionar automáticamente la primera libre
+          if (ocupados.includes(horaSeleccionada)) {
+            const primerLibre = HORARIOS_DISPONIBLES.find((h) => !ocupados.includes(h));
+            if (primerLibre) {
+              setHoraSeleccionada(primerLibre);
+            }
+          }
+        }
+      });
+    }
+    return () => {
+      activo = false;
+    };
+  }, [veterinariaSeleccionada?.id, fechaSeleccionada, horaSeleccionada]);
 
   // Inicializar mascota seleccionada si hay disponibles
   React.useEffect(() => {
@@ -133,6 +156,13 @@ export default function SolicitarTurnoModal({
       const msg = 'Por favor selecciona fecha y horario para el turno.';
       if (Platform.OS === 'web') window.alert(msg);
       else Alert.alert('Atención', msg);
+      return;
+    }
+
+    if (horariosOcupados.includes(horaSeleccionada)) {
+      const msg = `El horario de las ${horaSeleccionada} hs del día ${fechaSeleccionada} ya ha sido reservado. Por favor elige otro horario disponible.`;
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Horario Ocupado', msg);
       return;
     }
 
@@ -516,22 +546,33 @@ export default function SolicitarTurnoModal({
             </Text>
             <View style={styles.horasGrid}>
               {HORARIOS_DISPONIBLES.map((h) => {
-                const selected = horaSeleccionada === h;
+                const ocupado = horariosOcupados.includes(h);
+                const selected = horaSeleccionada === h && !ocupado;
                 return (
                   <TouchableOpacity
                     key={h}
+                    disabled={ocupado}
                     style={[
                       styles.horaChip,
                       isDark && styles.chipDark,
                       selected && styles.chipSelected,
+                      ocupado && (isDark ? styles.horaChipOcupadaDark : styles.horaChipOcupada),
                     ]}
-                    onPress={() => setHoraSeleccionada(h)}
-                    activeOpacity={0.8}
+                    onPress={() => !ocupado && setHoraSeleccionada(h)}
+                    activeOpacity={ocupado ? 1 : 0.8}
                   >
                     <Ionicons
-                      name="time-outline"
+                      name={ocupado ? 'close-circle-outline' : 'time-outline'}
                       size={13}
-                      color={selected ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
+                      color={
+                        ocupado
+                          ? (isDark ? '#f87171' : '#dc2626')
+                          : selected
+                          ? '#ffffff'
+                          : isDark
+                          ? '#a1a1aa'
+                          : Palette.textSecondary
+                      }
                       style={{ marginRight: 4 }}
                     />
                     <Text
@@ -539,9 +580,10 @@ export default function SolicitarTurnoModal({
                         styles.horaChipText,
                         isDark && styles.textDark,
                         selected && styles.chipSelectedText,
+                        ocupado && (isDark ? styles.horaChipOcupadaTextDark : styles.horaChipOcupadaText),
                       ]}
                     >
-                      {h} hs
+                      {h} hs{ocupado ? ' (Ocupado)' : ''}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -889,6 +931,24 @@ const styles = StyleSheet.create({
   chipSelectedText: {
     color: '#ffffff',
     fontWeight: '700',
+  },
+  horaChipOcupada: {
+    backgroundColor: '#f4f4f5',
+    borderColor: '#e4e4e7',
+    opacity: 0.6,
+  },
+  horaChipOcupadaDark: {
+    backgroundColor: '#1f1f23',
+    borderColor: '#2e2e33',
+    opacity: 0.5,
+  },
+  horaChipOcupadaText: {
+    color: '#a1a1aa',
+    textDecorationLine: 'line-through',
+  },
+  horaChipOcupadaTextDark: {
+    color: '#71717a',
+    textDecorationLine: 'line-through',
   },
   footer: {
     paddingHorizontal: 20,

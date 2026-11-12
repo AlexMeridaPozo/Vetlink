@@ -23,78 +23,93 @@ import { useTurnos, Turno, TurnoEstado } from '@/services/turnoService';
 import SolicitarTurnoModal from '@/components/SolicitarTurnoModal';
 import AtenderTurnoModal from '@/components/AtenderTurnoModal';
 
-export default function TurnosScreen() {
+// ── Helpers comunes ──────────────────────────────────────────────────────────
+function renderEstadoBadge(estado: TurnoEstado, isProfessionalView = false) {
+  switch (estado) {
+    case 'confirmado':
+      return (
+        <View style={styles.statusConfirmed}>
+          <Ionicons name="checkmark-circle" size={13} color={Palette.greenDeep} />
+          <Text style={styles.statusConfirmedText}>Confirmado</Text>
+        </View>
+      );
+    case 'solicitado':
+      return (
+        <View style={styles.statusRequested}>
+          <Ionicons name="time-outline" size={13} color="#0284c7" />
+          <Text style={styles.statusRequestedText}>
+            {isProfessionalView ? 'Pendiente' : 'Solicitado'}
+          </Text>
+        </View>
+      );
+    case 'completado':
+      return (
+        <View style={styles.statusCompleted}>
+          <Ionicons name="checkmark-done" size={13} color="#047857" />
+          <Text style={styles.statusCompletedText}>Atendido</Text>
+        </View>
+      );
+    case 'cancelado':
+      return (
+        <View style={styles.statusCancelled}>
+          <Ionicons name="close-circle-outline" size={13} color="#dc2626" />
+          <Text style={styles.statusCancelledText}>Cancelado</Text>
+        </View>
+      );
+  }
+}
+
+function llamarTelefono(telefono?: string) {
+  if (!telefono) {
+    const msg = 'No se encuentra registrado el número de teléfono.';
+    if (Platform.OS === 'web') window.alert(msg);
+    else Alert.alert('Teléfono no disponible', msg);
+    return;
+  }
+  const telLimpio = telefono.replace(/[^\d+]/g, '');
+  Linking.openURL(`tel:${telLimpio}`).catch(() => {
+    const msg = `Teléfono de contacto: ${telefono}`;
+    if (Platform.OS === 'web') window.alert(msg);
+    else Alert.alert('Contacto', msg);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// VISTA EXCLUSIVA PARA EL TUTOR / PROPIETARIO
+// ══════════════════════════════════════════════════════════════════════════════
+function TurnosUsuarioView() {
   const { isDark } = useAppTheme();
-  const { user, profile, isVeterinario } = useAuth();
-
-  // Permite alternar la perspectiva visual (inicia según el rol en AuthContext)
-  const [modoVista, setModoVista] = useState<'tutor' | 'veterinario'>(
-    isVeterinario ? 'veterinario' : 'tutor'
-  );
-
-  // Filtros de navegación
-  const [filtroTutor, setFiltroTutor] = useState<'proximos' | 'pasados'>('proximos');
-  const [filtroVet, setFiltroVet] = useState<'pendientes' | 'confirmados' | 'historial'>('pendientes');
-
-  // Modales
+  const { user } = useAuth();
+  const [filtro, setFiltro] = useState<'proximos' | 'pasados'>('proximos');
   const [modalSolicitarVisible, setModalSolicitarVisible] = useState(false);
-  const [turnoAAtender, setTurnoAAtender] = useState<Turno | null>(null);
 
-  // Hook de gestión de turnos
   const {
     turnos,
     loading,
     refreshing,
     refresh,
     solicitar,
-    confirmar,
-    completar,
     cancelar,
   } = useTurnos({
     tutorId: user?.uid,
-    isVeterinario: modoVista === 'veterinario',
+    isVeterinario: false,
   });
 
-  // Clasificación de turnos para Tutor
-  const tutorProximos = useMemo(
+  const proximos = useMemo(
     () => turnos.filter((t) => t.estado === 'solicitado' || t.estado === 'confirmado'),
     [turnos]
   );
-  const tutorPasados = useMemo(
+  const pasados = useMemo(
     () => turnos.filter((t) => t.estado === 'completado' || t.estado === 'cancelado'),
     [turnos]
   );
 
-  // Clasificación de turnos para Veterinario
-  const vetPendientes = useMemo(
-    () => turnos.filter((t) => t.estado === 'solicitado'),
-    [turnos]
-  );
-  const vetConfirmados = useMemo(
-    () => turnos.filter((t) => t.estado === 'confirmado'),
-    [turnos]
-  );
-  const vetHistorial = useMemo(
-    () => turnos.filter((t) => t.estado === 'completado' || t.estado === 'cancelado'),
-    [turnos]
-  );
+  const turnosMostrados = filtro === 'proximos' ? proximos : pasados;
 
-  // Lista activa según el modo y filtro
-  const turnosMostrados = useMemo(() => {
-    if (modoVista === 'tutor') {
-      return filtroTutor === 'proximos' ? tutorProximos : tutorPasados;
-    } else {
-      if (filtroVet === 'pendientes') return vetPendientes;
-      if (filtroVet === 'confirmados') return vetConfirmados;
-      return vetHistorial;
-    }
-  }, [modoVista, filtroTutor, filtroVet, tutorProximos, tutorPasados, vetPendientes, vetConfirmados, vetHistorial]);
-
-  // ── Acciones de Tutor ──────────────────────────────────────────────────────
   const handleCancelarTutor = (turno: Turno) => {
     const advertencia = `¿Estás seguro de que deseas cancelar el turno de ${turno.mascotaNombre} para el ${turno.fecha} a las ${turno.hora} hs?`;
 
-    const ejecutarCancelacion = async () => {
+    const ejecutar = async () => {
       try {
         await cancelar(turno.id, 'Cancelado por el tutor');
         const exito = 'El turno ha sido cancelado.';
@@ -109,108 +124,13 @@ export default function TurnosScreen() {
 
     if (Platform.OS === 'web') {
       if (window.confirm(advertencia)) {
-        ejecutarCancelacion();
+        ejecutar();
       }
     } else {
       Alert.alert('Cancelar Cita', advertencia, [
         { text: 'Volver', style: 'cancel' },
-        { text: 'Sí, Cancelar', style: 'destructive', onPress: ejecutarCancelacion },
+        { text: 'Sí, Cancelar', style: 'destructive', onPress: ejecutar },
       ]);
-    }
-  };
-
-  const handleLlamar = (telefono?: string) => {
-    if (!telefono) {
-      const msg = 'No se encuentra registrado el número de teléfono.';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Teléfono no disponible', msg);
-      return;
-    }
-    const telLimpio = telefono.replace(/[^\d+]/g, '');
-    Linking.openURL(`tel:${telLimpio}`).catch(() => {
-      const msg = `Teléfono de contacto: ${telefono}`;
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Contacto', msg);
-    });
-  };
-
-  // ── Acciones de Veterinario ────────────────────────────────────────────────
-  const handleConfirmarVet = async (turno: Turno) => {
-    try {
-      await confirmar(turno.id, {
-        id: user?.uid,
-        nombre: profile?.displayName || 'Dr. Profesional',
-      });
-      const msg = `¡Turno confirmado para ${turno.mascotaNombre}!\nFecha: ${turno.fecha} a las ${turno.hora} hs.`;
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Turno Confirmado', msg);
-    } catch (err: any) {
-      const errorMsg = err?.message || 'No se pudo confirmar el turno.';
-      if (Platform.OS === 'web') window.alert(errorMsg);
-      else Alert.alert('Error', errorMsg);
-    }
-  };
-
-  const handleRechazarVet = (turno: Turno) => {
-    const promptMsg = `¿Deseas rechazar o cancelar la solicitud de turno para ${turno.mascotaNombre}?`;
-
-    const ejecutarRechazo = async () => {
-      try {
-        await cancelar(turno.id, 'Rechazado por disponibilidad de la clínica');
-        const exito = 'La solicitud ha sido rechazada.';
-        if (Platform.OS === 'web') window.alert(exito);
-        else Alert.alert('Solicitud Rechazada', exito);
-      } catch (err: any) {
-        const errorMsg = err?.message || 'No se pudo rechazar la solicitud.';
-        if (Platform.OS === 'web') window.alert(errorMsg);
-        else Alert.alert('Error', errorMsg);
-      }
-    };
-
-    if (Platform.OS === 'web') {
-      if (window.confirm(promptMsg)) {
-        ejecutarRechazo();
-      }
-    } else {
-      Alert.alert('Rechazar Turno', promptMsg, [
-        { text: 'Atrás', style: 'cancel' },
-        { text: 'Rechazar', style: 'destructive', onPress: ejecutarRechazo },
-      ]);
-    }
-  };
-
-  const getEstadoBadge = (estado: TurnoEstado) => {
-    switch (estado) {
-      case 'confirmado':
-        return (
-          <View style={styles.statusConfirmed}>
-            <Ionicons name="checkmark-circle" size={13} color={Palette.greenDeep} />
-            <Text style={styles.statusConfirmedText}>Confirmado</Text>
-          </View>
-        );
-      case 'solicitado':
-        return (
-          <View style={styles.statusRequested}>
-            <Ionicons name="time-outline" size={13} color="#0284c7" />
-            <Text style={styles.statusRequestedText}>
-              {modoVista === 'veterinario' ? 'Pendiente' : 'Solicitado'}
-            </Text>
-          </View>
-        );
-      case 'completado':
-        return (
-          <View style={styles.statusCompleted}>
-            <Ionicons name="checkmark-done" size={13} color="#047857" />
-            <Text style={styles.statusCompletedText}>Atendido</Text>
-          </View>
-        );
-      case 'cancelado':
-        return (
-          <View style={styles.statusCancelled}>
-            <Ionicons name="close-circle-outline" size={13} color="#dc2626" />
-            <Text style={styles.statusCancelledText}>Cancelado</Text>
-          </View>
-        );
     }
   };
 
@@ -234,59 +154,6 @@ export default function TurnosScreen() {
         <ThemeToggleButton />
       </View>
 
-      {/* Selector de Perspectiva / Modo (Tutor vs Veterinario) */}
-      <View style={[styles.modeBar, isDark && styles.modeBarDark]}>
-        <TouchableOpacity
-          style={[
-            styles.modeButton,
-            modoVista === 'tutor' && styles.modeButtonActive,
-            modoVista === 'tutor' && isDark && styles.modeButtonActiveDark,
-          ]}
-          onPress={() => setModoVista('tutor')}
-          activeOpacity={0.8}
-        >
-          <Ionicons
-            name="person"
-            size={14}
-            color={modoVista === 'tutor' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
-          />
-          <Text
-            style={[
-              styles.modeButtonText,
-              modoVista === 'tutor' && styles.modeButtonTextActive,
-              isDark && modoVista !== 'tutor' && styles.textMutedDark,
-            ]}
-          >
-            Vista Tutor
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.modeButton,
-            modoVista === 'veterinario' && styles.modeButtonActive,
-            modoVista === 'veterinario' && isDark && styles.modeButtonActiveDark,
-          ]}
-          onPress={() => setModoVista('veterinario')}
-          activeOpacity={0.8}
-        >
-          <Ionicons
-            name="medkit"
-            size={14}
-            color={modoVista === 'veterinario' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
-          />
-          <Text
-            style={[
-              styles.modeButtonText,
-              modoVista === 'veterinario' && styles.modeButtonTextActive,
-              isDark && modoVista !== 'veterinario' && styles.textMutedDark,
-            ]}
-          >
-            Vista Profesional
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
@@ -300,21 +167,15 @@ export default function TurnosScreen() {
           />
         }
       >
-        {/* Cabecera contextual */}
+        {/* Cabecera */}
         <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.title, isDark && styles.textDark]}>
-              {modoVista === 'veterinario' ? 'Panel de Turnos Clínicos' : 'Agenda de Citas'}
-            </Text>
-            <Text style={[styles.subtitle, isDark && styles.subtituloDark]}>
-              {modoVista === 'veterinario'
-                ? 'Gestioná las solicitudes, confirmá citas y registrá la atención clínica'
-                : 'Consulta, programa y gestiona las citas médicas de tus mascotas'}
-            </Text>
-          </View>
+          <Text style={[styles.title, isDark && styles.textDark]}>Agenda de Citas</Text>
+          <Text style={[styles.subtitle, isDark && styles.subtituloDark]}>
+            Consulta, programa y gestiona las citas médicas de tus mascotas
+          </Text>
         </View>
 
-        {/* Botón Principal de Acción */}
+        {/* Botón Principal: Solicitar Turno */}
         <TouchableOpacity
           style={[styles.mainActionButton, isDark && styles.mainActionButtonDark]}
           onPress={() => setModalSolicitarVisible(true)}
@@ -324,180 +185,86 @@ export default function TurnosScreen() {
             <Ionicons name="calendar-outline" size={20} color="#ffffff" />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.mainActionTitle}>
-              {modoVista === 'veterinario' ? '+ Nuevo Turno en Clínica' : '+ Solicitar Turno Veterinario'}
-            </Text>
+            <Text style={styles.mainActionTitle}>+ Solicitar Turno Veterinario</Text>
             <Text style={styles.mainActionSubtitle}>
-              {modoVista === 'veterinario'
-                ? 'Agendar cita para paciente presencial o telefónico'
-                : 'Elegí mascota, clínica veterinaria y horario deseado'}
+              Elegí mascota, clínica veterinaria y horario deseado
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color="#ffffff" />
         </TouchableOpacity>
 
-        {/* Selector de Filtros según la perspectiva */}
-        {modoVista === 'tutor' ? (
-          <View style={styles.filterRow}>
-            <TouchableOpacity
+        {/* Filtros de Citas */}
+        <View style={styles.filterRow}>
+          <TouchableOpacity
+            style={[
+              styles.filterPill,
+              isDark && styles.filterPillDark,
+              filtro === 'proximos' && styles.filterPillActive,
+            ]}
+            onPress={() => setFiltro('proximos')}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="calendar-outline"
+              size={14}
+              color={filtro === 'proximos' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
+              style={{ marginRight: 6 }}
+            />
+            <Text
               style={[
-                styles.filterPill,
-                isDark && styles.filterPillDark,
-                filtroTutor === 'proximos' && styles.filterPillActive,
+                styles.filterPillText,
+                isDark && styles.filterPillTextDark,
+                filtro === 'proximos' && styles.filterPillTextActive,
               ]}
-              onPress={() => setFiltroTutor('proximos')}
-              activeOpacity={0.8}
             >
-              <Ionicons
-                name="calendar-outline"
-                size={14}
-                color={filtroTutor === 'proximos' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={[
-                  styles.filterPillText,
-                  isDark && styles.filterPillTextDark,
-                  filtroTutor === 'proximos' && styles.filterPillTextActive,
-                ]}
-              >
-                Próximos ({tutorProximos.length})
-              </Text>
-            </TouchableOpacity>
+              Próximos ({proximos.length})
+            </Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
+          <TouchableOpacity
+            style={[
+              styles.filterPill,
+              isDark && styles.filterPillDark,
+              filtro === 'pasados' && styles.filterPillActive,
+            ]}
+            onPress={() => setFiltro('pasados')}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="time-outline"
+              size={14}
+              color={filtro === 'pasados' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
+              style={{ marginRight: 6 }}
+            />
+            <Text
               style={[
-                styles.filterPill,
-                isDark && styles.filterPillDark,
-                filtroTutor === 'pasados' && styles.filterPillActive,
+                styles.filterPillText,
+                isDark && styles.filterPillTextDark,
+                filtro === 'pasados' && styles.filterPillTextActive,
               ]}
-              onPress={() => setFiltroTutor('pasados')}
-              activeOpacity={0.8}
             >
-              <Ionicons
-                name="time-outline"
-                size={14}
-                color={filtroTutor === 'pasados' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={[
-                  styles.filterPillText,
-                  isDark && styles.filterPillTextDark,
-                  filtroTutor === 'pasados' && styles.filterPillTextActive,
-                ]}
-              >
-                Historial ({tutorPasados.length})
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.filterRow}>
-            <TouchableOpacity
-              style={[
-                styles.filterPill,
-                isDark && styles.filterPillDark,
-                filtroVet === 'pendientes' && styles.filterPillActive,
-              ]}
-              onPress={() => setFiltroVet('pendientes')}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="alert-circle-outline"
-                size={14}
-                color={filtroVet === 'pendientes' ? '#ffffff' : '#0284c7'}
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={[
-                  styles.filterPillText,
-                  isDark && styles.filterPillTextDark,
-                  filtroVet === 'pendientes' && styles.filterPillTextActive,
-                ]}
-              >
-                Pendientes ({vetPendientes.length})
-              </Text>
-            </TouchableOpacity>
+              Historial ({pasados.length})
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-            <TouchableOpacity
-              style={[
-                styles.filterPill,
-                isDark && styles.filterPillDark,
-                filtroVet === 'confirmados' && styles.filterPillActive,
-              ]}
-              onPress={() => setFiltroVet('confirmados')}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="checkmark-circle-outline"
-                size={14}
-                color={filtroVet === 'confirmados' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.greenDeep)}
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={[
-                  styles.filterPillText,
-                  isDark && styles.filterPillTextDark,
-                  filtroVet === 'confirmados' && styles.filterPillTextActive,
-                ]}
-              >
-                Agenda ({vetConfirmados.length})
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.filterPill,
-                isDark && styles.filterPillDark,
-                filtroVet === 'historial' && styles.filterPillActive,
-              ]}
-              onPress={() => setFiltroVet('historial')}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="archive-outline"
-                size={14}
-                color={filtroVet === 'historial' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={[
-                  styles.filterPillText,
-                  isDark && styles.filterPillTextDark,
-                  filtroVet === 'historial' && styles.filterPillTextActive,
-                ]}
-              >
-                Historial ({vetHistorial.length})
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Contenido / Listado de Turnos */}
+        {/* Contenido / Listado */}
         {loading && turnos.length === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Palette.greenDeep} />
             <Text style={[styles.loadingText, isDark && styles.subtituloDark]}>
-              Cargando agenda de turnos...
+              Cargando tus citas médicas...
             </Text>
           </View>
         ) : turnosMostrados.length === 0 ? (
           <EmptyState
             variant="appointments"
             title={
-              modoVista === 'veterinario'
-                ? filtroVet === 'pendientes'
-                  ? 'No hay solicitudes pendientes'
-                  : 'Sin turnos en esta sección'
-                : filtroTutor === 'proximos'
+              filtro === 'proximos'
                 ? 'No tenés citas próximas programadas'
-                : 'Historial de turnos vacío'
+                : 'Todavía no tenés turnos pasados'
             }
-            message={
-              modoVista === 'veterinario'
-                ? 'Los turnos solicitados por los tutores aparecerán aquí para ser confirmados o atendidos.'
-                : 'Podés solicitar un turno veterinario fácilmente tocando el botón "+ Solicitar Turno".'
-            }
+            message="Podés solicitar un turno veterinario fácilmente tocando el botón '+ Solicitar Turno Veterinario'."
           />
         ) : (
           <View style={styles.content}>
@@ -505,7 +272,7 @@ export default function TurnosScreen() {
               const isGato = turno.mascotaEspecie?.toLowerCase().includes('gat');
               return (
                 <View key={turno.id} style={[styles.card, isDark && styles.cardDark]}>
-                  {/* Encabezado de la Tarjeta */}
+                  {/* Header de la tarjeta */}
                   <View style={styles.cardHeader}>
                     <View style={styles.petHeaderInfo}>
                       <View
@@ -525,17 +292,14 @@ export default function TurnosScreen() {
                           {turno.mascotaNombre}
                         </Text>
                         <Text style={[styles.petSubtext, isDark && styles.subtituloDark]}>
-                          {modoVista === 'veterinario'
-                            ? `Tutor: ${turno.tutorNombre}`
-                            : turno.motivo}
+                          {turno.motivo}
                         </Text>
                       </View>
                     </View>
-
-                    {getEstadoBadge(turno.estado)}
+                    {renderEstadoBadge(turno.estado, false)}
                   </View>
 
-                  {/* Fila Fecha y Hora */}
+                  {/* Fecha y Hora */}
                   <View style={styles.infoRow}>
                     <View style={styles.infoIconBox}>
                       <Ionicons name="calendar-outline" size={15} color={Palette.greenDeep} />
@@ -548,25 +312,17 @@ export default function TurnosScreen() {
                     </View>
                   </View>
 
-                  {/* Fila Veterinaria o Paciente */}
+                  {/* Veterinaria */}
                   <View style={styles.infoRow}>
                     <View style={styles.infoIconBox}>
-                      <Ionicons
-                        name={modoVista === 'veterinario' ? 'person-outline' : 'business-outline'}
-                        size={15}
-                        color={Palette.greenDeep}
-                      />
+                      <Ionicons name="business-outline" size={15} color={Palette.greenDeep} />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={[styles.label, isDark && styles.subtituloDark]}>
-                        {modoVista === 'veterinario' ? 'Contacto del Tutor' : 'Clínica Veterinaria'}
-                      </Text>
+                      <Text style={[styles.label, isDark && styles.subtituloDark]}>Veterinaria</Text>
                       <Text style={[styles.value, isDark && styles.textDark]}>
-                        {modoVista === 'veterinario'
-                          ? `${turno.tutorNombre} (${turno.tutorTelefono || 'Sin teléfono'})`
-                          : turno.veterinariaNombre}
+                        {turno.veterinariaNombre}
                       </Text>
-                      {modoVista !== 'veterinario' && turno.veterinariaDireccion && (
+                      {turno.veterinariaDireccion && (
                         <Text style={[styles.addressText, isDark && styles.subtituloDark]}>
                           {turno.veterinariaDireccion}
                         </Text>
@@ -574,20 +330,7 @@ export default function TurnosScreen() {
                     </View>
                   </View>
 
-                  {/* Motivo si estamos en modo veterinario */}
-                  {modoVista === 'veterinario' && (
-                    <View style={styles.infoRow}>
-                      <View style={styles.infoIconBox}>
-                        <Ionicons name="medical-outline" size={15} color={Palette.greenDeep} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={[styles.label, isDark && styles.subtituloDark]}>Motivo de Consulta</Text>
-                        <Text style={[styles.value, isDark && styles.textDark]}>{turno.motivo}</Text>
-                      </View>
-                    </View>
-                  )}
-
-                  {/* Notas del tutor (si las hay) */}
+                  {/* Notas del tutor */}
                   {turno.notasTutor ? (
                     <View style={[styles.notesBox, isDark && styles.notesBoxDark]}>
                       <Ionicons name="chatbubble-ellipses-outline" size={14} color={Palette.textSecondary} />
@@ -597,7 +340,7 @@ export default function TurnosScreen() {
                     </View>
                   ) : null}
 
-                  {/* Observaciones del Veterinario (si está completado) */}
+                  {/* Diagnóstico del profesional si está completado */}
                   {turno.notasVeterinario ? (
                     <View style={[styles.diagnosisBox, isDark && styles.diagnosisBoxDark]}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
@@ -612,117 +355,39 @@ export default function TurnosScreen() {
                     </View>
                   ) : null}
 
-                  {/* Botones de Acción según Modo y Estado */}
+                  {/* Acciones para el Tutor */}
                   <View style={styles.cardActionsRow}>
-                    {/* ACCIONES VISTA TUTOR */}
-                    {modoVista === 'tutor' && (
-                      <>
-                        <TouchableOpacity
-                          style={[styles.actionBtnOutline, isDark && styles.actionBtnOutlineDark]}
-                          onPress={() => handleLlamar(turno.veterinariaTelefono)}
-                          activeOpacity={0.7}
-                        >
-                          <Ionicons name="call-outline" size={14} color={Palette.greenDeep} />
-                          <Text style={[styles.actionBtnOutlineText, isDark && styles.textDark]}>
-                            Llamar
-                          </Text>
-                        </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.actionBtnOutline, isDark && styles.actionBtnOutlineDark]}
+                      onPress={() => llamarTelefono(turno.veterinariaTelefono)}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="call-outline" size={14} color={Palette.greenDeep} />
+                      <Text style={[styles.actionBtnOutlineText, isDark && styles.textDark]}>
+                        Llamar a Clínica
+                      </Text>
+                    </TouchableOpacity>
 
-                        <TouchableOpacity
-                          style={[styles.actionBtnOutline, isDark && styles.actionBtnOutlineDark]}
-                          onPress={() => router.push('/mapa')}
-                          activeOpacity={0.7}
-                        >
-                          <Ionicons name="map-outline" size={14} color={Palette.greenDeep} />
-                          <Text style={[styles.actionBtnOutlineText, isDark && styles.textDark]}>
-                            Mapa
-                          </Text>
-                        </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.actionBtnOutline, isDark && styles.actionBtnOutlineDark]}
+                      onPress={() => router.push('/mapa')}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="map-outline" size={14} color={Palette.greenDeep} />
+                      <Text style={[styles.actionBtnOutlineText, isDark && styles.textDark]}>
+                        Ver en Mapa
+                      </Text>
+                    </TouchableOpacity>
 
-                        {(turno.estado === 'solicitado' || turno.estado === 'confirmado') && (
-                          <TouchableOpacity
-                            style={styles.cancelBtn}
-                            onPress={() => handleCancelarTutor(turno)}
-                            activeOpacity={0.7}
-                          >
-                            <Ionicons name="close-circle-outline" size={14} color="#dc2626" />
-                            <Text style={styles.cancelBtnText}>Cancelar</Text>
-                          </TouchableOpacity>
-                        )}
-                      </>
-                    )}
-
-                    {/* ACCIONES VISTA PROFESIONAL */}
-                    {modoVista === 'veterinario' && (
-                      <>
-                        {turno.estado === 'solicitado' && (
-                          <>
-                            <TouchableOpacity
-                              style={styles.confirmBtn}
-                              onPress={() => handleConfirmarVet(turno)}
-                              activeOpacity={0.8}
-                            >
-                              <Ionicons name="checkmark" size={15} color="#ffffff" />
-                              <Text style={styles.confirmBtnText}>Aceptar Cita</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                              style={styles.rejectBtn}
-                              onPress={() => handleRechazarVet(turno)}
-                              activeOpacity={0.8}
-                            >
-                              <Ionicons name="close" size={15} color="#dc2626" />
-                              <Text style={styles.rejectBtnText}>Rechazar</Text>
-                            </TouchableOpacity>
-                          </>
-                        )}
-
-                        {turno.estado === 'confirmado' && (
-                          <>
-                            <TouchableOpacity
-                              style={styles.attendBtn}
-                              onPress={() => setTurnoAAtender(turno)}
-                              activeOpacity={0.8}
-                            >
-                              <Ionicons name="medkit-outline" size={15} color="#ffffff" />
-                              <Text style={styles.attendBtnText}>Marcar Atendido</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                              style={styles.rejectBtn}
-                              onPress={() => handleRechazarVet(turno)}
-                              activeOpacity={0.8}
-                            >
-                              <Ionicons name="close-circle-outline" size={15} color="#dc2626" />
-                              <Text style={styles.rejectBtnText}>Cancelar</Text>
-                            </TouchableOpacity>
-                          </>
-                        )}
-
-                        {turno.estado === 'completado' && (
-                          <TouchableOpacity
-                            style={[styles.actionBtnOutline, isDark && styles.actionBtnOutlineDark]}
-                            onPress={() => router.push('/recordatorios')}
-                            activeOpacity={0.7}
-                          >
-                            <Ionicons name="notifications-outline" size={14} color={Palette.greenDeep} />
-                            <Text style={[styles.actionBtnOutlineText, isDark && styles.textDark]}>
-                              Crear Recordatorio
-                            </Text>
-                          </TouchableOpacity>
-                        )}
-
-                        <TouchableOpacity
-                          style={[styles.actionBtnOutline, isDark && styles.actionBtnOutlineDark]}
-                          onPress={() => handleLlamar(turno.tutorTelefono)}
-                          activeOpacity={0.7}
-                        >
-                          <Ionicons name="call-outline" size={14} color={Palette.greenDeep} />
-                          <Text style={[styles.actionBtnOutlineText, isDark && styles.textDark]}>
-                            Tutor
-                          </Text>
-                        </TouchableOpacity>
-                      </>
+                    {(turno.estado === 'solicitado' || turno.estado === 'confirmado') && (
+                      <TouchableOpacity
+                        style={styles.cancelBtn}
+                        onPress={() => handleCancelarTutor(turno)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="close-circle-outline" size={14} color="#dc2626" />
+                        <Text style={styles.cancelBtnText}>Cancelar</Text>
+                      </TouchableOpacity>
                     )}
                   </View>
                 </View>
@@ -732,7 +397,7 @@ export default function TurnosScreen() {
         )}
       </ScrollView>
 
-      {/* Modal para Solicitar Cita */}
+      {/* Modal de Solicitud de Cita */}
       <SolicitarTurnoModal
         visible={modalSolicitarVisible}
         onClose={() => setModalSolicitarVisible(false)}
@@ -742,8 +407,441 @@ export default function TurnosScreen() {
           refresh();
         }}
       />
+    </SafeAreaView>
+  );
+}
 
-      {/* Modal para que el Veterinario complete la atención */}
+// ══════════════════════════════════════════════════════════════════════════════
+// VISTA EXCLUSIVA PARA EL PROFESIONAL VETERINARIO
+// ══════════════════════════════════════════════════════════════════════════════
+function TurnosProfesionalView() {
+  const { isDark } = useAppTheme();
+  const { user, profile } = useAuth();
+  const [filtro, setFiltro] = useState<'pendientes' | 'confirmados' | 'historial'>('pendientes');
+
+  const [modalNuevoTurnoVisible, setModalNuevoTurnoVisible] = useState(false);
+  const [turnoAAtender, setTurnoAAtender] = useState<Turno | null>(null);
+
+  const {
+    turnos,
+    loading,
+    refreshing,
+    refresh,
+    solicitar,
+    confirmar,
+    completar,
+    cancelar,
+  } = useTurnos({
+    isVeterinario: true,
+  });
+
+  const pendientes = useMemo(
+    () => turnos.filter((t) => t.estado === 'solicitado'),
+    [turnos]
+  );
+  const confirmados = useMemo(
+    () => turnos.filter((t) => t.estado === 'confirmado'),
+    [turnos]
+  );
+  const historial = useMemo(
+    () => turnos.filter((t) => t.estado === 'completado' || t.estado === 'cancelado'),
+    [turnos]
+  );
+
+  const turnosMostrados = useMemo(() => {
+    if (filtro === 'pendientes') return pendientes;
+    if (filtro === 'confirmados') return confirmados;
+    return historial;
+  }, [filtro, pendientes, confirmados, historial]);
+
+  const handleConfirmarVet = async (turno: Turno) => {
+    try {
+      await confirmar(turno.id, {
+        id: user?.uid,
+        nombre: profile?.displayName || 'Dr. Profesional',
+      });
+      const msg = `¡Turno confirmado para ${turno.mascotaNombre}!\nFecha: ${turno.fecha} a las ${turno.hora} hs.`;
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Turno Confirmado', msg);
+    } catch (err: any) {
+      const errorMsg = err?.message || 'No se pudo confirmar el turno.';
+      if (Platform.OS === 'web') window.alert(errorMsg);
+      else Alert.alert('Error', errorMsg);
+    }
+  };
+
+  const handleRechazarVet = (turno: Turno) => {
+    const promptMsg = `¿Deseas rechazar la solicitud de turno para ${turno.mascotaNombre}?`;
+
+    const ejecutar = async () => {
+      try {
+        await cancelar(turno.id, 'Rechazado por disponibilidad de la clínica');
+        const exito = 'La solicitud ha sido rechazada.';
+        if (Platform.OS === 'web') window.alert(exito);
+        else Alert.alert('Solicitud Rechazada', exito);
+      } catch (err: any) {
+        const errorMsg = err?.message || 'No se pudo rechazar la solicitud.';
+        if (Platform.OS === 'web') window.alert(errorMsg);
+        else Alert.alert('Error', errorMsg);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(promptMsg)) {
+        ejecutar();
+      }
+    } else {
+      Alert.alert('Rechazar Turno', promptMsg, [
+        { text: 'Atrás', style: 'cancel' },
+        { text: 'Rechazar', style: 'destructive', onPress: ejecutar },
+      ]);
+    }
+  };
+
+  return (
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'bottom']}>
+      {/* Navbar Superior */}
+      <View style={[styles.navbar, isDark && styles.navbarDark]}>
+        <TouchableOpacity
+          style={[styles.backButton, isDark && styles.buttonDark]}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+          accessibilityLabel="Volver"
+        >
+          <Ionicons name="arrow-back" size={20} color={isDark ? '#fafafa' : Palette.textPrimary} />
+        </TouchableOpacity>
+
+        <Text style={[styles.navTitle, isDark && styles.textDark]}>
+          Panel de Turnos Clínicos
+        </Text>
+
+        <ThemeToggleButton />
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={Palette.greenDeep}
+            colors={[Palette.greenDeep]}
+          />
+        }
+      >
+        {/* Cabecera */}
+        <View style={styles.header}>
+          <Text style={[styles.title, isDark && styles.textDark]}>Gestión de Turnos Clínicos</Text>
+          <Text style={[styles.subtitle, isDark && styles.subtituloDark]}>
+            Gestioná las solicitudes, confirmá citas y registrá la atención clínica de tus pacientes
+          </Text>
+        </View>
+
+        {/* Botón Principal: Nuevo Turno en Clínica */}
+        <TouchableOpacity
+          style={[styles.mainActionButton, isDark && styles.mainActionButtonDark]}
+          onPress={() => setModalNuevoTurnoVisible(true)}
+          activeOpacity={0.85}
+        >
+          <View style={styles.actionIconCircle}>
+            <Ionicons name="calendar-outline" size={20} color="#ffffff" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.mainActionTitle}>+ Nuevo Turno en Clínica</Text>
+            <Text style={styles.mainActionSubtitle}>
+              Agendar cita para paciente presencial o telefónico
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#ffffff" />
+        </TouchableOpacity>
+
+        {/* Filtros Clínicos */}
+        <View style={styles.filterRow}>
+          <TouchableOpacity
+            style={[
+              styles.filterPill,
+              isDark && styles.filterPillDark,
+              filtro === 'pendientes' && styles.filterPillActive,
+            ]}
+            onPress={() => setFiltro('pendientes')}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="alert-circle-outline"
+              size={14}
+              color={filtro === 'pendientes' ? '#ffffff' : '#0284c7'}
+              style={{ marginRight: 6 }}
+            />
+            <Text
+              style={[
+                styles.filterPillText,
+                isDark && styles.filterPillTextDark,
+                filtro === 'pendientes' && styles.filterPillTextActive,
+              ]}
+            >
+              Pendientes ({pendientes.length})
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.filterPill,
+              isDark && styles.filterPillDark,
+              filtro === 'confirmados' && styles.filterPillActive,
+            ]}
+            onPress={() => setFiltro('confirmados')}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={14}
+              color={filtro === 'confirmados' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.greenDeep)}
+              style={{ marginRight: 6 }}
+            />
+            <Text
+              style={[
+                styles.filterPillText,
+                isDark && styles.filterPillTextDark,
+                filtro === 'confirmados' && styles.filterPillTextActive,
+              ]}
+            >
+              Agenda ({confirmados.length})
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.filterPill,
+              isDark && styles.filterPillDark,
+              filtro === 'historial' && styles.filterPillActive,
+            ]}
+            onPress={() => setFiltro('historial')}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="archive-outline"
+              size={14}
+              color={filtro === 'historial' ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
+              style={{ marginRight: 6 }}
+            />
+            <Text
+              style={[
+                styles.filterPillText,
+                isDark && styles.filterPillTextDark,
+                filtro === 'historial' && styles.filterPillTextActive,
+              ]}
+            >
+              Historial ({historial.length})
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Listado Clínico */}
+        {loading && turnos.length === 0 ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Palette.greenDeep} />
+            <Text style={[styles.loadingText, isDark && styles.subtituloDark]}>
+              Cargando agenda de turnos...
+            </Text>
+          </View>
+        ) : turnosMostrados.length === 0 ? (
+          <EmptyState
+            variant="appointments"
+            title={
+              filtro === 'pendientes'
+                ? 'No hay solicitudes pendientes'
+                : filtro === 'confirmados'
+                ? 'No hay turnos confirmados en agenda'
+                : 'Historial de turnos vacío'
+            }
+            message="Los turnos solicitados por los tutores aparecerán aquí para ser confirmados o atendidos."
+          />
+        ) : (
+          <View style={styles.content}>
+            {turnosMostrados.map((turno) => {
+              const isGato = turno.mascotaEspecie?.toLowerCase().includes('gat');
+              return (
+                <View key={turno.id} style={[styles.card, isDark && styles.cardDark]}>
+                  {/* Header de la tarjeta */}
+                  <View style={styles.cardHeader}>
+                    <View style={styles.petHeaderInfo}>
+                      <View
+                        style={[
+                          styles.petIconCircle,
+                          isGato && { backgroundColor: Palette.cyanLight },
+                        ]}
+                      >
+                        <MaterialCommunityIcons
+                          name={isGato ? 'cat' : 'dog'}
+                          size={20}
+                          color={isGato ? '#0284c7' : Palette.greenDeep}
+                        />
+                      </View>
+                      <View>
+                        <Text style={[styles.petName, isDark && styles.textDark]}>
+                          {turno.mascotaNombre}
+                        </Text>
+                        <Text style={[styles.petSubtext, isDark && styles.subtituloDark]}>
+                          Tutor: {turno.tutorNombre}
+                        </Text>
+                      </View>
+                    </View>
+                    {renderEstadoBadge(turno.estado, true)}
+                  </View>
+
+                  {/* Fecha y Hora */}
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoIconBox}>
+                      <Ionicons name="calendar-outline" size={15} color={Palette.greenDeep} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.label, isDark && styles.subtituloDark]}>Fecha y Hora</Text>
+                      <Text style={[styles.value, isDark && styles.textDark]}>
+                        {turno.fecha} • {turno.hora} hs
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Contacto del Tutor */}
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoIconBox}>
+                      <Ionicons name="person-outline" size={15} color={Palette.greenDeep} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.label, isDark && styles.subtituloDark]}>Contacto del Tutor</Text>
+                      <Text style={[styles.value, isDark && styles.textDark]}>
+                        {turno.tutorNombre} ({turno.tutorTelefono || 'Sin teléfono'})
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Motivo de Consulta */}
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoIconBox}>
+                      <Ionicons name="medical-outline" size={15} color={Palette.greenDeep} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.label, isDark && styles.subtituloDark]}>Motivo de Consulta</Text>
+                      <Text style={[styles.value, isDark && styles.textDark]}>{turno.motivo}</Text>
+                    </View>
+                  </View>
+
+                  {/* Notas o Síntomas */}
+                  {turno.notasTutor ? (
+                    <View style={[styles.notesBox, isDark && styles.notesBoxDark]}>
+                      <Ionicons name="chatbubble-ellipses-outline" size={14} color={Palette.textSecondary} />
+                      <Text style={[styles.notesText, isDark && styles.subtituloDark]}>
+                        "{turno.notasTutor}"
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {/* Diagnóstico si está completado */}
+                  {turno.notasVeterinario ? (
+                    <View style={[styles.diagnosisBox, isDark && styles.diagnosisBoxDark]}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <Ionicons name="shield-checkmark" size={14} color={Palette.greenDeep} />
+                        <Text style={[styles.diagnosisTitle, isDark && styles.textDark]}>
+                          Atención Clínica ({turno.veterinarioNombre || 'Profesional'})
+                        </Text>
+                      </View>
+                      <Text style={[styles.diagnosisText, isDark && styles.subtituloDark]}>
+                        {turno.notasVeterinario}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {/* Acciones Clínicas */}
+                  <View style={styles.cardActionsRow}>
+                    {turno.estado === 'solicitado' && (
+                      <>
+                        <TouchableOpacity
+                          style={styles.confirmBtn}
+                          onPress={() => handleConfirmarVet(turno)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="checkmark" size={15} color="#ffffff" />
+                          <Text style={styles.confirmBtnText}>Aceptar Cita</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={styles.rejectBtn}
+                          onPress={() => handleRechazarVet(turno)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="close" size={15} color="#dc2626" />
+                          <Text style={styles.rejectBtnText}>Rechazar</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+
+                    {turno.estado === 'confirmado' && (
+                      <>
+                        <TouchableOpacity
+                          style={styles.attendBtn}
+                          onPress={() => setTurnoAAtender(turno)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="medkit-outline" size={15} color="#ffffff" />
+                          <Text style={styles.attendBtnText}>Marcar Atendido</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={styles.rejectBtn}
+                          onPress={() => handleRechazarVet(turno)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="close-circle-outline" size={15} color="#dc2626" />
+                          <Text style={styles.rejectBtnText}>Cancelar</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+
+                    {turno.estado === 'completado' && (
+                      <TouchableOpacity
+                        style={[styles.actionBtnOutline, isDark && styles.actionBtnOutlineDark]}
+                        onPress={() => router.push('/recordatorios')}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="notifications-outline" size={14} color={Palette.greenDeep} />
+                        <Text style={[styles.actionBtnOutlineText, isDark && styles.textDark]}>
+                          Crear Recordatorio
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                      style={[styles.actionBtnOutline, isDark && styles.actionBtnOutlineDark]}
+                      onPress={() => llamarTelefono(turno.tutorTelefono)}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="call-outline" size={14} color={Palette.greenDeep} />
+                      <Text style={[styles.actionBtnOutlineText, isDark && styles.textDark]}>
+                        Llamar Tutor
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Modal para agendar nuevo turno */}
+      <SolicitarTurnoModal
+        visible={modalNuevoTurnoVisible}
+        onClose={() => setModalNuevoTurnoVisible(false)}
+        onSolicitar={solicitar}
+        onSuccess={() => {
+          setModalNuevoTurnoVisible(false);
+          refresh();
+        }}
+      />
+
+      {/* Modal para completar atención */}
       <AtenderTurnoModal
         visible={!!turnoAAtender}
         turno={turnoAAtender}
@@ -755,6 +853,17 @@ export default function TurnosScreen() {
       />
     </SafeAreaView>
   );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COMPONENTE PRINCIPAL QUE SELECCIONA LA PANTALLA SEGÚN EL ROL
+// ══════════════════════════════════════════════════════════════════════════════
+export default function TurnosScreen() {
+  const { isVeterinario } = useAuth();
+
+  // Si el usuario es veterinario, muestra ÚNICAMENTE la vista profesional.
+  // Si el usuario es tutor/propietario, muestra ÚNICAMENTE la vista de usuario.
+  return isVeterinario ? <TurnosProfesionalView /> : <TurnosUsuarioView />;
 }
 
 const styles = StyleSheet.create({
@@ -795,49 +904,6 @@ const styles = StyleSheet.create({
     fontFamily: Typography.family.heading,
     fontWeight: '700',
     color: Palette.textPrimary,
-  },
-  modeBar: {
-    flexDirection: 'row',
-    backgroundColor: Palette.cardLight,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: Palette.borderLight,
-    gap: 8,
-  },
-  modeBarDark: {
-    backgroundColor: '#18181b',
-    borderBottomColor: '#27272a',
-  },
-  modeButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 7,
-    borderRadius: Radius.full,
-    backgroundColor: Palette.backgroundLight,
-    borderWidth: 1,
-    borderColor: Palette.borderLight,
-  },
-  modeButtonActive: {
-    backgroundColor: Palette.greenDeep,
-    borderColor: Palette.greenDeep,
-  },
-  modeButtonActiveDark: {
-    backgroundColor: Palette.greenDeep,
-    borderColor: Palette.greenDeep,
-  },
-  modeButtonText: {
-    fontSize: Typography.size.caption,
-    fontFamily: Typography.family.body,
-    color: Palette.textSecondary,
-  },
-  modeButtonTextActive: {
-    color: '#ffffff',
-    fontFamily: Typography.family.bodyBold,
-    fontWeight: '700',
   },
   scrollContent: {
     padding: 16,
@@ -1220,8 +1286,5 @@ const styles = StyleSheet.create({
   },
   subtituloDark: {
     color: '#a1a1aa',
-  },
-  textMutedDark: {
-    color: '#71717a',
   },
 });

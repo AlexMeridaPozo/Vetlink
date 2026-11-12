@@ -238,6 +238,30 @@ export default function PerfilScreen() {
 
         {/* Opciones y Preferencias */}
         <View style={styles.optionsContainer}>
+          {/* Acceso a Turnos Veterinarios */}
+          <TouchableOpacity
+            style={[styles.settingRow, isDark && styles.settingRowDark]}
+            onPress={() => router.push('/turnos')}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Ver turnos veterinarios"
+          >
+            <View style={[styles.settingIconCircle, isDark && styles.settingIconCircleDark]}>
+              <Ionicons name="calendar-outline" size={20} color={Palette.greenDeep} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingTitle, isDark && styles.textDark]}>
+                {isVeterinario ? 'Gestión de Turnos Clínicos' : 'Turnos Veterinarios'}
+              </Text>
+              <Text style={[styles.settingSubtitle, isDark && styles.subtituloDark]}>
+                {isVeterinario
+                  ? 'Solicitudes, agenda y atención de pacientes'
+                  : 'Citas médicas y revisiones programadas'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={18} color={isDark ? '#71717a' : Palette.textSecondary} />
+          </TouchableOpacity>
+
           {/* Acceso a Recordatorios */}
           <TouchableOpacity
             style={[styles.settingRow, isDark && styles.settingRowDark]}

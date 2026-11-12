@@ -109,15 +109,7 @@ function RootLayoutNav() {
         <Stack.Screen
           name="turnos"
           options={{
-            title: 'Turnos',
-            headerShown: true,
-            headerTintColor: colors.primary,
-            headerTitleStyle: {
-              fontFamily: fontsLoaded ? 'Quicksand_700Bold' : undefined,
-              fontSize: 18,
-            },
-            headerStyle: { backgroundColor: colors.surface },
-            headerShadowVisible: false,
+            headerShown: false,
           }}
         />
         <Stack.Screen

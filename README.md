@@ -1,17 +1,17 @@
-# 🐾 Huellapp
+# 🐾 HuellApp
 
 <p align="center">
-  <a href="https://alexmeridapozo.github.io/Huellapp/" title="Hacé clic para visitar la Landing Page oficial de Huellapp">
-    <img src="./assets/images/banner.png" alt="Huellapp — Sitio Web Oficial y Plataforma Móvil" width="100%">
+  <a href="https://alexmeridapozo.github.io/Huellapp/" title="Hacé clic para visitar el sitio web oficial de HuellApp">
+    <img src="./assets/images/banner.png" alt="HuellApp — El cuidado de tu mascota, conectado" width="100%">
   </a>
 </p>
 
 <p align="center">
   <a href="https://alexmeridapozo.github.io/Huellapp/">
-    <img src="https://img.shields.io/badge/🌐_Sitio_Oficial-alexmeridapozo.github.io%2FHuellapp-2563EB?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Sitio Web Oficial">
+    <img src="https://img.shields.io/badge/🌐_Sitio_Web-Abrir_página_oficial-0BB35E?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Abrir el sitio web oficial de HuellApp">
   </a>
   <a href="https://alexmeridapozo.github.io/Huellapp/">
-    <img src="https://img.shields.io/badge/GitHub_Pages-Activo-04B639?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Pages">
+    <img src="https://img.shields.io/badge/GitHub_Pages-Activo-07884A?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Pages">
   </a>
   <a href="https://expo.dev/">
     <img src="https://img.shields.io/badge/Expo-SDK_57-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo SDK 57">
@@ -26,9 +26,11 @@
 
 <p align="center">
   <strong>El cuidado de tu mascota, conectado.</strong><br>
-  Plataforma integral móvil para la gestión sanitaria, libreta médica e identificación inteligente mediante códigos QR y tags NFC.<br>
-  👉 <strong><a href="https://alexmeridapozo.github.io/Huellapp/">Hacé clic aquí para ingresar a la Landing Page Oficial de Huellapp</a></strong> 👈
+  App móvil para la gestión sanitaria, con ficha clínica digital y la identificación inteligente de mascotas mediante chapitas con código QR y tags NFC.<br><br>
+  👉 <strong><a href="https://alexmeridapozo.github.io/Huellapp/">Ingresá al sitio web oficial de HuellApp</a></strong> 👈
 </p>
+
+> 🌐 **Sitio web:** https://alexmeridapozo.github.io/Huellapp/
 
 ---
 

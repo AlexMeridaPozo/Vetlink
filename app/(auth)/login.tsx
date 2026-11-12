@@ -250,7 +250,7 @@ export default function LoginScreen() {
                   style={{ marginRight: 6 }}
                 />
                 <Text style={[styles.introLink, isDark && styles.introLinkDark]}>
-                  Ver presentación de HuellApp
+                  Sobre Huellapp
                 </Text>
               </TouchableOpacity>
             </View>

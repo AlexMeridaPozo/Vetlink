@@ -32,10 +32,9 @@ export const unstable_settings = {
 
 function RootLayoutNav() {
   const { isDark, colors } = useAppTheme();
-  const [showSplash, setShowSplash] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
-  const splashFinishedRef = useRef(false);
 
   const [fontsLoaded] = useFonts({
     Quicksand_600SemiBold,
@@ -45,13 +44,21 @@ function RootLayoutNav() {
     NunitoSans_700Bold,
   });
 
-  // 1. Verificar de inmediato si es la primera apertura para mostrar el Onboarding
+  // 1. Determinar si se debe mostrar "Sobre Huellapp" (Onboarding) al inicio o si va directo a la pantalla de carga
   useEffect(() => {
     let isMounted = true;
     (async () => {
       const completed = await checkHasCompletedOnboarding();
       if (isMounted) {
-        setShowOnboarding(!completed);
+        if (completed) {
+          // Ya completado anteriormente: no muestra onboarding y activa directo la pantalla de carga
+          setShowOnboarding(false);
+          setShowSplash(true);
+        } else {
+          // Primera apertura: "Sobre Huellapp" al inicio de todo, pantalla de carga en espera
+          setShowOnboarding(true);
+          setShowSplash(false);
+        }
         setOnboardingChecked(true);
       }
     })();
@@ -66,22 +73,15 @@ function RootLayoutNav() {
     }
   }, [fontsLoaded]);
 
-  // 2. Solo ocultar el Splash cuando tanto la animación de carga como la verificación de Onboarding estén listas
-  const handleSplashFinish = () => {
-    splashFinishedRef.current = true;
-    if (onboardingChecked) {
-      setShowSplash(false);
-    }
-  };
-
-  useEffect(() => {
-    if (onboardingChecked && splashFinishedRef.current) {
-      setShowSplash(false);
-    }
-  }, [onboardingChecked]);
-
+  // Al finalizar u omitir "Sobre Huellapp", recién pasa a la pantalla de carga (Splash)
   const handleOnboardingFinish = () => {
     setShowOnboarding(false);
+    setShowSplash(true);
+  };
+
+  // Al finalizar la pantalla de carga, pasa a la pantalla de Iniciar sesión / Tabs
+  const handleSplashFinish = () => {
+    setShowSplash(false);
   };
 
   return (

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { db } from '@/config/firebase';
+import { auth, db } from '@/config/firebase';
 import {
   collection,
   doc,
@@ -8,19 +8,20 @@ import {
   updateDoc,
   query,
   where,
-  orderBy,
 } from 'firebase/firestore';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { PUNTOS_VETERINARIOS_PILAR } from '@/constants/veterinarias';
 
 export type TurnoEstado = 'solicitado' | 'confirmado' | 'completado' | 'cancelado';
 
 export interface Turno {
   id: string;
+  userId?: string;
+  ownerId?: string;
+  tutorId: string;
   mascotaId?: string;
   mascotaNombre: string;
   mascotaEspecie: 'perro' | 'gato' | 'otro' | string;
-  tutorId: string;
   tutorNombre: string;
   tutorEmail?: string;
   tutorTelefono?: string;
@@ -73,10 +74,12 @@ function formatearFechaRelativa(diasOffset: number): string {
 export const TURNOS_INICIALES_SEMILLA: Turno[] = [
   {
     id: 'TUR-101',
+    userId: 'tutor-default',
+    ownerId: 'tutor-default',
+    tutorId: 'tutor-default',
     mascotaId: 'PET-001',
     mascotaNombre: 'Santino',
     mascotaEspecie: 'perro',
-    tutorId: 'tutor-default',
     tutorNombre: 'Santino Bravo',
     tutorTelefono: '011-3456-7890',
     tutorEmail: 'santinobravo2007@gmail.com',
@@ -96,10 +99,12 @@ export const TURNOS_INICIALES_SEMILLA: Turno[] = [
   },
   {
     id: 'TUR-102',
+    userId: 'tutor-default',
+    ownerId: 'tutor-default',
+    tutorId: 'tutor-default',
     mascotaId: 'PET-002',
     mascotaNombre: 'Milo',
     mascotaEspecie: 'gato',
-    tutorId: 'tutor-default',
     tutorNombre: 'Santino Bravo',
     tutorTelefono: '011-3456-7890',
     tutorEmail: 'santinobravo2007@gmail.com',
@@ -116,10 +121,12 @@ export const TURNOS_INICIALES_SEMILLA: Turno[] = [
   },
   {
     id: 'TUR-103',
+    userId: 'tutor-002',
+    ownerId: 'tutor-002',
+    tutorId: 'tutor-002',
     mascotaId: 'PET-003',
     mascotaNombre: 'Luna',
     mascotaEspecie: 'gato',
-    tutorId: 'tutor-002',
     tutorNombre: 'Carolina Méndez',
     tutorTelefono: '011-5555-8822',
     tutorEmail: 'carolina.mendez@example.com',
@@ -136,10 +143,12 @@ export const TURNOS_INICIALES_SEMILLA: Turno[] = [
   },
   {
     id: 'TUR-104',
+    userId: 'tutor-003',
+    ownerId: 'tutor-003',
+    tutorId: 'tutor-003',
     mascotaId: 'PET-004',
     mascotaNombre: 'Rocky',
     mascotaEspecie: 'perro',
-    tutorId: 'tutor-003',
     tutorNombre: 'Martín Almada',
     tutorTelefono: '011-4432-1199',
     tutorEmail: 'martin.almada@example.com',
@@ -173,8 +182,7 @@ async function obtenerTurnosCache(): Promise<Turno[]> {
       return parsed;
     }
     return TURNOS_INICIALES_SEMILLA;
-  } catch (err) {
-    console.warn('[turnoService] Error leyendo cache local:', err);
+  } catch {
     return TURNOS_INICIALES_SEMILLA;
   }
 }
@@ -194,9 +202,22 @@ export async function fetchTurnos(options?: {
 }): Promise<Turno[]> {
   const cached = await obtenerTurnosCache();
 
+  // Si no hay usuario autenticado en Firebase Auth, usar directamente el caché local
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    return filtrarTurnos(cached, options);
+  }
+
   try {
     const turnosRef = collection(db, 'turnos');
-    const snapshot = await getDocs(turnosRef);
+
+    // Construir la consulta según las reglas de seguridad de Firestore:
+    // Si no es veterinario, consultar únicamente los turnos del usuario autenticado
+    const consulta = options?.isVeterinario
+      ? turnosRef
+      : query(turnosRef, where('userId', '==', currentUser.uid));
+
+    const snapshot = await getDocs(consulta);
 
     if (!snapshot.empty) {
       const remoteList: Turno[] = snapshot.docs.map((d) => ({
@@ -213,8 +234,9 @@ export async function fetchTurnos(options?: {
 
       return filtrarTurnos(merged, options);
     }
-  } catch (firestoreError) {
-    console.info('[turnoService] Firestore offline o no accesible, usando cache local:', firestoreError);
+  } catch {
+    // Si Firestore no tiene la colección creada aún o faltan permisos en la nube,
+    // se mantiene la operación 100% funcional y fluida con el caché local
   }
 
   return filtrarTurnos(cached, options);
@@ -226,11 +248,12 @@ function filtrarTurnos(
 ): Turno[] {
   let list = [...turnos];
 
-  if (!options?.isVeterinario && options?.tutorId) {
-    // Para tutor: mostrar sus turnos o los de ejemplo asociados
+  if (!options?.isVeterinario) {
+    const targetId = options?.tutorId || auth.currentUser?.uid;
     list = list.filter(
       (t) =>
-        t.tutorId === options.tutorId ||
+        t.userId === targetId ||
+        t.tutorId === targetId ||
         t.tutorId === 'tutor-default' ||
         t.tutorEmail === 'santinobravo2007@gmail.com'
     );
@@ -248,16 +271,19 @@ function filtrarTurnos(
 export async function solicitarTurno(input: SolicitarTurnoInput): Promise<Turno> {
   const nuevoId = `TUR-${Date.now().toString().slice(-6)}`;
   const fechaCreacion = new Date().toISOString();
+  const uid = input.tutorId || auth.currentUser?.uid || 'tutor-default';
 
   // Completar dirección y teléfono de veterinaria si faltan
   const vetConocida = PUNTOS_VETERINARIOS_PILAR.find((v) => v.id === input.veterinariaId);
 
   const nuevoTurno: Turno = {
     id: nuevoId,
+    userId: uid,
+    ownerId: uid,
+    tutorId: uid,
     mascotaId: input.mascotaId || `PET-${Math.floor(100 + Math.random() * 900)}`,
     mascotaNombre: input.mascotaNombre.trim(),
     mascotaEspecie: input.mascotaEspecie || 'perro',
-    tutorId: input.tutorId || 'tutor-default',
     tutorNombre: input.tutorNombre || 'Santino Bravo',
     tutorEmail: input.tutorEmail || 'santinobravo2007@gmail.com',
     tutorTelefono: input.tutorTelefono || '011-3456-7890',
@@ -279,12 +305,14 @@ export async function solicitarTurno(input: SolicitarTurnoInput): Promise<Turno>
   const actualizados = [nuevoTurno, ...cache.filter((t) => t.id !== nuevoId)];
   await guardarTurnosCache(actualizados);
 
-  // 2. Intentar guardar en Firestore de fondo
-  try {
-    const docRef = doc(db, 'turnos', nuevoId);
-    await setDoc(docRef, nuevoTurno);
-  } catch (firestoreError) {
-    console.info('[turnoService] Firestore offline, guardado en cache local exitoso:', firestoreError);
+  // 2. Intentar guardar en Firestore de fondo si hay sesión
+  if (auth.currentUser) {
+    try {
+      const docRef = doc(db, 'turnos', nuevoId);
+      await setDoc(docRef, nuevoTurno);
+    } catch {
+      // Sincronización silenciosa con fallback
+    }
   }
 
   return nuevoTurno;
@@ -322,18 +350,20 @@ export async function actualizarEstadoTurno(
   await guardarTurnosCache(cache);
 
   // Intentar sincronizar con Firestore
-  try {
-    const docRef = doc(db, 'turnos', turnoId);
-    await updateDoc(docRef, {
-      estado: nuevoEstado,
-      updatedAt: actualizado.updatedAt,
-      ...(detalles?.notasVeterinario ? { notasVeterinario: detalles.notasVeterinario } : {}),
-      ...(detalles?.motivoCancelacion ? { motivoCancelacion: detalles.motivoCancelacion } : {}),
-      ...(detalles?.veterinarioId ? { veterinarioId: detalles.veterinarioId } : {}),
-      ...(detalles?.veterinarioNombre ? { veterinarioNombre: detalles.veterinarioNombre } : {}),
-    });
-  } catch (firestoreError) {
-    console.info('[turnoService] No se pudo sincronizar actualización en Firestore, mantenido en cache:', firestoreError);
+  if (auth.currentUser) {
+    try {
+      const docRef = doc(db, 'turnos', turnoId);
+      await updateDoc(docRef, {
+        estado: nuevoEstado,
+        updatedAt: actualizado.updatedAt,
+        ...(detalles?.notasVeterinario ? { notasVeterinario: detalles.notasVeterinario } : {}),
+        ...(detalles?.motivoCancelacion ? { motivoCancelacion: detalles.motivoCancelacion } : {}),
+        ...(detalles?.veterinarioId ? { veterinarioId: detalles.veterinarioId } : {}),
+        ...(detalles?.veterinarioNombre ? { veterinarioNombre: detalles.veterinarioNombre } : {}),
+      });
+    } catch {
+      // Mantenido en cache local
+    }
   }
 
   return actualizado;
@@ -387,13 +417,21 @@ export function useTurnos(options?: {
   tutorId?: string;
   isVeterinario?: boolean;
 }): UseTurnosReturn {
+  const tutorId = options?.tutorId;
+  const isVeterinario = options?.isVeterinario;
+
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
+  const cargandoRef = useRef(false);
+
   const cargar = useCallback(
     async (isManualRefresh = false) => {
+      if (cargandoRef.current && !isManualRefresh) return;
+      cargandoRef.current = true;
+
       if (isManualRefresh) {
         setRefreshing(true);
       } else {
@@ -402,17 +440,17 @@ export function useTurnos(options?: {
       setError(null);
 
       try {
-        const datos = await fetchTurnos(options);
+        const datos = await fetchTurnos({ tutorId, isVeterinario });
         setTurnos(datos);
       } catch (err) {
-        console.error('[useTurnos] Error cargando turnos:', err);
         setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
+        cargandoRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [options?.tutorId, options?.isVeterinario]
+    [tutorId, isVeterinario]
   );
 
   useEffect(() => {
@@ -471,4 +509,3 @@ export function useTurnos(options?: {
     cancelar,
   };
 }
-

@@ -142,17 +142,19 @@ service cloud.firestore {
     // ── Colección 'turnos' ───────────────────────────────────────────────────
     // Citas médicas y turnos veterinarios
     match /turnos/{turnoId} {
-      // Lectura segura: Solo el titular del turno (por userId/ownerId) o un veterinario autorizado
+      // Lectura segura: Solo el titular del turno (por userId/ownerId/tutorId) o un veterinario autorizado
       allow read: if isAuthenticated() && (
         isVeterinario() ||
         resource.data.userId == request.auth.uid ||
-        resource.data.ownerId == request.auth.uid
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.tutorId == request.auth.uid
       );
 
       // Creación: El propio usuario para sí mismo o un veterinario
       allow create: if isAuthenticated() && (
         request.resource.data.userId == request.auth.uid ||
         request.resource.data.ownerId == request.auth.uid ||
+        request.resource.data.tutorId == request.auth.uid ||
         isVeterinario()
       );
 
@@ -160,6 +162,7 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && (
         resource.data.userId == request.auth.uid ||
         resource.data.ownerId == request.auth.uid ||
+        resource.data.tutorId == request.auth.uid ||
         isVeterinario()
       );
     }

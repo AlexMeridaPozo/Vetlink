@@ -376,7 +376,8 @@ export default function HomeScreen() {
           <View style={[styles.sosSecondaryIconWrapper, isDark && styles.sosSecondaryIconWrapperDark]}>
             <Image
               source={require('@/assets/images/3d/sos_siren_art.png')}
-              style={{ width: 28, height: 28, resizeMode: 'contain' }}
+              resizeMode="contain"
+              style={{ width: 28, height: 28 }}
             />
           </View>
           <View style={{ flex: 1 }}>

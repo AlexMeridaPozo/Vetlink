@@ -34,7 +34,8 @@ function RootLayoutNav() {
   const { isDark, colors } = useAppTheme();
   const [showSplash, setShowSplash] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const splashHandled = useRef(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const splashFinishedRef = useRef(false);
 
   const [fontsLoaded] = useFonts({
     Quicksand_600SemiBold,
@@ -44,13 +45,19 @@ function RootLayoutNav() {
     NunitoSans_700Bold,
   });
 
+  // 1. Verificar de inmediato si es la primera apertura para mostrar el Onboarding
   useEffect(() => {
+    let isMounted = true;
     (async () => {
       const completed = await checkHasCompletedOnboarding();
-      if (!completed) {
-        setShowOnboarding(true);
+      if (isMounted) {
+        setShowOnboarding(!completed);
+        setOnboardingChecked(true);
       }
     })();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -59,11 +66,19 @@ function RootLayoutNav() {
     }
   }, [fontsLoaded]);
 
+  // 2. Solo ocultar el Splash cuando tanto la animación de carga como la verificación de Onboarding estén listas
   const handleSplashFinish = () => {
-    if (splashHandled.current) return;
-    splashHandled.current = true;
-    setShowSplash(false);
+    splashFinishedRef.current = true;
+    if (onboardingChecked) {
+      setShowSplash(false);
+    }
   };
+
+  useEffect(() => {
+    if (onboardingChecked && splashFinishedRef.current) {
+      setShowSplash(false);
+    }
+  }, [onboardingChecked]);
 
   const handleOnboardingFinish = () => {
     setShowOnboarding(false);
@@ -133,11 +148,11 @@ function RootLayoutNav() {
         />
       </Stack>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      {showOnboarding && (
+        <OnboardingScreen onFinish={handleOnboardingFinish} />
+      )}
       {showSplash && (
         <AnimatedSplashScreen onFinish={handleSplashFinish} />
-      )}
-      {!showSplash && showOnboarding && (
-        <OnboardingScreen onFinish={handleOnboardingFinish} />
       )}
     </ThemeProvider>
   );

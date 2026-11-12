@@ -1,7 +1,7 @@
-import { auth } from '@/config/firebase';
-import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
-import { Palette, FontFamily } from '@/constants/theme';
+import { auth } from '@/config/firebase';
+import { FontFamily, Palette } from '@/constants/theme';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';

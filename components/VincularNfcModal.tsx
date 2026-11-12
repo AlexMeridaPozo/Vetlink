@@ -92,16 +92,7 @@ export default function VincularNfcModal({
   const handleIniciarVinculacion = async () => {
     if (!mascota) return;
 
-    // 1. Verificación obligatoria de permisos de veterinario
-    if (!isVeterinario) {
-      Alert.alert(
-        'Acceso denegado',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular etiquetas NFC a las mascotas.'
-      );
-      return;
-    }
-
-    // 2. Comprobar si el módulo nativo está disponible (no disponible en web / Expo Go puro)
+    // 1. Comprobar si el módulo nativo está disponible (no disponible en web / Expo Go puro)
     if (!nfcService.isModuleAvailable()) {
       setPaso('no_hardware');
       return;

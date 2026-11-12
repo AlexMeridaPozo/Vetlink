@@ -79,16 +79,7 @@ service cloud.firestore {
       allow update: if (
         isAuthenticated() && (
           isVeterinario() ||
-          (
-            isOwner(resource.data) && (
-              !request.resource.data.diff(resource.data).affectedKeys().hasAny(['nfcTagId', 'nfcStatus', 'nfcLinkedBy', 'nfcLinkedAt', 'createdByVet']) ||
-              (
-                request.resource.data.nfcStatus == 'unlinked' &&
-                request.resource.data.nfcTagId == null &&
-                !request.resource.data.diff(resource.data).affectedKeys().hasAny(['createdByVet'])
-              )
-            )
-          ) ||
+          isOwner(resource.data) ||
           (
             (!('userId' in resource.data) || resource.data.userId == null || resource.data.userId == '') &&
             (!('ownerId' in resource.data) || resource.data.ownerId == null || resource.data.ownerId == '') &&
@@ -119,13 +110,9 @@ service cloud.firestore {
       // Lectura: Cualquier usuario autenticado puede resolver qué mascota corresponde a la etiqueta
       allow read: if isAuthenticated();
 
-      // Escritura, Vinculación, Desvinculación y Reasignación:
-      // Reservado para Veterinarios autorizados, o para desvincular una etiqueta existente.
-      allow create, delete: if isVeterinario();
-      allow update: if isVeterinario() || (
-        isAuthenticated() &&
-        request.resource.data.status == 'unlinked'
-      );
+      // Escritura, Vinculación y Desvinculación de etiquetas NFC por usuarios autenticados
+      allow create, update: if isAuthenticated();
+      allow delete: if isVeterinario();
     }
 
     // ── Colección 'consultasPublicas' (opcional) ─────────────────────────────

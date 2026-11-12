@@ -37,9 +37,9 @@ export const PetCard = React.memo(function PetCard({
   pet,
   onPress = () => {},
   onQrPress = () => {},
-  onNfcPress = () => {},
+  onNfcPress,
   onDeletePress,
-  onPhotoPress = () => {},
+  onPhotoPress,
   isUpdatingPhoto = false,
   isDark = false,
 }: PetCardProps) {
@@ -58,9 +58,9 @@ export const PetCard = React.memo(function PetCard({
         <TouchableOpacity
           style={styles.avatarContainer}
           activeOpacity={0.8}
-          onPress={() => onPhotoPress(pet)}
+          onPress={() => (onPhotoPress ? onPhotoPress(pet) : onPress(pet))}
           accessibilityRole="button"
-          accessibilityLabel={`Foto de perfil de ${pet.nombre}. Toca para cambiar o agregar foto.`}
+          accessibilityLabel={`Foto de perfil de ${pet.nombre}.`}
         >
           {pet.fotoUrl ? (
             <Image
@@ -196,35 +196,51 @@ export const PetCard = React.memo(function PetCard({
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[
-            styles.quickActionBtn,
-            isNfcLinked
-              ? (isDark ? styles.nfcQuickBtnLinkedDark : styles.nfcQuickBtnLinked)
-              : (isDark ? styles.nfcQuickBtnDark : styles.nfcQuickBtn),
-          ]}
-          onPress={(e) => {
-            e.stopPropagation?.();
-            onNfcPress(pet);
-          }}
-          activeOpacity={0.8}
-        >
-          <MaterialIcons
-            name="nfc"
-            size={15}
-            color={isNfcLinked ? (isDark ? '#4ade80' : Palette.greenDeep) : (isDark ? '#22C55E' : Palette.greenDeep)}
-          />
-          <Text
+        {onNfcPress ? (
+          <TouchableOpacity
             style={[
-              styles.quickActionBtnText,
-              isDark && styles.quickActionBtnTextDark,
-              isNfcLinked && { color: isDark ? '#4ade80' : Palette.greenDeep, fontFamily: FontFamily.bodyBold },
+              styles.quickActionBtn,
+              isNfcLinked
+                ? (isDark ? styles.nfcQuickBtnLinkedDark : styles.nfcQuickBtnLinked)
+                : (isDark ? styles.nfcQuickBtnDark : styles.nfcQuickBtn),
             ]}
-            numberOfLines={1}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onNfcPress(pet);
+            }}
+            activeOpacity={0.8}
           >
-            {isNfcLinked ? '✓ NFC Vinculado' : 'Vincular NFC'}
-          </Text>
-        </TouchableOpacity>
+            <MaterialIcons
+              name="nfc"
+              size={15}
+              color={isNfcLinked ? (isDark ? '#4ade80' : Palette.greenDeep) : (isDark ? '#22C55E' : Palette.greenDeep)}
+            />
+            <Text
+              style={[
+                styles.quickActionBtnText,
+                isDark && styles.quickActionBtnTextDark,
+                isNfcLinked && { color: isDark ? '#4ade80' : Palette.greenDeep, fontFamily: FontFamily.bodyBold },
+              ]}
+              numberOfLines={1}
+            >
+              {isNfcLinked ? '✓ NFC Vinculado' : 'Vincular NFC'}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.quickActionBtn, isDark ? styles.nfcQuickBtnDark : styles.nfcQuickBtn]}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onPress(pet);
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="document-text-outline" size={15} color={isDark ? '#4ade80' : Palette.greenDeep} />
+            <Text style={[styles.quickActionBtnText, isDark && styles.quickActionBtnTextDark]} numberOfLines={1}>
+              Ver Ficha Clínica
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {onDeletePress && (
           <TouchableOpacity

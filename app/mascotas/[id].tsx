@@ -174,13 +174,6 @@ export default function MascotaDetalleScreen() {
   };
 
   const handleOpenVincularNfc = () => {
-    if (!isVeterinario && !isNfcLinked) {
-      Alert.alert(
-        'Acceso Restringido',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular etiquetas NFC nuevas en HuellApp.'
-      );
-      return;
-    }
     setNfcModalVisible(true);
   };
 
@@ -562,8 +555,8 @@ export default function MascotaDetalleScreen() {
                 </TouchableOpacity>
               )}
 
-              {/* Botón Eliminar Mascota (siempre visible; pide desvincular NFC antes si tiene collar activo) */}
-              {canEdit && (
+              {/* Botón Eliminar Mascota (solo para el usuario propietario; pide desvincular NFC antes si tiene collar activo) */}
+              {!isVeterinario && canEdit && (
                 <TouchableOpacity
                   style={[styles.btnDeleteMain, isDark && styles.btnDeleteMainDark]}
                   onPress={handleEliminarMascota}
@@ -859,7 +852,7 @@ export default function MascotaDetalleScreen() {
                   </View>
                 )}
 
-                {canEdit && (
+                {!isVeterinario && canEdit && (
                   <TouchableOpacity
                     style={[styles.relinkNfcBtn, isDark && styles.relinkNfcBtnDark]}
                     onPress={handleOpenVincularNfc}
@@ -875,11 +868,11 @@ export default function MascotaDetalleScreen() {
             ) : (
               <View style={[styles.unlinkedNfcBox, isDark && styles.unlinkedNfcBoxDark]}>
                 <Text style={[styles.unlinkedNfcDesc, isDark && styles.textSecondaryDark]}>
-                  {isVeterinario
+                  {!isVeterinario
                     ? `Acerca un collar o chapita NFC para asociarlo a la ficha de ${displayNombre}.`
-                    : `${displayNombre} aún no tiene un collar NFC vinculado. Podés solicitar su vinculación en tu veterinaria adherida.`}
+                    : `${displayNombre} aún no tiene un collar NFC vinculado por su propietario.`}
                 </Text>
-                {isVeterinario && (
+                {!isVeterinario && canEdit && (
                   <TouchableOpacity
                     style={styles.linkNfcPrimaryBtn}
                     onPress={handleOpenVincularNfc}

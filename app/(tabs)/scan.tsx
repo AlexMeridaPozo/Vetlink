@@ -1,4 +1,5 @@
 import { auth } from '@/config/firebase';
+import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { nfcService } from '@/services/nfcService';
 import { getPetById, linkPetToUser, type Pet } from '@/services/petService';
@@ -20,6 +21,7 @@ import { Palette, Typography, Radius, Shadows } from '@/constants/theme';
 
 export default function ScanScreen() {
   const { isDark } = useAppTheme();
+  const { isVeterinario } = useAuth();
   const [permission, requestPermission] = useCameraPermissions();
   const [camaraActiva, setCamaraActiva] = useState(false);
   const [esperandoNFC, setEsperandoNFC] = useState(false);
@@ -250,33 +252,35 @@ export default function ScanScreen() {
             isDark={isDark}
           />
 
-          {/* Estado de vinculación al usuario */}
-          {mascota.userId === auth.currentUser?.uid || mascota.ownerId === auth.currentUser?.uid ? (
-            <View style={[styles.statusBox, styles.statusBoxOwned, isDark && styles.statusBoxOwnedDark]}>
-              <Ionicons name="checkmark-circle-outline" size={18} color={Palette.greenDeep} />
-              <Text style={[styles.statusBoxText, { color: Palette.greenDeep }]}>
-                Esta mascota ya está vinculada a tu cuenta.
-              </Text>
-            </View>
-          ) : mascota.userId || mascota.ownerId ? (
-            <View style={[styles.statusBox, styles.statusBoxOther, isDark && styles.statusBoxOtherDark]}>
-              <Ionicons name="information-circle-outline" size={18} color="#1d4ed8" />
-              <Text style={[styles.statusBoxText, { color: '#1d4ed8' }]}>
-                Esta mascota ya tiene un dueño asignado.
-              </Text>
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={[styles.botonVerde, vinculando && { opacity: 0.7 }]}
-              onPress={handleVincularMascota}
-              disabled={vinculando}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="link-outline" size={18} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={styles.textoBoton}>
-                {vinculando ? 'Vinculando a tu cuenta...' : 'Vincular a Mi Cuenta'}
-              </Text>
-            </TouchableOpacity>
+          {/* Estado de vinculación al usuario (solo para tutores/usuarios, el veterinario solo consulta la ficha) */}
+          {!isVeterinario && (
+            mascota.userId === auth.currentUser?.uid || mascota.ownerId === auth.currentUser?.uid ? (
+              <View style={[styles.statusBox, styles.statusBoxOwned, isDark && styles.statusBoxOwnedDark]}>
+                <Ionicons name="checkmark-circle-outline" size={18} color={Palette.greenDeep} />
+                <Text style={[styles.statusBoxText, { color: Palette.greenDeep }]}>
+                  Esta mascota ya está vinculada a tu cuenta.
+                </Text>
+              </View>
+            ) : mascota.userId || mascota.ownerId ? (
+              <View style={[styles.statusBox, styles.statusBoxOther, isDark && styles.statusBoxOtherDark]}>
+                <Ionicons name="information-circle-outline" size={18} color="#1d4ed8" />
+                <Text style={[styles.statusBoxText, { color: '#1d4ed8' }]}>
+                  Esta mascota ya tiene un dueño asignado.
+                </Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[styles.botonVerde, vinculando && { opacity: 0.7 }]}
+                onPress={handleVincularMascota}
+                disabled={vinculando}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="link-outline" size={18} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text style={styles.textoBoton}>
+                  {vinculando ? 'Vinculando a tu cuenta...' : 'Vincular a Mi Cuenta'}
+                </Text>
+              </TouchableOpacity>
+            )
           )}
 
           <TouchableOpacity

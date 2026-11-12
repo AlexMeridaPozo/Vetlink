@@ -74,7 +74,7 @@ function RegistrarMascotaModal({
     setRaza('');
     setPeso('');
     setEdad('');
-    setPropietario('');
+    setPropietario(user?.displayName || '');
     setTelefono('');
     setDescripcion('');
     setFotoUrl('');
@@ -154,23 +154,12 @@ function RegistrarMascotaModal({
       return;
     }
 
-    if (!isVeterinario) {
-      Alert.alert(
-        'Acceso denegado',
-        'Solo los veterinarios autorizados tienen permisos para dar de alta nuevas mascotas con identificador clínico oficial.'
-      );
-      return;
-    }
-
     if (!nombre.trim()) {
       Alert.alert('Campo obligatorio', 'Por favor, ingresa el nombre de la mascota.');
       return;
     }
 
-    if (!propietario.trim()) {
-      Alert.alert('Campo obligatorio', 'Por favor, ingresa el nombre del propietario o tutor.');
-      return;
-    }
+    const nombrePropietario = propietario.trim() || user.displayName || user.email?.split('@')[0] || 'Propietario';
 
     const cleanId = (petId || 'PET-001').trim().toUpperCase();
 
@@ -215,19 +204,19 @@ function RegistrarMascotaModal({
           peso: peso.trim() || 'N/A',
           edad: edad.trim() || 'No especificada',
           fechaNacimiento: edad.trim() || 'No especificada',
-          propietario: propietario.trim(),
+          propietario: nombrePropietario,
           telefonoContacto: telefono.trim() || '',
           descripcion: descripcion.trim() || '',
           fotoUrl: finalFoto || '',
-          userId: '',
-          ownerId: '',
+          userId: user.uid,
+          ownerId: user.uid,
         },
         user.uid
       );
 
       Alert.alert(
         '¡Mascota registrada con éxito!',
-        `Se ha creado el registro clínico de ${nuevaMascota.nombre} (${nuevaMascota.id}). Ahora puedes vincular su etiqueta NFC.`,
+        `Se ha creado la ficha de ${nuevaMascota.nombre}. Ahora puedes vincular su collar NFC o código QR.`,
         [
           {
             text: 'OK',
@@ -538,21 +527,13 @@ export default function MascotasScreen() {
 
   const handleRegisterPress = () => {
     if (isVeterinario) {
-      setShowRegistrarModal(true);
-    } else {
       router.push('/(tabs)/scan');
+    } else {
+      setShowRegistrarModal(true);
     }
   };
 
   const handleVincularNfcPress = (pet: Pet) => {
-    const isLinked = pet.nfcStatus === 'linked' || Boolean(pet.nfcTagId);
-    if (!isVeterinario && !isLinked) {
-      Alert.alert(
-        'Acceso Restringido',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular etiquetas NFC nuevas en HuellApp.'
-      );
-      return;
-    }
     setNfcMascota(pet);
   };
 
@@ -724,9 +705,9 @@ export default function MascotasScreen() {
       pet={item}
       onPress={handlePetPress}
       onQrPress={setQrMascota}
-      onNfcPress={handleVincularNfcPress}
-      onDeletePress={handleDeletePetPress}
-      onPhotoPress={handlePhotoPress}
+      onNfcPress={isVeterinario ? undefined : handleVincularNfcPress}
+      onDeletePress={isVeterinario ? undefined : handleDeletePetPress}
+      onPhotoPress={isVeterinario ? undefined : handlePhotoPress}
       isUpdatingPhoto={updatingPetId === item.id}
       isDark={isDark}
     />
@@ -738,11 +719,11 @@ export default function MascotasScreen() {
       title="No hay mascotas registradas."
       message={
         isVeterinario
-          ? 'Agregá a tus pacientes clínicos para gestionar sus historiales y chapitas inteligentes.'
-          : 'Agregá a tu compañero para comenzar a cuidar su salud y vincular su chapita inteligente.'
+          ? 'Escaneá el código QR o collar NFC de una mascota para obtener su información e historial clínico.'
+          : 'Registrá a tu compañero para comenzar a cuidar su salud y vincular su chapita inteligente.'
       }
-      actionLabel={isVeterinario ? 'Registrar nuevo paciente' : 'Registrar mi primera mascota'}
-      actionIcon={isVeterinario ? 'add-circle-outline' : 'qr-code-outline'}
+      actionLabel={isVeterinario ? 'Escanear mascota' : 'Registrar mi primera mascota'}
+      actionIcon={isVeterinario ? 'qr-code-outline' : 'add-circle-outline'}
       onAction={handleRegisterPress}
     />
   );
@@ -781,9 +762,9 @@ export default function MascotasScreen() {
             onPress={handleRegisterPress}
             activeOpacity={0.85}
           >
-            <Ionicons name={isVeterinario ? 'add-circle-outline' : 'qr-code-outline'} size={17} color="#ffffff" />
+            <Ionicons name={isVeterinario ? 'qr-code-outline' : 'add-circle-outline'} size={17} color="#ffffff" />
             <Text style={styles.headerPrimaryButtonText} numberOfLines={1}>
-              {isVeterinario ? 'Registrar' : 'Vincular'}
+              {isVeterinario ? 'Escanear' : 'Registrar'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -825,9 +806,9 @@ export default function MascotasScreen() {
           style={styles.fab}
           onPress={handleRegisterPress}
           activeOpacity={0.85}
-          accessibilityLabel="Registrar Mascota"
+          accessibilityLabel={isVeterinario ? 'Escanear Mascota' : 'Registrar Mascota'}
         >
-          <Ionicons name="add" size={28} color="#ffffff" />
+          <Ionicons name={isVeterinario ? 'qr-code-outline' : 'add'} size={28} color="#ffffff" />
         </TouchableOpacity>
       )}
 

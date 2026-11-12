@@ -27,6 +27,7 @@ export interface PetCardProps {
   onPress?: (pet: Pet) => void;
   onQrPress?: (pet: Pet) => void;
   onNfcPress?: (pet: Pet) => void;
+  onDeletePress?: (pet: Pet) => void;
   onPhotoPress?: (pet: Pet) => void;
   isUpdatingPhoto?: boolean;
   isDark?: boolean;
@@ -37,12 +38,13 @@ export const PetCard = React.memo(function PetCard({
   onPress = () => {},
   onQrPress = () => {},
   onNfcPress = () => {},
+  onDeletePress,
   onPhotoPress = () => {},
   isUpdatingPhoto = false,
   isDark = false,
 }: PetCardProps) {
   const isMale = pet.sexo?.toLowerCase().includes('macho');
-  const isNfcLinked = pet.nfcStatus === 'linked';
+  const isNfcLinked = pet.nfcStatus === 'linked' || Boolean(pet.nfcTagId);
   const isGato = pet.especie?.toLowerCase().includes('gato');
 
   return (
@@ -100,7 +102,9 @@ export const PetCard = React.memo(function PetCard({
         {/* Información Principal */}
         <View style={styles.petInfo}>
           <View style={styles.nameRow}>
-            <Text style={[styles.petName, isDark && styles.petNameDark]}>{pet.nombre}</Text>
+            <Text style={[styles.petName, isDark && styles.petNameDark]} numberOfLines={1}>
+              {pet.nombre}
+            </Text>
             <View
               style={[
                 styles.genderBadge,
@@ -176,7 +180,7 @@ export const PetCard = React.memo(function PetCard({
         </View>
       </View>
 
-      {/* Fila de Acciones Rápidas: QR y Vincular NFC */}
+      {/* Fila de Acciones Rápidas: QR, Vincular NFC y Eliminar (si no tiene NFC vinculado) */}
       <View style={styles.cardActionsRow}>
         <TouchableOpacity
           style={[styles.quickActionBtn, styles.qrQuickBtn, isDark && styles.qrQuickBtnDark]}
@@ -187,7 +191,9 @@ export const PetCard = React.memo(function PetCard({
           activeOpacity={0.8}
         >
           <Ionicons name="qr-code-outline" size={15} color={Palette.greenDeep} />
-          <Text style={[styles.quickActionBtnText, isDark && styles.quickActionBtnTextDark]}>QR / 3D</Text>
+          <Text style={[styles.quickActionBtnText, isDark && styles.quickActionBtnTextDark]} numberOfLines={1}>
+            QR / 3D
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -214,10 +220,25 @@ export const PetCard = React.memo(function PetCard({
               isDark && styles.quickActionBtnTextDark,
               isNfcLinked && { color: isDark ? '#4ade80' : Palette.greenDeep, fontFamily: FontFamily.bodyBold },
             ]}
+            numberOfLines={1}
           >
             {isNfcLinked ? '✓ NFC Vinculado' : 'Vincular NFC'}
           </Text>
         </TouchableOpacity>
+
+        {!isNfcLinked && onDeletePress && (
+          <TouchableOpacity
+            style={[styles.deleteQuickBtn, isDark && styles.deleteQuickBtnDark]}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onDeletePress(pet);
+            }}
+            activeOpacity={0.8}
+            accessibilityLabel={`Eliminar a ${pet.nombre}`}
+          >
+            <Ionicons name="trash-outline" size={16} color={Palette.redEmergency} />
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -353,6 +374,9 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   petName: {
+    flex: 1,
+    flexShrink: 1,
+    marginRight: 8,
     fontSize: 18,
     fontFamily: FontFamily.headingBold,
     color: Palette.textPrimary,
@@ -531,8 +555,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: FontFamily.bodySemiBold,
     color: Palette.textPrimary,
+    flexShrink: 1,
   },
   quickActionBtnTextDark: {
     color: Palette.textPrimaryDark,
+  },
+  deleteQuickBtn: {
+    width: 38,
+    height: 36,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Palette.redSoft,
+    borderWidth: 1,
+    borderColor: Palette.redBorder,
+  },
+  deleteQuickBtnDark: {
+    backgroundColor: 'rgba(217, 74, 74, 0.15)',
+    borderColor: 'rgba(217, 74, 74, 0.35)',
   },
 });

@@ -31,6 +31,7 @@ import { FontFamily, Palette } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import {
+  deletePet,
   getNextSuggestedPetId,
   registerPet,
   updatePetData,
@@ -554,6 +555,43 @@ export default function MascotasScreen() {
     setNfcMascota(pet);
   };
 
+  const handleDeletePetPress = useCallback(
+    (pet: Pet) => {
+      if (pet.nfcStatus === 'linked' || Boolean(pet.nfcTagId)) {
+        Alert.alert(
+          'No disponible',
+          'Esta mascota ya tiene un collar NFC/QR vinculado y no puede eliminarse.'
+        );
+        return;
+      }
+
+      Alert.alert(
+        'Eliminar mascota',
+        `¿Estás seguro de que querés eliminar a ${pet.nombre}? Esta acción no se puede deshacer.`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deletePet(pet.id);
+                await refresh();
+                Alert.alert('Mascota eliminada', `Se eliminó el registro de ${pet.nombre}.`);
+              } catch (err: any) {
+                Alert.alert(
+                  'Error al eliminar',
+                  err?.message || 'No se pudo eliminar la mascota en este momento.'
+                );
+              }
+            },
+          },
+        ]
+      );
+    },
+    [refresh]
+  );
+
   const capturarYGuardarFoto = useCallback(
     async (pet: Pet, origen: 'camera' | 'gallery') => {
       try {
@@ -679,6 +717,7 @@ export default function MascotasScreen() {
       onPress={handlePetPress}
       onQrPress={setQrMascota}
       onNfcPress={handleVincularNfcPress}
+      onDeletePress={handleDeletePetPress}
       onPhotoPress={handlePhotoPress}
       isUpdatingPhoto={updatingPetId === item.id}
       isDark={isDark}
@@ -704,34 +743,38 @@ export default function MascotasScreen() {
     <SafeAreaView style={[styles.safeArea, isDark && styles.safeAreaDark]} edges={['top']}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
-      {/* Header Superior */}
+      {/* Header Superior Responsivo */}
       <View style={[styles.header, isDark && styles.headerDark]}>
-        <View>
+        <View style={{ flex: 1, marginRight: 8 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={styles.headerBrandGreen}>Huell</Text>
             <Text style={[styles.headerBrandDark, isDark && styles.textDark]}>App</Text>
           </View>
-          <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
+          <Text
+            style={[styles.headerTitle, isDark && styles.headerTitleDark]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
             {isVeterinario ? 'Mascotas Clínicas' : 'Mis Mascotas'}
           </Text>
         </View>
         <View style={styles.headerActions}>
-          <ThemeToggleButton style={{ marginRight: 6 }} />
+          <ThemeToggleButton style={{ marginRight: 2 }} />
           <TouchableOpacity
             style={[styles.reloadButton, isDark && styles.reloadButtonDark]}
             onPress={refresh}
             activeOpacity={0.7}
             accessibilityLabel="Recargar mascotas"
           >
-            <Ionicons name="refresh-outline" size={20} color={isDark ? '#fafafa' : Palette.textPrimary} />
+            <Ionicons name="refresh-outline" size={19} color={isDark ? '#fafafa' : Palette.textPrimary} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerPrimaryButton}
             onPress={handleRegisterPress}
             activeOpacity={0.85}
           >
-            <Ionicons name={isVeterinario ? 'add-circle-outline' : 'qr-code-outline'} size={18} color="#ffffff" />
-            <Text style={styles.headerPrimaryButtonText}>
+            <Ionicons name={isVeterinario ? 'add-circle-outline' : 'qr-code-outline'} size={17} color="#ffffff" />
+            <Text style={styles.headerPrimaryButtonText} numberOfLines={1}>
               {isVeterinario ? 'Registrar' : 'Vincular'}
             </Text>
           </TouchableOpacity>
@@ -858,8 +901,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: Palette.surfaceLight,
     borderBottomWidth: 1,
     borderBottomColor: Palette.borderLight,
@@ -881,7 +924,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: FontFamily.headingBold,
     color: Palette.textPrimary,
   },
@@ -891,12 +934,13 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    flexShrink: 0,
+    gap: 6,
   },
   reloadButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 11,
     backgroundColor: Palette.surfaceSubtle,
     borderWidth: 1,
     borderColor: Palette.borderLight,
@@ -911,10 +955,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Palette.greenDeep,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 12,
-    gap: 5,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+    borderRadius: 11,
+    gap: 4,
     shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -924,7 +968,8 @@ const styles = StyleSheet.create({
   headerPrimaryButtonText: {
     color: '#ffffff',
     fontFamily: FontFamily.bodyBold,
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 13,
   },
   listContent: {
     padding: 16,

@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -561,5 +562,38 @@ export async function toggleEstadoExtravio(petId: string, extraviada: boolean): 
     fechaExtravio: extraviada ? new Date().toISOString() : null,
     updatedAt: new Date().toISOString(),
   });
+}
+
+/**
+ * 15. Elimina una mascota de Firestore únicamente si NO se encuentra vinculada a un collar NFC activo.
+ */
+export async function deletePet(petId: string): Promise<void> {
+  if (!petId || !petId.trim()) {
+    throw new Error('Identificador de mascota requerido para eliminar.');
+  }
+
+  const rawId = petId.trim();
+  let targetDocRef = doc(db, 'mascotas', rawId.toUpperCase());
+  let snap = await getDoc(targetDocRef);
+
+  if (!snap.exists()) {
+    const altRef = doc(db, 'mascotas', rawId);
+    const altSnap = await getDoc(altRef);
+    if (altSnap.exists()) {
+      targetDocRef = altRef;
+      snap = altSnap;
+    }
+  }
+
+  if (snap.exists()) {
+    const data = snap.data() as Pet;
+    if (data.nfcStatus === 'linked' || Boolean(data.nfcTagId)) {
+      throw new Error(
+        'No se puede eliminar una mascota que ya tiene un collar NFC/QR vinculado.'
+      );
+    }
+  }
+
+  await deleteDoc(targetDocRef);
 }
 

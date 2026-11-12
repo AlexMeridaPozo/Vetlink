@@ -25,7 +25,7 @@ import VincularNfcModal from '@/components/VincularNfcModal';
 import { Palette, Radius, Shadows, Typography } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
-import { getPetById, toggleEstadoExtravio, updatePetData, type HistorialClinicoItem, type Pet } from '@/services/petService';
+import { deletePet, getPetById, toggleEstadoExtravio, updatePetData, type HistorialClinicoItem, type Pet } from '@/services/petService';
 
 type ClinicalTabId = 'general' | 'historial' | 'seguridad' | 'nfc' | 'qr' | 'todos';
 
@@ -115,7 +115,7 @@ export default function MascotaDetalleScreen() {
   const displayDescripcion = pet?.descripcion || params.descripcion || '';
   const displayPropietario = pet?.propietario || '';
   const displayTelefono = pet?.telefonoContacto || '';
-  const isNfcLinked = pet?.nfcStatus === 'linked';
+  const isNfcLinked = pet?.nfcStatus === 'linked' || Boolean(pet?.nfcTagId);
 
   const isMale = displaySexo.toLowerCase().includes('macho');
   const isGato = displayEspecie.toLowerCase().includes('gato');
@@ -230,6 +230,37 @@ export default function MascotaDetalleScreen() {
     setPet(updatedPet);
   };
 
+  const handleEliminarMascota = () => {
+    if (isNfcLinked) {
+      Alert.alert(
+        'No se puede eliminar',
+        'Esta mascota ya tiene un collar NFC/QR vinculado y no puede ser eliminada.'
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Eliminar Mascota',
+      `¿Estás seguro de que querés eliminar a "${displayNombre}"? Esta acción no se puede deshacer.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deletePet(displayId);
+              Alert.alert('Mascota eliminada', `${displayNombre} fue eliminada correctamente.`);
+              router.replace('/(tabs)/mascotas');
+            } catch (err: any) {
+              Alert.alert('Error', err?.message || 'No se pudo eliminar la mascota.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'bottom']}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
@@ -245,7 +276,7 @@ export default function MascotaDetalleScreen() {
           <Ionicons name="arrow-back" size={20} color={isDark ? '#fafafa' : Palette.textPrimary} />
         </TouchableOpacity>
 
-        <Text style={[styles.navTitle, isDark && styles.textDark]}>
+        <Text style={[styles.navTitle, isDark && styles.textDark]} numberOfLines={1}>
           Ficha Clínica
         </Text>
 
@@ -257,7 +288,7 @@ export default function MascotaDetalleScreen() {
               activeOpacity={0.75}
               accessibilityLabel="Editar información de mascota"
             >
-              <Ionicons name="create-outline" size={17} color={Palette.greenDeep} />
+              <Ionicons name="create-outline" size={16} color={Palette.greenDeep} />
               <Text style={styles.editNavBtnText}>Editar</Text>
             </TouchableOpacity>
           )}
@@ -291,14 +322,16 @@ export default function MascotaDetalleScreen() {
           )}
         </View>
 
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, marginRight: 6 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={[styles.petCompactName, isDark && styles.textDark]}>{displayNombre}</Text>
+            <Text style={[styles.petCompactName, isDark && styles.textDark]} numberOfLines={1}>
+              {displayNombre}
+            </Text>
             <View style={[styles.codeBadge, isDark && styles.codeBadgeDark]}>
               <Text style={styles.codeBadgeText}>{displayId}</Text>
             </View>
           </View>
-          <Text style={[styles.petCompactSub, isDark && styles.textSecondaryDark]}>
+          <Text style={[styles.petCompactSub, isDark && styles.textSecondaryDark]} numberOfLines={1}>
             {displayEspecie} • {displayRaza}
           </Text>
         </View>
@@ -419,9 +452,13 @@ export default function MascotaDetalleScreen() {
             {/* Datos Principales */}
             <View style={[styles.infoCard, isDark && styles.cardDark]}>
               <View style={styles.nameHeader}>
-                <View>
-                  <Text style={[styles.petName, isDark && styles.textDark]}>{displayNombre}</Text>
-                  <Text style={[styles.petBreed, isDark && styles.textSecondaryDark]}>{displayRaza}</Text>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <Text style={[styles.petName, isDark && styles.textDark]} numberOfLines={1}>
+                    {displayNombre}
+                  </Text>
+                  <Text style={[styles.petBreed, isDark && styles.textSecondaryDark]} numberOfLines={1}>
+                    {displayRaza}
+                  </Text>
                 </View>
                 <View
                   style={[
@@ -515,6 +552,18 @@ export default function MascotaDetalleScreen() {
                 >
                   <Ionicons name="create-outline" size={18} color={Palette.greenDeep} style={{ marginRight: 6 }} />
                   <Text style={styles.btnEditMainText}>Editar Información de Mascota</Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Botón Eliminar Mascota (solo si NO está vinculada a collar NFC) */}
+              {canEdit && !isNfcLinked && (
+                <TouchableOpacity
+                  style={[styles.btnDeleteMain, isDark && styles.btnDeleteMainDark]}
+                  onPress={handleEliminarMascota}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="trash-outline" size={18} color={Palette.redEmergency} style={{ marginRight: 6 }} />
+                  <Text style={styles.btnDeleteMainText}>Eliminar Mascota</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -905,7 +954,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#27272a',
   },
   navTitle: {
-    fontSize: Typography.size.bodyLarge,
+    flex: 1,
+    marginHorizontal: 8,
+    fontSize: 16,
     fontFamily: Typography.family.heading,
     fontWeight: '700',
     color: Palette.textPrimary,
@@ -914,14 +965,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flexShrink: 0,
   },
   backButton: {
-    width: 38,
-    height: 38,
+    width: 36,
+    height: 36,
     borderRadius: Radius.md,
     backgroundColor: Palette.greenSoft,
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
   },
   buttonDark: {
     backgroundColor: '#27272a',
@@ -984,6 +1037,7 @@ const styles = StyleSheet.create({
     fontFamily: Typography.family.heading,
     fontWeight: '700',
     color: Palette.textPrimary,
+    flexShrink: 1,
   },
   petCompactSub: {
     fontSize: Typography.size.tiny,
@@ -1012,6 +1066,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: Radius.full,
+    flexShrink: 0,
   },
   pillHome: {
     backgroundColor: Palette.greenDeep,
@@ -1248,6 +1303,27 @@ const styles = StyleSheet.create({
     color: Palette.greenDeep,
     fontSize: Typography.size.bodySmall,
     fontFamily: Typography.family.bodyBold,
+  },
+  btnDeleteMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: Radius.md,
+    paddingVertical: 11,
+    marginTop: 10,
+  },
+  btnDeleteMainDark: {
+    backgroundColor: 'rgba(220, 38, 38, 0.14)',
+    borderColor: 'rgba(220, 38, 38, 0.4)',
+  },
+  btnDeleteMainText: {
+    color: Palette.redEmergency,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.bodyBold,
+    fontWeight: '700',
   },
   countBadge: {
     backgroundColor: Palette.greenSoft,

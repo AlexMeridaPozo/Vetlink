@@ -287,11 +287,11 @@ function TurnosUsuarioView() {
                           color={isGato ? '#0284c7' : Palette.greenDeep}
                         />
                       </View>
-                      <View>
-                        <Text style={[styles.petName, isDark && styles.textDark]}>
+                      <View style={{ flex: 1, marginRight: 8 }}>
+                        <Text style={[styles.petName, isDark && styles.textDark]} numberOfLines={1}>
                           {turno.mascotaNombre}
                         </Text>
-                        <Text style={[styles.petSubtext, isDark && styles.subtituloDark]}>
+                        <Text style={[styles.petSubtext, isDark && styles.subtituloDark]} numberOfLines={1}>
                           {turno.motivo}
                         </Text>
                       </View>
@@ -679,11 +679,11 @@ function TurnosProfesionalView() {
                           color={isGato ? '#0284c7' : Palette.greenDeep}
                         />
                       </View>
-                      <View>
-                        <Text style={[styles.petName, isDark && styles.textDark]}>
+                      <View style={{ flex: 1, marginRight: 8 }}>
+                        <Text style={[styles.petName, isDark && styles.textDark]} numberOfLines={1}>
                           {turno.mascotaNombre}
                         </Text>
-                        <Text style={[styles.petSubtext, isDark && styles.subtituloDark]}>
+                        <Text style={[styles.petSubtext, isDark && styles.subtituloDark]} numberOfLines={1}>
                           Tutor: {turno.tutorNombre}
                         </Text>
                       </View>
@@ -900,7 +900,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#27272a',
   },
   navTitle: {
-    fontSize: Typography.size.bodyLarge,
+    flex: 1,
+    marginHorizontal: 8,
+    textAlign: 'center',
+    fontSize: 16,
     fontFamily: Typography.family.heading,
     fontWeight: '700',
     color: Palette.textPrimary,
@@ -961,13 +964,17 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+    gap: 6,
     marginBottom: 16,
   },
   filterPill: {
+    flex: 1,
+    minWidth: 96,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: Radius.full,
     backgroundColor: Palette.cardLight,

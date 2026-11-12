@@ -595,11 +595,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   recipientText: {
+    flex: 1,
     fontSize: Typography.size.caption,
     fontFamily: Typography.family.body,
     color: Palette.textSecondary,
   },
   badgeTime: {
+    flexShrink: 0,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: Radius.full,

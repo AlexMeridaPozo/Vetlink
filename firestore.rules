@@ -14,8 +14,11 @@ service cloud.firestore {
     function isVeterinario() {
       return isAuthenticated() && (
         request.auth.token.role == 'veterinario' ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rol == 'veterinario')
+        request.auth.token.rol == 'veterinario' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rol == 'veterinario' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'veterinario'
+        ))
       );
     }
 

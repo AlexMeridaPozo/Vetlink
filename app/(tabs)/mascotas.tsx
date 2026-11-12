@@ -215,9 +215,9 @@ function RegistrarMascotaModal({
           edad: edad.trim() || 'No especificada',
           fechaNacimiento: edad.trim() || 'No especificada',
           propietario: propietario.trim(),
-          telefonoContacto: telefono.trim() || undefined,
-          descripcion: descripcion.trim() || undefined,
-          fotoUrl: finalFoto || undefined,
+          telefonoContacto: telefono.trim() || '',
+          descripcion: descripcion.trim() || '',
+          fotoUrl: finalFoto || '',
           userId: '',
           ownerId: '',
         },
@@ -575,7 +575,7 @@ export default function MascotasScreen() {
     if (!isVeterinario) {
       Alert.alert(
         'Acceso Denegado (Seguridad)',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o reasignar etiquetas NFC en HuellaApp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o reasignar etiquetas NFC en HuellApp.'
       );
       return;
     }

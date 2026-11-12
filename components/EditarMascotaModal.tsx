@@ -220,9 +220,9 @@ export function EditarMascotaModal({
         edad: edad.trim() || 'No especificada',
         fechaNacimiento: edad.trim() || 'No especificada',
         propietario: propietario.trim(),
-        telefonoContacto: telefono.trim() || undefined,
-        descripcion: descripcion.trim() || undefined,
-        fotoUrl: finalFoto || undefined,
+        telefonoContacto: telefono.trim() || '',
+        descripcion: descripcion.trim() || '',
+        fotoUrl: finalFoto || '',
       };
 
       // Guardar cambios directamente en el documento existente de Firestore

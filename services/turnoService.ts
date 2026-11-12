@@ -345,7 +345,10 @@ export async function solicitarTurno(input: SolicitarTurnoInput): Promise<Turno>
   if (auth.currentUser) {
     try {
       const docRef = doc(db, 'turnos', nuevoId);
-      await setDoc(docRef, nuevoTurno);
+      const cleanTurno = Object.fromEntries(
+        Object.entries(nuevoTurno).filter(([, v]) => v !== undefined)
+      );
+      await setDoc(docRef, cleanTurno);
     } catch {
       // Sincronización silenciosa con fallback
     }

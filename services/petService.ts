@@ -202,8 +202,13 @@ export async function registerPet(
       ],
     };
 
-    await setDoc(existingRef, newPet);
-    return newPet;
+    // Limpiar propiedades undefined para evitar errores de Firebase Firestore en setDoc
+    const cleanPayload = Object.fromEntries(
+      Object.entries(newPet).filter(([, v]) => v !== undefined)
+    ) as unknown as Pet;
+
+    await setDoc(existingRef, cleanPayload);
+    return cleanPayload;
   } catch (error) {
     console.error('Error al registrar mascota en Firestore:', error);
     throw error;
@@ -333,10 +338,15 @@ export async function updatePetData(petId: string, updates: Partial<Pet>): Promi
       console.warn('[updatePetData] Aviso al resolver referencia de mascota:', lookupErr);
     }
 
-    await updateDoc(targetDocRef, {
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    });
+    // Limpiar propiedades undefined para evitar errores de Firebase Firestore en updateDoc
+    const cleanUpdates = Object.fromEntries(
+      Object.entries({
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      }).filter(([, v]) => v !== undefined)
+    );
+
+    await updateDoc(targetDocRef, cleanUpdates);
   } catch (error) {
     console.error('Error al actualizar datos de la mascota en Firestore:', error);
     throw error;

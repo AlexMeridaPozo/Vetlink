@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Linking,
   Platform,
@@ -11,6 +12,7 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -23,7 +25,7 @@ import VincularNfcModal from '@/components/VincularNfcModal';
 import { Palette, Radius, Shadows, Typography } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
-import { getPetById, toggleEstadoExtravio, type Pet } from '@/services/petService';
+import { getPetById, toggleEstadoExtravio, updatePetData, type HistorialClinicoItem, type Pet } from '@/services/petService';
 
 type ClinicalTabId = 'general' | 'historial' | 'seguridad' | 'nfc' | 'qr' | 'todos';
 
@@ -64,6 +66,10 @@ export default function MascotaDetalleScreen() {
   const [nfcModalVisible, setNfcModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<ClinicalTabId>('general');
+  const [showAddHistoryForm, setShowAddHistoryForm] = useState(false);
+  const [nuevoHistTitulo, setNuevoHistTitulo] = useState('');
+  const [nuevoHistDetalle, setNuevoHistDetalle] = useState('');
+  const [savingHistory, setSavingHistory] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -171,11 +177,53 @@ export default function MascotaDetalleScreen() {
     if (!isVeterinario) {
       Alert.alert(
         'Acceso Restringido',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en HuellaApp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en HuellApp.'
       );
       return;
     }
     setNfcModalVisible(true);
+  };
+
+  const handleAgregarRegistroClinico = async () => {
+    if (!isVeterinario || !user) return;
+    if (!nuevoHistTitulo.trim()) {
+      Alert.alert('Campo obligatorio', 'Ingresa el título del registro clínico (ej: Vacuna Antirrábica, Control General).');
+      return;
+    }
+    setSavingHistory(true);
+    try {
+      const nuevoItem: HistorialClinicoItem = {
+        id: `hist-${Date.now()}`,
+        titulo: nuevoHistTitulo.trim(),
+        detalle: nuevoHistDetalle.trim() || 'Control clínico realizado en consultorio.',
+        fecha: new Date().toLocaleDateString('es-AR'),
+        veterinario: user.displayName || user.email || user.uid,
+        completado: true,
+      };
+      const historialActualizado = [nuevoItem, ...(pet?.historialClinico || [])];
+      await updatePetData(displayId, { historialClinico: historialActualizado });
+      setPet((prev) =>
+        prev
+          ? { ...prev, historialClinico: historialActualizado }
+          : ({
+              id: displayId,
+              nombre: displayNombre,
+              especie: displayEspecie,
+              raza: displayRaza,
+              sexo: displaySexo,
+              peso: displayPeso,
+              historialClinico: historialActualizado,
+            } as Pet)
+      );
+      setNuevoHistTitulo('');
+      setNuevoHistDetalle('');
+      setShowAddHistoryForm(false);
+      Alert.alert('¡Registro guardado!', 'La entrada fue añadida al historial clínico de la mascota.');
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'No se pudo guardar el registro clínico.');
+    } finally {
+      setSavingHistory(false);
+    }
   };
 
   const handlePetUpdated = (updatedPet: Pet) => {
@@ -483,12 +531,106 @@ export default function MascotaDetalleScreen() {
                   Historial Clínico
                 </Text>
               </View>
-              {pet?.historialClinico && pet.historialClinico.length > 0 && (
-                <View style={[styles.countBadge, isDark && styles.countBadgeDark]}>
-                  <Text style={styles.countBadgeText}>{pet.historialClinico.length} registros</Text>
-                </View>
-              )}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                {pet?.historialClinico && pet.historialClinico.length > 0 && (
+                  <View style={[styles.countBadge, isDark && styles.countBadgeDark]}>
+                    <Text style={styles.countBadgeText}>{pet.historialClinico.length} registros</Text>
+                  </View>
+                )}
+                {isVeterinario && (
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: Palette.greenDeep,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      borderRadius: 10,
+                      gap: 4,
+                    }}
+                    onPress={() => setShowAddHistoryForm((v) => !v)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name={showAddHistoryForm ? 'close' : 'add'} size={15} color="#ffffff" />
+                    <Text style={{ color: '#ffffff', fontSize: 12, fontWeight: '700' }}>
+                      {showAddHistoryForm ? 'Cancelar' : 'Agregar'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
+
+            {isVeterinario && showAddHistoryForm && (
+              <View
+                style={{
+                  backgroundColor: isDark ? '#18181b' : '#f1f7f3',
+                  borderRadius: 14,
+                  padding: 12,
+                  marginBottom: 14,
+                  borderWidth: 1,
+                  borderColor: isDark ? '#27272a' : Palette.greenBorder,
+                  gap: 8,
+                }}
+              >
+                <Text style={{ fontSize: 13, fontWeight: '700', color: isDark ? '#f4f4f5' : Palette.textPrimary }}>
+                  Nuevo Registro Clínico
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: isDark ? '#09090b' : '#ffffff',
+                    borderWidth: 1,
+                    borderColor: isDark ? '#27272a' : Palette.borderLight,
+                    borderRadius: 10,
+                    paddingHorizontal: 12,
+                    paddingVertical: 9,
+                    fontSize: 14,
+                    color: isDark ? '#f4f4f5' : Palette.textPrimary,
+                  }}
+                  placeholder="Título (ej: Vacuna Séxtuple, Control Anual)"
+                  placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
+                  value={nuevoHistTitulo}
+                  onChangeText={setNuevoHistTitulo}
+                />
+                <TextInput
+                  style={{
+                    backgroundColor: isDark ? '#09090b' : '#ffffff',
+                    borderWidth: 1,
+                    borderColor: isDark ? '#27272a' : Palette.borderLight,
+                    borderRadius: 10,
+                    paddingHorizontal: 12,
+                    paddingVertical: 9,
+                    fontSize: 14,
+                    color: isDark ? '#f4f4f5' : Palette.textPrimary,
+                    minHeight: 60,
+                    textAlignVertical: 'top',
+                  }}
+                  placeholder="Observaciones, dosis o diagnóstico..."
+                  placeholderTextColor={isDark ? '#71717a' : Palette.textPlaceholder}
+                  value={nuevoHistDetalle}
+                  onChangeText={setNuevoHistDetalle}
+                  multiline
+                />
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: Palette.greenDeep,
+                    borderRadius: 10,
+                    paddingVertical: 10,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onPress={handleAgregarRegistroClinico}
+                  disabled={savingHistory}
+                >
+                  {savingHistory ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 13 }}>
+                      Guardar en Historial Clínico
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
 
             {pet?.historialClinico && pet.historialClinico.length > 0 ? (
               pet.historialClinico.map((item, idx) => (

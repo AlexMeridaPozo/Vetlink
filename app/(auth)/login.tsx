@@ -235,6 +235,25 @@ export default function LoginScreen() {
                 <Text style={styles.footerLink}>Regístrate aquí</Text>
               </TouchableOpacity>
             </View>
+
+            {/* Acceso a Presentación / Onboarding */}
+            <View style={styles.introContainer}>
+              <TouchableOpacity
+                onPress={() => router.push('/onboarding')}
+                style={styles.introButton}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name="sparkles-outline"
+                  size={15}
+                  color={isDark ? Palette.greenPrimary : Palette.greenDeep}
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={[styles.introLink, isDark && styles.introLinkDark]}>
+                  Ver presentación de HuellApp
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -452,5 +471,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: FontFamily.bodyBold,
     color: Palette.greenDeep,
+  },
+  introContainer: {
+    alignItems: 'center',
+    marginTop: 18,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: Palette.borderLight,
+  },
+  introButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  introLink: {
+    fontSize: 13,
+    fontFamily: FontFamily.bodySemiBold,
+    color: Palette.greenDeep,
+  },
+  introLinkDark: {
+    color: Palette.greenPrimary,
   },
 });

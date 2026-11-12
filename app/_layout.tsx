@@ -87,6 +87,7 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <Stack initialRouteName="(auth)">
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="mascotas/[id]" options={{ headerShown: false }} />

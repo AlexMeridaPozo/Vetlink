@@ -1,32 +1,25 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
- * Clave de persistencia para el estado de Onboarding en AsyncStorage.
+ * Clave oficial de persistencia para el estado de Onboarding de HuellApp en AsyncStorage.
  */
-export const ONBOARDING_COMPLETED_KEY = '@huellapp_has_completed_onboarding_v2';
-const LEGACY_KEYS = [
+export const ONBOARDING_COMPLETED_KEY = '@huellapp_onboarding_completed_v1';
+
+const ALL_KNOWN_KEYS = [
+  '@huellapp_onboarding_completed_v1',
+  '@huellapp_has_completed_onboarding_v2',
   '@huellapp_has_completed_onboarding',
   '@vetlink_has_completed_onboarding',
 ];
 
 /**
- * Consulta si el usuario ya completó u omitió el Onboarding.
+ * Consulta si el usuario ya completó u omitió el Onboarding oficial de HuellApp.
  * @returns true si ya lo completó o saltó previamente, false si es la primera apertura.
  */
 export async function checkHasCompletedOnboarding(): Promise<boolean> {
   try {
     const value = await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY);
-    if (value === 'true') return true;
-
-    for (const legacyKey of LEGACY_KEYS) {
-      const legacyValue = await AsyncStorage.getItem(legacyKey);
-      if (legacyValue === 'true') {
-        await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
-        return true;
-      }
-    }
-
-    return false;
+    return value === 'true';
   } catch (error) {
     console.error('[onboardingService] Error al leer estado de onboarding:', error);
     return false;
@@ -45,13 +38,13 @@ export async function saveOnboardingCompleted(): Promise<void> {
 }
 
 /**
- * Restablece el estado de Onboarding (útil para pruebas o depuración de desarrollo).
+ * Restablece el estado de Onboarding en todos los identificadores conocidos.
+ * Útil para pruebas, depuración y reabrir el flujo de presentación.
  */
 export async function resetOnboardingStatus(): Promise<void> {
   try {
-    await AsyncStorage.removeItem(ONBOARDING_COMPLETED_KEY);
-    for (const legacyKey of LEGACY_KEYS) {
-      await AsyncStorage.removeItem(legacyKey);
+    for (const key of ALL_KNOWN_KEYS) {
+      await AsyncStorage.removeItem(key);
     }
   } catch (error) {
     console.error('[onboardingService] Error al restablecer estado de onboarding:', error);

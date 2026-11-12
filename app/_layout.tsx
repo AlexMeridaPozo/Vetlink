@@ -1,7 +1,7 @@
 import { Stack, DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'react-native-get-random-values';
 import 'react-native-reanimated';
 import 'react-native-url-polyfill/auto';
@@ -17,9 +17,11 @@ import {
   NunitoSans_700Bold,
 } from '@expo-google-fonts/nunito-sans';
 
+import { OnboardingScreen } from '@/components/OnboardingScreen';
 import { AnimatedSplashScreen } from '@/components/SplashScreen';
 import { AuthProvider } from '@/context/AuthContext';
 import { AppThemeProvider, useAppTheme } from '@/context/ThemeContext';
+import { checkHasCompletedOnboarding } from '@/services/onboardingService';
 
 // Evita que el splash nativo desaparezca antes de que React Native esté listo
 SplashScreen.preventAutoHideAsync().catch(() => { });
@@ -31,6 +33,8 @@ export const unstable_settings = {
 function RootLayoutNav() {
   const { isDark, colors } = useAppTheme();
   const [showSplash, setShowSplash] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const splashHandled = useRef(false);
 
   const [fontsLoaded] = useFonts({
     Quicksand_600SemiBold,
@@ -41,10 +45,29 @@ function RootLayoutNav() {
   });
 
   useEffect(() => {
+    (async () => {
+      const completed = await checkHasCompletedOnboarding();
+      if (!completed) {
+        setShowOnboarding(true);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync().catch(() => { });
     }
   }, [fontsLoaded]);
+
+  const handleSplashFinish = () => {
+    if (splashHandled.current) return;
+    splashHandled.current = true;
+    setShowSplash(false);
+  };
+
+  const handleOnboardingFinish = () => {
+    setShowOnboarding(false);
+  };
 
   return (
     <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
@@ -111,7 +134,10 @@ function RootLayoutNav() {
       </Stack>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       {showSplash && (
-        <AnimatedSplashScreen onFinish={() => setShowSplash(false)} />
+        <AnimatedSplashScreen onFinish={handleSplashFinish} />
+      )}
+      {!showSplash && showOnboarding && (
+        <OnboardingScreen onFinish={handleOnboardingFinish} />
       )}
     </ThemeProvider>
   );

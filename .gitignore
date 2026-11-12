@@ -30,6 +30,14 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE
+.idea/
+
 # local env files
 .env
 .env*.local
@@ -54,7 +62,56 @@ jest.config.*
 jest.setup.*
 .postman/
 postman/
+*.postman_collection.json
+*.postman_environment.json
+VetLink.postman_collection.json
+*.xlsx
+*.xls
+*.csv
 
-# Reports & documentation drafts
+# Video projects & media files (not related to mobile app functionality)
+Video/
+friendly-video/
+promotional-video/
+.hyperframes/
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
+*.flv
+*.wmv
+
+# AI agents, skills and prompts (local / external tooling)
+.agents/
+.agent/
+.claude/
+AGENTS.md
+DOCUMENTACION_USO_DE_IA_PROMPTS.md
+
+# Cloudflare Worker cache & local state
+cloudflare-worker/.wrangler/
+**/.wrangler/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Reports, documentation drafts & external scripts
 REBRANDING_REPORT.md
 *.docx
+scripts/build_ai_report_docx.py
+scripts/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Temporary / scratch files
+scratch/
+temp/
+tmp/
+*.log

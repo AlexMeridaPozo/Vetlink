@@ -1,17 +1,19 @@
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { usePets } from '@/services/petService';
+import { Palette, FontFamily } from '@/constants/theme';
+import { FriendlyPetBanner } from '@/components/FriendlyPetBanner';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SosIcon } from '@/components/SosIcon';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user, isVeterinario } = useAuth();
-  const { isDark } = useAppTheme();
+  const { isDark, colors } = useAppTheme();
   const { petCount, refresh: refreshPets } = usePets();
 
   const nombreUsuario = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
@@ -34,13 +36,13 @@ export default function HomeScreen() {
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
               <View style={[styles.vetBadge, isDark && styles.vetBadgeDark]}>
-                <Ionicons name="shield-checkmark" size={13} color={isDark ? '#4ade80' : '#15803d'} />
+                <Ionicons name="shield-checkmark" size={14} color={isDark ? '#4ade80' : Palette.greenDeep} />
                 <Text style={[styles.vetBadgeText, isDark && styles.vetBadgeTextDark]}>
-                  Perfil Veterinario
+                  Perfil Profesional Veterinario
                 </Text>
               </View>
               <Text style={[styles.saludo, isDark && styles.textDark]}>
-                ¡Hola, {nombreUsuario}! 🩺
+                ¡Hola, Dr. {nombreUsuario}! 🩺
               </Text>
               <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>
                 Panel de atención y gestión clínica
@@ -49,125 +51,212 @@ export default function HomeScreen() {
             <ThemeToggleButton />
           </View>
 
-          {/* ACCESO PRINCIPAL Y DESTACADO: Escanear Mascota */}
+          {/* TARJETA DESTACADA CLÍNICA: Gestión de Pacientes */}
           <Pressable
             style={({ pressed }) => [
-              styles.heroCardVet,
-              isDark && styles.heroCardVetDark,
-              pressed && styles.botonPresionado,
-            ]}
-            onPress={() => router.push('/(tabs)/scan')}
-            accessibilityRole="button"
-            accessibilityLabel="Escanear mascota mediante QR o NFC"
-          >
-            <View style={styles.heroVetTop}>
-              <View style={[styles.heroIconCircle, isDark && styles.heroIconCircleDark]}>
-                <Ionicons name="qr-code" size={32} color="#04b639" />
-              </View>
-              <View style={[styles.heroActionBadge, isDark && styles.heroActionBadgeDark]}>
-                <Text style={[styles.heroActionBadgeText, isDark && styles.heroActionBadgeTextDark]}>
-                  Acción principal
-                </Text>
-              </View>
-            </View>
-
-            <Text style={[styles.heroVetTitle, isDark && styles.heroVetTitleDark]}>
-              Escanear Mascota
-            </Text>
-            <Text style={[styles.heroVetSubtitle, isDark && styles.heroVetSubtitleDark]}>
-              Identificación inmediata por código QR o etiqueta NFC para consultar la ficha clínica del paciente.
-            </Text>
-
-            <View style={[styles.heroVetFooter, isDark && styles.heroVetFooterDark]}>
-              <View style={styles.heroCtaButton}>
-                <Ionicons name="camera-outline" size={18} color="#ffffff" />
-                <Text style={styles.heroCtaText}>Abrir Escáner</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={isDark ? '#4ade80' : '#04b639'} />
-            </View>
-          </Pressable>
-
-          {/* ACCESO SECUNDARIO: Buscar Mascota */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.searchCardVet,
-              isDark && styles.searchCardVetDark,
+              styles.cardMascotas,
+              isDark && styles.cardMascotasDark,
               pressed && styles.botonPresionado,
             ]}
             onPress={() => router.push('/(tabs)/mascotas')}
             accessibilityRole="button"
-            accessibilityLabel="Buscar mascota por nombre o identificador"
+            accessibilityLabel="Ver pacientes y fichas clínicas"
           >
-            <View style={[styles.searchIconWrapper, isDark && styles.searchIconWrapperDark]}>
-              <Ionicons name="search" size={22} color="#04b639" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.searchCardTitle, isDark && styles.textDark]}>
-                Buscar Mascota
+            <Image
+              source={require('../../assets/images/3d/hero_pets_art.png')}
+              style={styles.heroPetsImage}
+              resizeMode="contain"
+            />
+
+            <View style={styles.cardMascotasContent}>
+              <View style={[styles.cardIconWrapper, isDark && styles.cardIconWrapperDark]}>
+                <Ionicons name="medkit" size={22} color={isDark ? '#4ade80' : Palette.greenDeep} />
+              </View>
+
+              <Text style={[styles.cardTitulo, isDark && styles.cardTituloDark]}>Pacientes Clínicos</Text>
+              <Text style={[styles.cardDetalle, isDark && styles.cardDetalleDark]}>
+                {petCount === 1 ? '1 paciente registrado' : `${petCount} pacientes en sistema`}
               </Text>
-              <Text style={[styles.searchCardSubtitle, isDark && styles.subtituloDark]}>
-                Localizar paciente por nombre o ID clínico
-              </Text>
+
+              <View style={[styles.cardFooter, isDark && styles.cardFooterDark]}>
+                <Text style={[styles.cardLink, isDark && styles.cardLinkDark]}>Ver historias clínicas</Text>
+                <Ionicons name="chevron-forward-outline" size={16} color={isDark ? '#4ade80' : Palette.greenDeep} />
+              </View>
             </View>
-            <Ionicons name="arrow-forward" size={18} color={isDark ? '#4ade80' : '#04b639'} />
           </Pressable>
 
-          {/* Sección de Gestión y Servicios Profesionales */}
+          {/* ACCESO RÁPIDO CLÍNICO: Escanear Paciente (QR / NFC) */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.scanActionCard,
+              isDark && styles.scanActionCardDark,
+              pressed && styles.botonPresionado,
+            ]}
+            onPress={() => router.push('/(tabs)/scan')}
+            accessibilityRole="button"
+            accessibilityLabel="Escanear paciente mediante QR o NFC"
+          >
+            <View style={[styles.scanActionIconWrapper, isDark && styles.scanActionIconWrapperDark]}>
+              <Ionicons name="qr-code" size={20} color={isDark ? '#4ade80' : Palette.greenDeep} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={[styles.scanActionTitle, isDark && styles.textDark]}>
+                  Escanear Paciente
+                </Text>
+                <View style={[styles.scanActionBadge, isDark && styles.scanActionBadgeDark]}>
+                  <Text style={[styles.scanActionBadgeText, isDark && styles.scanActionBadgeTextDark]}>
+                    QR / NFC
+                  </Text>
+                </View>
+              </View>
+              <Text style={[styles.scanActionSubtitle, isDark && styles.subtituloDark]}>
+                Identificación inmediata para consultar o actualizar su historia clínica.
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={18} color={isDark ? '#4ade80' : Palette.greenDeep} />
+          </Pressable>
+
+          {/* Título de sección de servicios clínicos */}
           <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>
-            Accesos y Servicios
+            Gestión y Servicios Clínicos
           </Text>
 
+          {/* Grilla moderna con ilustraciones 3D (paridad total con diseño de usuario, sin cupones) */}
           <View style={styles.grid}>
             <BotonMenu
-              titulo="Atención SOS"
-              subtitulo="Guardias de turno"
-              icono="alert-circle-outline"
-              onPress={() => router.push('/(tabs)/sos')}
-              isDark={isDark}
-              isAlert={true}
-            />
-            <BotonMenu
-              titulo="Turnos"
-              subtitulo="Agenda de citas"
+              titulo="Turnos Clínicos"
+              subtitulo="Agenda y citas"
               icono="calendar-outline"
+              colorFondoIcono={isDark ? '#12384D' : '#D6EDFA'}
+              colorIcono={isDark ? '#38BDF8' : '#0284C7'}
               onPress={() => router.push('/turnos')}
               isDark={isDark}
+              artSource={require('../../assets/images/3d/calendar_art.png')}
+              cardBgLight="#EBF5FB"
+              cardBorderLight="#BEE3F8"
+              cardBgDark="#072d47"
+              cardBorderDark="#0e5e94"
             />
             <BotonMenu
-              titulo="Mi Perfil"
-              subtitulo="Datos profesionales"
-              icono="person-outline"
-              onPress={() => router.push('/(tabs)/perfil')}
+              titulo="Recordatorios"
+              subtitulo="Avisos y vacunas"
+              icono="notifications-outline"
+              colorFondoIcono={isDark ? '#42240C' : '#FCE9D8'}
+              colorIcono={isDark ? '#FB923C' : '#D97706'}
+              onPress={() => router.push('/recordatorios')}
               isDark={isDark}
+              artSource={require('../../assets/images/3d/clock_art.png')}
+              cardBgLight="#FEF6EE"
+              cardBorderLight="#FADEC9"
+              cardBgDark="#331908"
+              cardBorderDark="#733b16"
             />
             <BotonMenu
               titulo="Mi Veterinaria"
               subtitulo="Clínica asociada"
               icono="medkit-outline"
+              colorFondoIcono={isDark ? '#143825' : '#D1F2DE'}
+              colorIcono={isDark ? '#4ade80' : '#087A43'}
               onPress={() => router.push('/veterinarias')}
               isDark={isDark}
-            />
-            <BotonMenu
-              titulo="Recordatorios"
-              subtitulo="Avisos sanitarios"
-              icono="notifications-outline"
-              onPress={() => router.push('/recordatorios')}
-              isDark={isDark}
+              artSource={require('../../assets/images/3d/clinic_art.png')}
+              cardBgLight="#EAF8F0"
+              cardBorderLight="#BCEAD0"
+              cardBgDark="#042c16"
+              cardBorderDark="#0c6332"
             />
             <BotonMenu
               titulo="Mapa Pilar"
-              subtitulo="Clínicas y guardias"
-              icono="map-outline"
+              subtitulo="Red y guardias"
+              icono="compass-outline"
+              colorFondoIcono={isDark ? '#12384D' : '#D6EFF8'}
+              colorIcono={isDark ? '#38BDF8' : '#0891B2'}
               onPress={() => router.push('/(tabs)/mapa')}
               isDark={isDark}
+              artSource={require('../../assets/images/3d/map_art.png')}
+              cardBgLight="#EBF6FA"
+              cardBorderLight="#BEE5F2"
+              cardBgDark="#082c42"
+              cardBorderDark="#115c8c"
+            />
+            <BotonMenu
+              titulo="Buscar Mascota"
+              subtitulo="Localizar paciente"
+              icono="search-outline"
+              colorFondoIcono={isDark ? '#143825' : '#D1F2DE'}
+              colorIcono={isDark ? '#4ade80' : '#087A43'}
+              onPress={() => router.push('/(tabs)/mascotas')}
+              isDark={isDark}
+              artSource={require('../../assets/images/3d/qr_tag_art.png')}
+              cardBgLight="#EAF8F0"
+              cardBorderLight="#BCEAD0"
+              cardBgDark="#042313"
+              cardBorderDark="#0d522c"
+            />
+            <BotonMenu
+              titulo="Mi Perfil"
+              subtitulo="Matrícula y datos"
+              icono="person-outline"
+              colorFondoIcono={isDark ? '#133D2F' : '#D3EFE4'}
+              colorIcono={isDark ? '#34D399' : '#059669'}
+              onPress={() => router.push('/(tabs)/perfil')}
+              isDark={isDark}
+              artSource={require('../../assets/images/3d/clipboard_art.png')}
+              cardBgLight="#EBF7F2"
+              cardBorderLight="#BEE6D7"
+              cardBgDark="#042d1b"
+              cardBorderDark="#0e623b"
             />
           </View>
+
+          {/* ACCESO SECUNDARIO SOS: Diseño con iluminación y badge */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.sosSecondaryCard,
+              isDark && styles.sosSecondaryCardDark,
+              pressed && styles.botonPresionado,
+            ]}
+            onPress={() => router.push('/(tabs)/sos')}
+            accessibilityRole="button"
+            accessibilityLabel="Acceso a centro de emergencias SOS y guardias 24 horas"
+          >
+            <View style={[styles.sosSecondaryIconWrapper, isDark && styles.sosSecondaryIconWrapperDark]}>
+              <Image
+                source={require('../../assets/images/3d/sos_siren_art.png')}
+                resizeMode="contain"
+                style={{ width: 28, height: 28 }}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={[styles.sosSecondaryTitle, isDark && styles.textDark]}>
+                  Guardias 24hs y Atención de Urgencias
+                </Text>
+                <View style={styles.sosSecondaryBadge}>
+                  <Text style={styles.sosSecondaryBadgeText}>SOS</Text>
+                </View>
+              </View>
+              <Text style={[styles.sosSecondarySubtitle, isDark && styles.subtituloDark]}>
+                Hospital San Roque y centros veterinarios activos en Pilar.
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={18} color={Palette.redEmergency} />
+          </Pressable>
+
+          {/* Mensaje cálido de cuidado profesional */}
+          <FriendlyPetBanner
+            title="Compromiso con la salud y bienestar animal."
+            subtitle="Atención médica y excelencia clínica para cada paciente y su familia."
+            variant="care"
+            style={{ marginTop: 6, marginBottom: 20 }}
+          />
         </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // ── 2. Vista de Inicio para Propietarios / Tutores (Sin Tienda) ─────────────
+  // ── 2. Vista de Inicio para Propietarios / Tutores ─────────────────────────
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'left', 'right']}>
       <ScrollView
@@ -178,48 +267,10 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.saludo, isDark && styles.textDark]}>¡Hola, {nombreUsuario}! 👋</Text>
-            <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>¿Qué necesitas hoy?</Text>
+            <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>¿Qué necesita tu mascota hoy?</Text>
           </View>
           <ThemeToggleButton />
         </View>
-
-        {/* BOTÓN GRANDE CUADRADO PROTAGONISTA DE EMERGENCIA SOS */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.sosHeroCard,
-            isDark && styles.sosHeroCardDark,
-            pressed && styles.botonPresionado,
-          ]}
-          onPress={() => router.push('/(tabs)/sos')}
-          accessibilityRole="button"
-          accessibilityLabel="Atención urgente SOS y guardia 24 horas"
-        >
-          <View style={styles.sosHeroHeader}>
-            <View style={styles.sosHeroIconCircle}>
-              <SosIcon size={26} focused variant="custom" />
-            </View>
-            <View style={styles.sosLiveBadge}>
-              <View style={styles.sosPulseDot} />
-              <Text style={styles.sosLiveBadgeText}>GUARDIA 24HS ACTIVA</Text>
-            </View>
-          </View>
-
-          <Text style={styles.sosHeroTitle}>EMERGENCIAS SOS</Text>
-          <Text style={[styles.sosHeroSubtitle, isDark && styles.sosHeroSubtitleDark]}>
-            Línea directa y veterinarias con guardia nocturna en Pilar Centro
-          </Text>
-
-          <View style={styles.sosHeroFooter}>
-            <View style={styles.sosActionChip}>
-              <Ionicons name="call" size={13} color="#ffffff" />
-              <Text style={styles.sosActionChipText}>Atención Inmediata</Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text style={styles.sosVerGuardiaText}>Ver guardia</Text>
-              <Ionicons name="chevron-forward" size={16} color="#dc2626" />
-            </View>
-          </View>
-        </Pressable>
 
         {/* Tarjeta de mascotas / perfiles */}
         <Pressable
@@ -232,82 +283,193 @@ export default function HomeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Ver mis mascotas"
         >
-          <View style={styles.cardHeader}>
+          <Image
+            source={require('../../assets/images/3d/hero_pets_art.png')}
+            style={styles.heroPetsImage}
+            resizeMode="contain"
+          />
+
+          <View style={styles.cardMascotasContent}>
             <View style={[styles.cardIconWrapper, isDark && styles.cardIconWrapperDark]}>
-              <Ionicons name="paw" size={24} color="#04b639" />
+              <Ionicons name="paw" size={22} color={isDark ? '#4ade80' : Palette.greenDeep} />
             </View>
-            <View style={styles.cardBadge}>
-              <Text style={styles.cardNumero}>{petCount}</Text>
+
+            <Text style={[styles.cardTitulo, isDark && styles.cardTituloDark]}>Mis mascotas</Text>
+            <Text style={[styles.cardDetalle, isDark && styles.cardDetalleDark]}>
+              {petCount === 1 ? '1 mascota registrada' : `${petCount} mascotas registradas`}
+            </Text>
+
+            <View style={[styles.cardFooter, isDark && styles.cardFooterDark]}>
+              <Text style={[styles.cardLink, isDark && styles.cardLinkDark]}>Ver perfiles y detalles</Text>
+              <Ionicons name="chevron-forward-outline" size={16} color={isDark ? '#4ade80' : Palette.greenDeep} />
             </View>
-          </View>
-
-          <Text style={[styles.cardTitulo, isDark && styles.cardTituloDark]}>Mis mascotas</Text>
-          <Text style={[styles.cardDetalle, isDark && styles.cardDetalleDark]}>
-            {petCount === 1 ? '1 mascota registrada' : `${petCount} mascotas registradas`}
-          </Text>
-
-          <View style={[styles.cardFooter, isDark && styles.cardFooterDark]}>
-            <Text style={[styles.cardLink, isDark && styles.cardLinkDark]}>Ver perfiles y detalles</Text>
-            <Ionicons name="chevron-forward" size={16} color="#04b639" />
           </View>
         </Pressable>
 
-        {/* Título de accesos rápidos */}
+        {/* ACCESO A BENEFICIOS: Directamente debajo de Mis Mascotas */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.beneficiosCard,
+            isDark && styles.beneficiosCardDark,
+            pressed && styles.botonPresionado,
+          ]}
+          onPress={() => router.push('/beneficios')}
+          accessibilityRole="button"
+          accessibilityLabel="Club de Beneficios: Descuentos para tu mascota en comercios adheridos"
+        >
+          <View style={[styles.beneficiosIconWrapper, isDark && styles.beneficiosIconWrapperDark]}>
+            <Ionicons name="pricetag" size={20} color={isDark ? '#FBBF24' : '#D97706'} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[styles.beneficiosTitle, isDark && styles.textDark]}>
+                Club de Beneficios
+              </Text>
+              <View style={[styles.beneficiosBadge, isDark && styles.beneficiosBadgeDark]}>
+                <Text style={[styles.beneficiosBadgeText, isDark && styles.beneficiosBadgeTextDark]}>
+                  Hasta 25% OFF
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.beneficiosSubtitle, isDark && styles.subtituloDark]}>
+              Cupones reales en veterinarias y petshops de Pilar.
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={18} color={isDark ? '#FBBF24' : '#D97706'} />
+        </Pressable>
+
+        {/* Título de servicios diarios */}
         <Text style={[styles.seccionTitulo, isDark && styles.textDark]}>Servicios y Accesos</Text>
 
-        {/* Grilla de accesos (Sin tienda) */}
+        {/* Grilla de accesos prioritarios para el tutor con ilustraciones 3D */}
         <View style={styles.grid}>
           <BotonMenu
-            titulo="SOS Urgencias"
-            subtitulo="Guardia 24hs"
-            icono="alert-circle-outline"
-            onPress={() => router.push('/(tabs)/sos')}
-            isDark={isDark}
-            isAlert={true}
-          />
-          <BotonMenu
             titulo="Escanear QR"
-            subtitulo="Identificar o vincular"
+            subtitulo="Identificar chapita"
             icono="qr-code-outline"
+            colorFondoIcono={isDark ? '#143825' : '#D1F2DE'}
+            colorIcono={isDark ? '#4ade80' : '#087A43'}
             onPress={() => router.push('/(tabs)/scan')}
             isDark={isDark}
+            artSource={require('../../assets/images/3d/qr_tag_art.png')}
+            cardBgLight="#EAF8F0"
+            cardBorderLight="#BCEAD0"
+            cardBgDark="#042313"
+            cardBorderDark="#0d522c"
           />
           <BotonMenu
-            titulo="Mapa Pilar"
-            subtitulo="15 lugares reales"
-            icono="map-outline"
-            onPress={() => router.push('/(tabs)/mapa')}
+            titulo="Turnos"
+            subtitulo="Agenda de citas"
+            icono="calendar-outline"
+            colorFondoIcono={isDark ? '#12384D' : '#D6EDFA'}
+            colorIcono={isDark ? '#38BDF8' : '#0284C7'}
+            onPress={() => router.push('/turnos')}
             isDark={isDark}
+            artSource={require('../../assets/images/3d/calendar_art.png')}
+            cardBgLight="#EBF5FB"
+            cardBorderLight="#BEE3F8"
+            cardBgDark="#072d47"
+            cardBorderDark="#0e5e94"
+          />
+          <BotonMenu
+            titulo="Recordatorios"
+            subtitulo="Vacunas y controles"
+            icono="notifications-outline"
+            colorFondoIcono={isDark ? '#42240C' : '#FCE9D8'}
+            colorIcono={isDark ? '#FB923C' : '#D97706'}
+            onPress={() => router.push('/recordatorios')}
+            isDark={isDark}
+            artSource={require('../../assets/images/3d/clock_art.png')}
+            cardBgLight="#FEF6EE"
+            cardBorderLight="#FADEC9"
+            cardBgDark="#331908"
+            cardBorderDark="#733b16"
           />
           <BotonMenu
             titulo="Veterinarias"
             subtitulo="Cercanas a vos"
             icono="medkit-outline"
+            colorFondoIcono={isDark ? '#143825' : '#D1F2DE'}
+            colorIcono={isDark ? '#4ade80' : '#087A43'}
             onPress={() => router.push('/veterinarias')}
             isDark={isDark}
+            artSource={require('../../assets/images/3d/clinic_art.png')}
+            cardBgLight="#EAF8F0"
+            cardBorderLight="#BCEAD0"
+            cardBgDark="#042c16"
+            cardBorderDark="#0c6332"
           />
           <BotonMenu
-            titulo="Recordatorios"
-            subtitulo="Avisos importantes"
-            icono="notifications-outline"
-            onPress={() => router.push('/recordatorios')}
+            titulo="Mapa Pilar"
+            subtitulo="15 lugares reales"
+            icono="compass-outline"
+            colorFondoIcono={isDark ? '#12384D' : '#D6EFF8'}
+            colorIcono={isDark ? '#38BDF8' : '#0891B2'}
+            onPress={() => router.push('/(tabs)/mapa')}
             isDark={isDark}
-          />
-          <BotonMenu
-            titulo="Turnos"
-            subtitulo="Próximos y anteriores"
-            icono="calendar-outline"
-            onPress={() => router.push('/turnos')}
-            isDark={isDark}
+            artSource={require('../../assets/images/3d/map_art.png')}
+            cardBgLight="#EBF6FA"
+            cardBorderLight="#BEE5F2"
+            cardBgDark="#082c42"
+            cardBorderDark="#115c8c"
           />
           <BotonMenu
             titulo="Mi Perfil"
             subtitulo="Datos y ajustes"
             icono="person-outline"
+            colorFondoIcono={isDark ? '#133D2F' : '#D3EFE4'}
+            colorIcono={isDark ? '#34D399' : '#059669'}
             onPress={() => router.push('/(tabs)/perfil')}
             isDark={isDark}
+            artSource={require('../../assets/images/3d/clipboard_art.png')}
+            cardBgLight="#EBF7F2"
+            cardBorderLight="#BEE6D7"
+            cardBgDark="#042d1b"
+            cardBorderDark="#0e623b"
           />
         </View>
+
+        {/* ACCESO SECUNDARIO SOS: Diseño con iluminación y badge */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.sosSecondaryCard,
+            isDark && styles.sosSecondaryCardDark,
+            pressed && styles.botonPresionado,
+          ]}
+          onPress={() => router.push('/(tabs)/sos')}
+          accessibilityRole="button"
+          accessibilityLabel="Acceso a centro de emergencias SOS y guardias 24 horas"
+        >
+          <View style={[styles.sosSecondaryIconWrapper, isDark && styles.sosSecondaryIconWrapperDark]}>
+            <Image
+              source={require('../../assets/images/3d/sos_siren_art.png')}
+              resizeMode="contain"
+              style={{ width: 28, height: 28 }}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[styles.sosSecondaryTitle, isDark && styles.textDark]}>
+                Guardias 24hs y Atención SOS
+              </Text>
+              <View style={styles.sosSecondaryBadge}>
+                <Text style={styles.sosSecondaryBadgeText}>SOS</Text>
+              </View>
+            </View>
+            <Text style={[styles.sosSecondarySubtitle, isDark && styles.subtituloDark]}>
+              Hospital San Roque y centros veterinarios activos en Pilar.
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={18} color={Palette.redEmergency} />
+        </Pressable>
+
+        {/* Mensaje de calidez y personalidad de marca con ilustración vectorial */}
+        <FriendlyPetBanner
+          title="Cada huellita tiene una historia."
+          subtitle="Acompañamos cada etapa de su vida con cuidado, dedicación y amor."
+          variant="paw"
+          style={{ marginTop: 6, marginBottom: 20 }}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -317,22 +479,40 @@ function BotonMenu({
   titulo,
   subtitulo,
   icono,
+  colorFondoIcono,
+  colorIcono,
   onPress,
   isDark,
   isAlert,
+  artSource,
+  cardBgLight,
+  cardBorderLight,
+  cardBgDark,
+  cardBorderDark,
 }: {
   titulo: string;
   subtitulo: string;
   icono: keyof typeof Ionicons.glyphMap;
+  colorFondoIcono?: string;
+  colorIcono?: string;
   onPress: () => void;
   isDark?: boolean;
   isAlert?: boolean;
+  artSource?: any;
+  cardBgLight?: string;
+  cardBorderLight?: string;
+  cardBgDark?: string;
+  cardBorderDark?: string;
 }) {
   return (
     <Pressable
       style={({ pressed }) => [
         styles.boton,
+        !isDark && cardBgLight ? { backgroundColor: cardBgLight } : undefined,
+        !isDark && cardBorderLight ? { borderColor: cardBorderLight } : undefined,
         isDark && styles.botonDark,
+        isDark && cardBgDark ? { backgroundColor: cardBgDark } : undefined,
+        isDark && cardBorderDark ? { borderColor: cardBorderDark } : undefined,
         isAlert && (isDark ? styles.botonAlertDark : styles.botonAlert),
         pressed && styles.botonPresionado,
       ]}
@@ -340,21 +520,35 @@ function BotonMenu({
       accessibilityRole="button"
       accessibilityLabel={titulo}
     >
-      <View
-        style={[
-          styles.botonIconoContainer,
-          isDark && styles.botonIconoContainerDark,
-          isAlert && (isDark ? styles.botonAlertIconoContainerDark : styles.botonAlertIconoContainer),
-        ]}
-      >
-        <Ionicons name={icono} size={22} color={isAlert ? '#dc2626' : '#04b639'} />
+      {artSource && (
+        <Image
+          source={artSource}
+          style={styles.botonArtImage}
+          resizeMode="contain"
+        />
+      )}
+      <View style={artSource ? styles.botonContentWrapper : undefined}>
+        <View
+          style={[
+            styles.botonIconoContainer,
+            colorFondoIcono && { backgroundColor: colorFondoIcono },
+          ]}
+        >
+          <Ionicons name={icono} size={20} color={colorIcono || Palette.greenDeep} />
+        </View>
+        <Text
+          numberOfLines={1}
+          style={[styles.botonTitulo, isDark && styles.textDark, isAlert && styles.botonAlertTitulo]}
+        >
+          {titulo}
+        </Text>
+        <Text
+          numberOfLines={1}
+          style={[styles.botonSubtitulo, isDark && styles.subtituloDark, isAlert && styles.botonAlertSubtitulo]}
+        >
+          {subtitulo}
+        </Text>
       </View>
-      <Text style={[styles.botonTitulo, isDark && styles.textDark, isAlert && styles.botonAlertTitulo]}>
-        {titulo}
-      </Text>
-      <Text style={[styles.botonSubtitulo, isDark && styles.subtituloDark, isAlert && styles.botonAlertSubtitulo]}>
-        {subtitulo}
-      </Text>
     </Pressable>
   );
 }
@@ -362,28 +556,217 @@ function BotonMenu({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
-    backgroundColor: '#09090b',
+    backgroundColor: Palette.backgroundDark,
+  },
+  // ── Tarjeta de Beneficios y Descuentos Exclusivos ─────────────
+  beneficiosCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFDF5',
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    gap: 12,
+    marginTop: 0,
+    marginBottom: 18,
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  beneficiosCardDark: {
+    backgroundColor: '#1E180A',
+    borderColor: '#4D3B14',
+  },
+  beneficiosIconWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#FEF3C7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  beneficiosIconWrapperDark: {
+    backgroundColor: '#382B0E',
+  },
+  beneficiosTitle: {
+    fontSize: 13.5,
+    fontFamily: FontFamily.headingSemiBold,
+    letterSpacing: -0.2,
+    color: '#92400E',
+  },
+  beneficiosSubtitle: {
+    fontSize: 11.5,
+    fontFamily: FontFamily.bodyRegular,
+    color: '#B45309',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  beneficiosBadge: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  beneficiosBadgeDark: {
+    backgroundColor: '#382B0E',
+    borderColor: '#785A17',
+  },
+  beneficiosBadgeText: {
+    color: '#92400E',
+    fontSize: 9,
+    fontFamily: FontFamily.bodyBold,
+  },
+  beneficiosBadgeTextDark: {
+    color: '#FBBF24',
+  },
+  // ── Tarjeta Rápida Escanear Paciente (Veterinario) ────────
+  scanActionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EAF8F0',
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#BCEAD0',
+    gap: 12,
+    marginTop: 0,
+    marginBottom: 18,
+    shadowColor: Palette.greenDeep,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  scanActionCardDark: {
+    backgroundColor: '#072417',
+    borderColor: '#174E33',
+  },
+  scanActionIconWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#D1F2DE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanActionIconWrapperDark: {
+    backgroundColor: '#143825',
+  },
+  scanActionTitle: {
+    fontSize: 13.5,
+    fontFamily: FontFamily.headingSemiBold,
+    letterSpacing: -0.2,
+    color: '#0A3B22',
+  },
+  scanActionSubtitle: {
+    fontSize: 11.5,
+    fontFamily: FontFamily.bodyRegular,
+    color: '#38634E',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  scanActionBadge: {
+    backgroundColor: '#D1F2DE',
+    borderWidth: 1,
+    borderColor: '#BCEAD0',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  scanActionBadgeDark: {
+    backgroundColor: '#143825',
+    borderColor: '#174E33',
+  },
+  scanActionBadgeText: {
+    color: '#087A43',
+    fontSize: 9,
+    fontFamily: FontFamily.bodyBold,
+  },
+  scanActionBadgeTextDark: {
+    color: '#4ade80',
+  },
+  // ── Tarjeta de Emergencia SOS Secundaria y no invasiva ────────
+  sosSecondaryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    gap: 12,
+    marginTop: 4,
+    marginBottom: 10,
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  sosSecondaryCardDark: {
+    backgroundColor: '#1E0B0F',
+    borderColor: '#4A151C',
+  },
+  sosSecondaryIconWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sosSecondaryIconWrapperDark: {
+    backgroundColor: '#301116',
+  },
+  sosSecondaryTitle: {
+    fontSize: 13.5,
+    fontFamily: FontFamily.headingSemiBold,
+    letterSpacing: -0.2,
+    color: '#991B1B',
+  },
+  sosSecondarySubtitle: {
+    fontSize: 11.5,
+    fontFamily: FontFamily.bodyRegular,
+    color: '#7F1D1D',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  sosSecondaryBadge: {
+    backgroundColor: Palette.redEmergency,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  sosSecondaryBadgeText: {
+    color: '#ffffff',
+    fontSize: 9,
+    fontFamily: FontFamily.bodyBold,
   },
   // ── Tarjeta de Emergencia SOS Destacada ─────────────────────────
   sosHeroCard: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: Palette.redSoft,
     borderRadius: 22,
-    padding: 20,
+    padding: 18,
     marginBottom: 16,
-    borderWidth: 2,
-    borderColor: '#fca5a5',
-    shadowColor: '#dc2626',
+    borderWidth: 1.5,
+    borderColor: Palette.redBorder,
+    shadowColor: Palette.redEmergency,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.12,
     shadowRadius: 10,
     elevation: 3,
   },
   sosHeroCardDark: {
-    backgroundColor: '#450a0a33',
-    borderColor: '#b91c1c',
+    backgroundColor: '#381616',
+    borderColor: '#7F1D1D',
     shadowOpacity: 0.35,
   },
   sosHeroHeader: {
@@ -394,8 +777,8 @@ const styles = StyleSheet.create({
   },
   sosHeroIconCircle: {
     backgroundColor: '#fee2e2',
-    width: 46,
-    height: 46,
+    width: 44,
+    height: 44,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
@@ -406,7 +789,7 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: '#fee2e2',
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 4,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#fca5a5',
@@ -415,29 +798,30 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#dc2626',
+    backgroundColor: Palette.redEmergency,
   },
   sosLiveBadgeText: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#b91c1c',
+    fontFamily: FontFamily.bodyBold,
+    color: '#991B1B',
     letterSpacing: 0.5,
   },
   sosHeroTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#991b1b',
+    fontSize: 19,
+    fontFamily: FontFamily.headingBold,
+    color: '#991B1B',
     letterSpacing: 0.3,
     marginBottom: 4,
   },
   sosHeroSubtitle: {
     fontSize: 13,
+    fontFamily: FontFamily.bodyRegular,
     lineHeight: 18,
-    color: '#b91c1c',
+    color: '#991B1B',
     marginBottom: 14,
   },
   sosHeroSubtitleDark: {
-    color: '#fca5a5',
+    color: '#FCA5A5',
   },
   sosHeroFooter: {
     flexDirection: 'row',
@@ -451,7 +835,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#dc2626',
+    backgroundColor: Palette.redEmergency,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
@@ -459,32 +843,26 @@ const styles = StyleSheet.create({
   sosActionChipText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
   },
   sosVerGuardiaText: {
-    color: '#dc2626',
+    color: Palette.redEmergency,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
   },
   botonAlert: {
-    borderColor: '#fca5a5',
-    backgroundColor: '#fff5f5',
+    borderColor: Palette.redBorder,
+    backgroundColor: Palette.surfaceLight,
   },
   botonAlertDark: {
-    borderColor: '#991b1b',
-    backgroundColor: '#450a0a22',
-  },
-  botonAlertIconoContainer: {
-    backgroundColor: '#fee2e2',
-  },
-  botonAlertIconoContainerDark: {
-    backgroundColor: '#7f1d1d',
+    borderColor: '#7F1D1D',
+    backgroundColor: '#381616',
   },
   botonAlertTitulo: {
-    color: '#b91c1c',
+    color: '#991B1B',
   },
   botonAlertSubtitulo: {
-    color: '#dc2626',
+    color: Palette.redEmergency,
   },
   scrollContent: {
     padding: 20,
@@ -498,38 +876,57 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   saludo: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: 24,
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
   },
   subtitulo: {
-    color: '#64748b',
-    fontSize: 15,
-    marginTop: 4,
+    color: Palette.textSecondary,
+    fontSize: 14,
+    fontFamily: FontFamily.bodyRegular,
+    marginTop: 3,
   },
   subtituloDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   textDark: {
-    color: '#f4f4f5',
+    color: Palette.textPrimaryDark,
   },
   cardMascotas: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: '#EAF8F0',
     borderRadius: 22,
-    padding: 20,
-    marginBottom: 24,
+    padding: 18,
+    marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
-    shadowColor: '#04b639',
+    borderColor: '#BCEAD0',
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 2,
+    position: 'relative',
+    overflow: 'hidden',
+    minHeight: 146,
+    justifyContent: 'center',
   },
   cardMascotasDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
+    backgroundColor: '#072417',
+    borderColor: '#174E33',
     shadowOpacity: 0.3,
+  },
+  cardMascotasContent: {
+    zIndex: 2,
+    position: 'relative',
+    width: '56%',
+  },
+  heroPetsImage: {
+    position: 'absolute',
+    right: 4,
+    bottom: 0,
+    top: 4,
+    width: '52%',
+    height: '96%',
+    zIndex: 1,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -538,18 +935,22 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cardIconWrapper: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     width: 44,
     height: 44,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#BCEAD0',
   },
   cardIconWrapperDark: {
-    backgroundColor: '#1f2937',
+    backgroundColor: '#133324',
+    borderColor: '#174E33',
   },
   cardBadge: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenPrimary,
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -558,40 +959,43 @@ const styles = StyleSheet.create({
   },
   cardNumero: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontFamily: FontFamily.bodyBold,
     color: '#ffffff',
   },
   cardTitulo: {
-    fontWeight: '800',
+    fontFamily: FontFamily.headingBold,
     fontSize: 18,
-    color: '#14532d',
+    color: '#0A3B22',
   },
   cardTituloDark: {
-    color: '#86efac',
+    color: Palette.textPrimaryDark,
   },
   cardDetalle: {
-    color: '#166534',
+    color: '#38634E',
+    fontFamily: FontFamily.bodyRegular,
     marginTop: 4,
     fontSize: 14,
   },
   cardDetalleDark: {
-    color: '#bbf7d0',
+    color: Palette.textSecondaryDark,
   },
   cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 14,
-    paddingTop: 12,
+    marginTop: 12,
+    paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#bbf7d0',
+    borderTopColor: '#CBEBD8',
   },
   cardFooterDark: {
-    borderTopColor: '#166534',
+    borderTopWidth: 0,
+    paddingTop: 4,
+    marginTop: 8,
   },
   cardLink: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#04b639',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.greenDeep,
     marginRight: 4,
   },
   cardLinkDark: {
@@ -599,8 +1003,8 @@ const styles = StyleSheet.create({
   },
   seccionTitulo: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
     marginBottom: 14,
   },
   grid: {
@@ -610,48 +1014,66 @@ const styles = StyleSheet.create({
   },
   boton: {
     width: '48%',
-    backgroundColor: '#f8fafc',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
+    backgroundColor: Palette.surfaceLight,
+    borderRadius: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    minHeight: 124,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 4,
     elevation: 1,
+    position: 'relative',
+    overflow: 'hidden',
+    justifyContent: 'center',
   },
   botonDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
+    backgroundColor: '#0A1811',
+    borderColor: '#163C2A',
+  },
+  botonContentWrapper: {
+    zIndex: 2,
+    position: 'relative',
+    width: '74%',
+  },
+  botonArtImage: {
+    position: 'absolute',
+    right: 2,
+    top: 10,
+    bottom: 10,
+    width: '44%',
+    height: '80%',
+    zIndex: 1,
   },
   botonPresionado: {
     opacity: 0.75,
     transform: [{ scale: 0.98 }],
   },
   botonIconoContainer: {
-    backgroundColor: '#dcfce7',
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    backgroundColor: Palette.greenSoft,
+    width: 36,
+    height: 36,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  botonIconoContainerDark: {
-    backgroundColor: '#064e3b',
+    marginBottom: 8,
   },
   botonTitulo: {
-    fontWeight: '700',
-    fontSize: 15,
-    color: '#0f172a',
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: 13.5,
+    letterSpacing: -0.2,
+    color: Palette.textPrimary,
   },
   botonSubtitulo: {
-    color: '#64748b',
-    fontSize: 12,
-    marginTop: 4,
-    lineHeight: 16,
+    color: Palette.textSecondary,
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 11,
+    marginTop: 2,
+    lineHeight: 14,
   },
   // ── Estilos específicos del Perfil Veterinario ──────────────────────────────
   vetBadge: {
@@ -659,19 +1081,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     alignSelf: 'flex-start',
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
     marginBottom: 6,
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
   },
   vetBadgeDark: {
-    backgroundColor: '#064e3b',
+    backgroundColor: '#133324',
+    borderColor: '#1F543B',
   },
   vetBadgeText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#15803d',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.greenDeep,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -679,22 +1104,22 @@ const styles = StyleSheet.create({
     color: '#4ade80',
   },
   heroCardVet: {
-    backgroundColor: '#ecfdf5',
+    backgroundColor: Palette.surfaceLight,
     borderRadius: 22,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1.5,
-    borderColor: '#a7f3d0',
-    shadowColor: '#04b639',
+    borderColor: Palette.greenBorder,
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 3,
   },
   heroCardVetDark: {
-    backgroundColor: '#064e3b26',
-    borderColor: '#059669',
-    shadowOpacity: 0.3,
+    backgroundColor: Palette.surfaceDark,
+    borderColor: '#1F543B',
+    shadowOpacity: 0.25,
   },
   heroVetTop: {
     flexDirection: 'row',
@@ -703,34 +1128,29 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   heroIconCircle: {
-    backgroundColor: '#ffffff',
-    width: 52,
-    height: 52,
+    backgroundColor: Palette.greenSoft,
+    width: 50,
+    height: 50,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
   },
   heroIconCircleDark: {
-    backgroundColor: '#1f2937',
+    backgroundColor: '#133324',
   },
   heroActionBadge: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenPrimary,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   heroActionBadgeDark: {
-    backgroundColor: '#16a34a',
+    backgroundColor: '#15803D',
   },
   heroActionBadgeText: {
     color: '#ffffff',
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -738,22 +1158,23 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   heroVetTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#065f46',
+    fontSize: 20,
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
     marginBottom: 6,
   },
   heroVetTitleDark: {
-    color: '#6ee7b7',
+    color: Palette.textPrimaryDark,
   },
   heroVetSubtitle: {
     fontSize: 14,
+    fontFamily: FontFamily.bodyRegular,
     lineHeight: 20,
-    color: '#047857',
+    color: Palette.textSecondary,
     marginBottom: 16,
   },
   heroVetSubtitleDark: {
-    color: '#a7f3d0',
+    color: Palette.textSecondaryDark,
   },
   heroVetFooter: {
     flexDirection: 'row',
@@ -761,42 +1182,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 14,
     borderTopWidth: 1,
-    borderTopColor: '#a7f3d0',
+    borderTopColor: Palette.borderSubtle,
   },
   heroVetFooterDark: {
-    borderTopColor: '#065f46',
+    borderTopColor: Palette.borderDark,
   },
   heroCtaButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 12,
   },
   heroCtaText: {
     color: '#ffffff',
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
     fontSize: 14,
   },
   searchCardVet: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.surfaceLight,
     borderRadius: 18,
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
     gap: 14,
   },
   searchCardVetDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
   },
   searchIconWrapper: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     width: 44,
     height: 44,
     borderRadius: 12,
@@ -804,16 +1225,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchIconWrapperDark: {
-    backgroundColor: '#064e3b',
+    backgroundColor: '#133324',
   },
   searchCardTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontFamily: FontFamily.headingSemiBold,
+    color: Palette.textPrimary,
   },
   searchCardSubtitle: {
     fontSize: 12,
-    color: '#64748b',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
 });

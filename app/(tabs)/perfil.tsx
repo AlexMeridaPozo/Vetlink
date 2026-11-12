@@ -1,27 +1,69 @@
+import { FriendlyPetBanner } from '@/components/FriendlyPetBanner';
 import { auth } from '@/config/firebase';
+import { FontFamily, Palette } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PerfilScreen() {
   const router = useRouter();
-  const { user, profile, isVeterinario } = useAuth();
+  const { user, profile, isVeterinario, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useAppTheme();
 
-  const handleLogout = async () => {
+  const doLogout = async () => {
     try {
       await signOut(auth);
-      router.replace('/(auth)/register');
-    } catch (error) {
-      console.log('Error cerrando sesión:', error);
+      router.replace('/(auth)/login');
+    } catch (error: any) {
+      console.error('Error cerrando sesión:', error);
+      if (Platform.OS === 'web') {
+        window.alert(error?.message || 'No se pudo cerrar la sesión. Intenta nuevamente.');
+      } else {
+        Alert.alert('Error', error?.message || 'No se pudo cerrar la sesión. Intenta nuevamente.');
+      }
     }
   };
 
-  const displayName = profile?.displayName || user?.displayName || (isVeterinario ? 'Profesional Veterinario' : 'Usuario Huellapp');
+  const handleLogout = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = typeof window !== 'undefined' && window.confirm
+        ? window.confirm('¿Estás seguro de que deseas salir de tu cuenta en HuellaApp?')
+        : true;
+      if (confirmed) {
+        doLogout();
+      }
+      return;
+    }
+
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro de que deseas salir de tu cuenta en HuellaApp?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: doLogout,
+        },
+      ]
+    );
+  };
+
+  const displayName = profile?.displayName || user?.displayName || (isVeterinario ? 'Profesional Veterinario' : 'Usuario HuellaApp');
   const email = profile?.email || user?.email || 'Sin correo asociado';
   const matricula = profile?.matricula;
   const especialidad = profile?.especialidad;
@@ -29,167 +71,185 @@ export default function PerfilScreen() {
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'left', 'right']}>
-      {/* Header con botón de tema */}
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.titulo, isDark && styles.textDark]}>
-            {isVeterinario ? 'Perfil Profesional' : 'Mi Perfil'}
-          </Text>
-          <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>
-            {isVeterinario ? 'Credenciales clínicas y preferencias' : 'Información de tu cuenta y preferencias'}
-          </Text>
-        </View>
-        <ThemeToggleButton />
-      </View>
-
-      {/* Tarjeta de perfil */}
-      <View style={[styles.profileCard, isDark && styles.profileCardDark]}>
-        <View style={[styles.avatar, isDark && styles.avatarDark]}>
-          <Ionicons
-            name={isVeterinario ? 'medkit' : 'person'}
-            size={38}
-            color="#04b639"
-          />
-        </View>
-        <Text style={[styles.userName, isDark && styles.textDark]}>{displayName}</Text>
-        <Text style={[styles.userEmail, isDark && styles.subtituloDark]}>{email}</Text>
-
-        {/* Badges de Rol y Verificación */}
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 12 }}>
-          <View style={[styles.roleBadge, isVeterinario ? (isDark ? styles.roleBadgeVetDark : styles.roleBadgeVet) : (isDark ? styles.roleBadgeOwnerDark : styles.roleBadgeOwner), { marginTop: 0 }]}>
-            <Ionicons
-              name={isVeterinario ? 'shield-checkmark' : 'paw'}
-              size={14}
-              color={isVeterinario ? (isDark ? '#4ade80' : '#15803d') : (isDark ? '#60a5fa' : '#2563eb')}
-            />
-            <Text style={[styles.roleBadgeText, isVeterinario ? (isDark ? styles.roleTextVetDark : styles.roleTextVet) : (isDark ? styles.roleTextOwnerDark : styles.roleTextOwner)]}>
-              {isVeterinario ? 'Veterinario Autorizado' : 'Propietario / Tutor'}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Header con botón de tema */}
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.titulo, isDark && styles.textDark]}>
+              {isVeterinario ? 'Perfil Profesional' : 'Mi Perfil'}
+            </Text>
+            <Text style={[styles.subtitulo, isDark && styles.subtituloDark]}>
+              {isVeterinario ? 'Credenciales clínicas y preferencias' : 'Información de tu cuenta y preferencias'}
             </Text>
           </View>
+          <ThemeToggleButton />
+        </View>
 
-          {isVeterinario && (
-            <View style={[styles.verifiedBadge, isDark && styles.verifiedBadgeDark]}>
-              <Ionicons name="checkmark-circle" size={14} color="#04b639" />
-              <Text style={[styles.verifiedBadgeText, isDark && styles.verifiedBadgeTextDark]}>
-                Profesional Habilitado
+        {/* Tarjeta de perfil */}
+        <View style={[styles.profileCard, isDark && styles.profileCardDark]}>
+          <View style={[styles.avatar, isDark && styles.avatarDark]}>
+            <Ionicons
+              name={isVeterinario ? 'medkit-outline' : 'person-outline'}
+              size={38}
+              color={Palette.greenDeep}
+            />
+          </View>
+          <Text style={[styles.userName, isDark && styles.textDark]}>{displayName}</Text>
+          <Text style={[styles.userEmail, isDark && styles.subtituloDark]}>{email}</Text>
+
+          {/* Badges de Rol y Verificación */}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 12 }}>
+            <View style={[styles.roleBadge, isVeterinario ? (isDark ? styles.roleBadgeVetDark : styles.roleBadgeVet) : (isDark ? styles.roleBadgeOwnerDark : styles.roleBadgeOwner)]}>
+              <Ionicons
+                name={isVeterinario ? 'shield-checkmark-outline' : 'paw-outline'}
+                size={14}
+                color={isVeterinario ? (isDark ? '#4ade80' : Palette.greenDeep) : (isDark ? '#38BDF8' : Palette.cyanDark)}
+              />
+              <Text style={[styles.roleBadgeText, isVeterinario ? (isDark ? styles.roleTextVetDark : styles.roleTextVet) : (isDark ? styles.roleTextOwnerDark : styles.roleTextOwner)]}>
+                {isVeterinario ? 'Veterinario Habilitado' : 'Tutor / Propietario'}
               </Text>
+            </View>
+
+            {isVeterinario && (
+              <View style={[styles.verifiedBadge, isDark && styles.verifiedBadgeDark]}>
+                <Ionicons name="checkmark-circle-outline" size={14} color={Palette.greenDeep} />
+                <Text style={[styles.verifiedBadgeText, isDark && styles.verifiedBadgeTextDark]}>
+                  Profesional Habilitado
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Datos Profesionales Exclusivos (Solo si existen datos reales) */}
+          {isVeterinario && (
+            <View style={[styles.profDetailsBox, isDark && styles.profDetailsBoxDark]}>
+              <View style={styles.profDetailRow}>
+                <Text style={[styles.profDetailLabel, isDark && styles.subtituloDark]}>Matrícula:</Text>
+                <Text style={[styles.profDetailValue, isDark && styles.textDark]}>
+                  {matricula ? matricula : 'No especificada en legajo'}
+                </Text>
+              </View>
+
+              {especialidad ? (
+                <View style={styles.profDetailRow}>
+                  <Text style={[styles.profDetailLabel, isDark && styles.subtituloDark]}>Especialidad:</Text>
+                  <Text style={[styles.profDetailValue, isDark && styles.textDark]}>{especialidad}</Text>
+                </View>
+              ) : null}
+
+              {veterinaria ? (
+                <TouchableOpacity
+                  style={[styles.profDetailRow, { borderBottomWidth: 0 }]}
+                  onPress={() => router.push('/veterinarias')}
+                >
+                  <Text style={[styles.profDetailLabel, isDark && styles.subtituloDark]}>Clínica asociada:</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Text style={[styles.profDetailValue, { color: Palette.greenDeep }]}>{veterinaria}</Text>
+                    <Ionicons name="chevron-forward-outline" size={14} color={Palette.greenDeep} />
+                  </View>
+                </TouchableOpacity>
+              ) : null}
             </View>
           )}
         </View>
 
-        {/* Datos Profesionales Exclusivos (Solo si existen datos reales) */}
-        {isVeterinario && (
-          <View style={[styles.profDetailsBox, isDark && styles.profDetailsBoxDark]}>
-            <View style={styles.profDetailRow}>
-              <Text style={[styles.profDetailLabel, isDark && styles.subtituloDark]}>Matrícula:</Text>
-              <Text style={[styles.profDetailValue, isDark && styles.textDark]}>
-                {matricula ? matricula : 'No especificada en legajo'}
+        {/* Opciones y Preferencias */}
+        <View style={styles.optionsContainer}>
+          {/* Acceso a Turnos Veterinarios */}
+          <TouchableOpacity
+            style={[styles.settingRow, isDark && styles.settingRowDark]}
+            onPress={() => router.push('/turnos')}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Ver turnos veterinarios"
+          >
+            <View style={[styles.settingIconCircle, isDark && styles.settingIconCircleDark]}>
+              <Ionicons name="calendar-outline" size={20} color={Palette.greenDeep} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingTitle, isDark && styles.textDark]}>
+                {isVeterinario ? 'Gestión de Turnos Clínicos' : 'Turnos Veterinarios'}
+              </Text>
+              <Text style={[styles.settingSubtitle, isDark && styles.subtituloDark]}>
+                {isVeterinario
+                  ? 'Solicitudes, agenda y atención de pacientes'
+                  : 'Citas médicas y revisiones programadas'}
               </Text>
             </View>
+            <Ionicons name="chevron-forward-outline" size={18} color={isDark ? '#71717a' : Palette.textSecondary} />
+          </TouchableOpacity>
 
-            {especialidad ? (
-              <View style={styles.profDetailRow}>
-                <Text style={[styles.profDetailLabel, isDark && styles.subtituloDark]}>Especialidad:</Text>
-                <Text style={[styles.profDetailValue, isDark && styles.textDark]}>{especialidad}</Text>
-              </View>
-            ) : null}
-
-            {veterinaria ? (
-              <TouchableOpacity
-                style={[styles.profDetailRow, { borderBottomWidth: 0 }]}
-                onPress={() => router.push('/veterinarias')}
-              >
-                <Text style={[styles.profDetailLabel, isDark && styles.subtituloDark]}>Clínica asociada:</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Text style={[styles.profDetailValue, { color: '#04b639' }]}>{veterinaria}</Text>
-                  <Ionicons name="chevron-forward" size={14} color="#04b639" />
-                </View>
-              </TouchableOpacity>
-            ) : null}
-          </View>
-        )}
-      </View>
-
-      {/* Opciones y Preferencias */}
-      <View style={styles.optionsContainer}>
-        {/* Acceso a Centro de Emergencias y Guardia SOS */}
-        <TouchableOpacity
-          style={[styles.sosRow, isDark && styles.sosRowDark]}
-          onPress={() => router.push('/(tabs)/sos')}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Centro de emergencias veterinarias y guardia 24 horas"
-        >
-          <View style={[styles.sosIconCircle, isDark && styles.sosIconCircleDark]}>
-            <Ionicons name="alert-circle" size={22} color="#dc2626" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={styles.sosTitle}>Emergencias y Guardia 24hs</Text>
-              <View style={styles.sosBadge}>
-                <Text style={styles.sosBadgeText}>SOS</Text>
-              </View>
+          {/* Acceso a Recordatorios */}
+          <TouchableOpacity
+            style={[styles.settingRow, isDark && styles.settingRowDark]}
+            onPress={() => router.push('/recordatorios')}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Ver recordatorios sanitarios"
+          >
+            <View style={[styles.settingIconCircle, isDark && styles.settingIconCircleDark]}>
+              <Ionicons name="notifications-outline" size={20} color={Palette.greenDeep} />
             </View>
-            <Text style={[styles.sosSubtitle, isDark && styles.sosSubtitleDark]}>
-              Hospital San Roque, guardia nocturna y llamadas directas
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color="#dc2626" />
-        </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingTitle, isDark && styles.textDark]}>Recordatorios y Avisos</Text>
+              <Text style={[styles.settingSubtitle, isDark && styles.subtituloDark]}>
+                {isVeterinario ? 'Gestión de alertas sanitarias para pacientes' : 'Vacunaciones y controles programados'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={18} color={isDark ? '#71717a' : Palette.textSecondary} />
+          </TouchableOpacity>
 
-        {/* Acceso a Recordatorios */}
-        <TouchableOpacity
-          style={[styles.settingRow, isDark && styles.settingRowDark]}
-          onPress={() => router.push('/recordatorios')}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Ver recordatorios sanitarios"
-        >
-          <View style={[styles.settingIconCircle, isDark && styles.settingIconCircleDark]}>
-            <Ionicons name="notifications-outline" size={20} color="#04b639" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.settingTitle, isDark && styles.textDark]}>Recordatorios y Avisos</Text>
-            <Text style={[styles.settingSubtitle, isDark && styles.subtituloDark]}>
-              {isVeterinario ? 'Gestión de alertas sanitarias para pacientes' : 'Vacunaciones y controles programados'}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={isDark ? '#71717a' : '#9ca3af'} />
-        </TouchableOpacity>
-
-        {/* Fila Selector Modo Oscuro / Claro */}
-        <View style={[styles.settingRow, isDark && styles.settingRowDark]}>
-          <View style={[styles.settingIconCircle, isDark && styles.settingIconCircleDark]}>
-            <Ionicons
-              name={isDark ? 'moon' : 'sunny'}
-              size={20}
-              color={isDark ? '#facc15' : '#04b639'}
+          {/* Fila Selector Modo Oscuro / Claro */}
+          <View style={[styles.settingRow, isDark && styles.settingRowDark]}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: isDark }}
+            accessibilityLabel="Activar o desactivar Modo Oscuro"
+          >
+            <View style={[styles.settingIconCircle, isDark && styles.settingIconCircleDark]}>
+              <Ionicons
+                name={isDark ? 'moon-outline' : 'sunny-outline'}
+                size={20}
+                color={isDark ? '#facc15' : Palette.greenPrimary}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingTitle, isDark && styles.textDark]}>Modo Oscuro</Text>
+              <Text style={[styles.settingSubtitle, isDark && styles.subtituloDark]}>
+                {isDark ? 'Aspecto oscuro activado' : 'Aspecto claro activado'}
+              </Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: Palette.borderLight, true: Palette.greenDeep }}
+              thumbColor={isDark ? '#4ade80' : '#ffffff'}
             />
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.settingTitle, isDark && styles.textDark]}>Modo Oscuro</Text>
-            <Text style={[styles.settingSubtitle, isDark && styles.subtituloDark]}>
-              {isDark ? 'Aspecto oscuro activado' : 'Aspecto claro activado'}
-            </Text>
-          </View>
-          <Switch
-            value={isDark}
-            onValueChange={toggleTheme}
-            trackColor={{ false: '#e2e8f0', true: '#15803d' }}
-            thumbColor={isDark ? '#4ade80' : '#ffffff'}
-          />
+
+          {/* Botón Cerrar Sesión */}
+          <TouchableOpacity
+            style={[styles.logoutButton, isDark && styles.logoutButtonDark]}
+            onPress={handleLogout}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar sesión"
+          >
+            <Ionicons name="log-out-outline" size={20} color={Palette.redEmergency} />
+            <Text style={styles.logoutText}>Cerrar sesión</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Botón Cerrar Sesión */}
-        <TouchableOpacity
-          style={[styles.logoutButton, isDark && styles.logoutButtonDark]}
-          onPress={handleLogout}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-          <Text style={styles.logoutText}>Cerrar sesión</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Ilustración amigable y mensaje cálido de cuidado */}
+        <FriendlyPetBanner
+          title="¡Tu compañero merece lo mejor!"
+          subtitle="Un pequeño cuidado diario hace una gran diferencia en su felicidad y bienestar."
+          variant="both"
+          style={{ marginTop: 20 }}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -197,207 +257,166 @@ export default function PerfilScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    padding: 20,
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
-    backgroundColor: '#09090b',
+    backgroundColor: Palette.backgroundDark,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 36,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
     gap: 12,
   },
   titulo: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: 24,
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
   },
   subtitulo: {
-    color: '#64748b',
+    color: Palette.textSecondary,
     fontSize: 14,
-    marginTop: 4,
+    fontFamily: FontFamily.bodyRegular,
+    marginTop: 3,
   },
   subtituloDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   textDark: {
-    color: '#f4f4f5',
+    color: Palette.textPrimaryDark,
   },
   profileCard: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Palette.surfaceLight,
     borderRadius: 22,
-    padding: 24,
+    padding: 22,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#dcfce7',
-    marginBottom: 24,
-    shadowColor: '#04b639',
+    borderColor: Palette.borderLight,
+    marginBottom: 20,
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 2,
   },
   profileCardDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
     shadowOpacity: 0.3,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#dcfce7',
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: Palette.greenSoft,
+    borderWidth: 1.5,
+    borderColor: Palette.greenBorder,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   avatarDark: {
-    backgroundColor: '#064e3b',
+    backgroundColor: '#133324',
+    borderColor: '#1F543B',
   },
   userName: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: '#64748b',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
   },
   roleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 5,
     borderRadius: 20,
-    marginTop: 12,
   },
   roleBadgeVet: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   roleBadgeVetDark: {
-    backgroundColor: '#064e3b',
+    backgroundColor: '#133324',
     borderWidth: 1,
-    borderColor: '#047857',
+    borderColor: '#1F543B',
   },
   roleBadgeOwner: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: Palette.cyanLight,
     borderWidth: 1,
-    borderColor: '#93c5fd',
+    borderColor: Palette.cyanBorder,
   },
   roleBadgeOwnerDark: {
-    backgroundColor: '#1e3a5f',
+    backgroundColor: '#162F3B',
     borderWidth: 1,
-    borderColor: '#2563eb',
+    borderColor: '#1F4759',
   },
   roleBadgeText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontFamily: FontFamily.bodyBold,
   },
   roleTextVet: {
-    color: '#15803d',
+    color: Palette.greenDeep,
   },
   roleTextVetDark: {
     color: '#86efac',
   },
   roleTextOwner: {
-    color: '#1d4ed8',
+    color: Palette.cyanDark,
   },
   roleTextOwnerDark: {
-    color: '#93c5fd',
+    color: '#7DD3FC',
   },
   optionsContainer: {
-    marginTop: 8,
-    gap: 14,
-  },
-  sosRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#fef2f2',
-    borderWidth: 1.5,
-    borderColor: '#fca5a5',
-    gap: 14,
-  },
-  sosRowDark: {
-    backgroundColor: '#380a0a33',
-    borderColor: '#991b1b',
-  },
-  sosIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#fee2e2',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sosIconCircleDark: {
-    backgroundColor: '#501010',
-  },
-  sosTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#991b1b',
-  },
-  sosSubtitle: {
-    fontSize: 12,
-    color: '#b91c1c',
-    marginTop: 2,
-  },
-  sosSubtitleDark: {
-    color: '#fca5a5',
-  },
-  sosBadge: {
-    backgroundColor: '#dc2626',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  sosBadgeText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '900',
+    marginTop: 4,
+    gap: 12,
   },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 14,
     borderRadius: 16,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.surfaceLight,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: 14,
+    borderColor: Palette.borderLight,
+    gap: 12,
   },
   settingRowDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
   },
   settingIconCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ecfdf5',
+    backgroundColor: Palette.surfaceSubtle,
     justifyContent: 'center',
     alignItems: 'center',
   },
   settingIconCircleDark: {
-    backgroundColor: '#27272a',
+    backgroundColor: '#20302B',
   },
   settingTitle: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontFamily: FontFamily.headingSemiBold,
+    color: Palette.textPrimary,
   },
   settingSubtitle: {
     fontSize: 12,
-    color: '#64748b',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
   logoutButton: {
@@ -405,57 +424,57 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    padding: 16,
+    padding: 14,
     borderRadius: 16,
-    backgroundColor: '#fef2f2',
+    backgroundColor: Palette.redSoft,
     borderWidth: 1,
-    borderColor: '#fee2e2',
+    borderColor: Palette.redBorder,
+    marginTop: 6,
   },
   logoutButtonDark: {
     backgroundColor: '#271919',
     borderColor: '#451a1a',
   },
   logoutText: {
-    color: '#ef4444',
+    color: Palette.redEmergency,
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
   },
-  // ── Estilos Profesionales ──────────────────────────────────────────────────
   verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.surfaceLight,
     borderWidth: 1,
-    borderColor: '#04b639',
+    borderColor: Palette.greenBorder,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
   },
   verifiedBadgeDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#04b639',
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.greenPrimary,
   },
   verifiedBadgeText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#04b639',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.greenDeep,
   },
   verifiedBadgeTextDark: {
     color: '#4ade80',
   },
   profDetailsBox: {
     width: '100%',
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.surfaceSubtle,
     borderRadius: 14,
     padding: 14,
-    marginTop: 16,
+    marginTop: 14,
     borderWidth: 1,
-    borderColor: '#dcfce7',
+    borderColor: Palette.borderLight,
   },
   profDetailsBoxDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
+    backgroundColor: '#20302B',
+    borderColor: Palette.borderDark,
   },
   profDetailRow: {
     flexDirection: 'row',
@@ -463,16 +482,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderSubtle,
   },
   profDetailLabel: {
     fontSize: 13,
-    color: '#64748b',
-    fontWeight: '500',
+    color: Palette.textSecondary,
+    fontFamily: FontFamily.bodyRegular,
   },
   profDetailValue: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.textPrimary,
   },
 });

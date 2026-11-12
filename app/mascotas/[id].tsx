@@ -1,10 +1,4 @@
-import QRMascotaCard from '@/components/QRMascotaCard';
-import VincularNfcModal from '@/components/VincularNfcModal';
-import { useAuth } from '@/context/AuthContext';
-import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
-import { getPetById, toggleEstadoExtravio, type Pet } from '@/services/petService';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -22,9 +16,36 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { EditarMascotaModal } from '@/components/EditarMascotaModal';
+import { EmptyState } from '@/components/EmptyState';
+import QRMascotaCard from '@/components/QRMascotaCard';
+import VincularNfcModal from '@/components/VincularNfcModal';
+import { Palette, Radius, Shadows, Typography } from '@/constants/theme';
+import { useAuth } from '@/context/AuthContext';
+import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
+import { getPetById, toggleEstadoExtravio, type Pet } from '@/services/petService';
+
+type ClinicalTabId = 'general' | 'historial' | 'seguridad' | 'nfc' | 'qr' | 'todos';
+
+interface ClinicalTabItem {
+  id: ClinicalTabId;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap | 'nfc';
+  isMci?: boolean;
+}
+
+const CLINICAL_TABS: ClinicalTabItem[] = [
+  { id: 'general', label: 'General', icon: 'paw-outline' },
+  { id: 'historial', label: 'Historial', icon: 'document-text-outline' },
+  { id: 'seguridad', label: 'Seguridad', icon: 'shield-checkmark-outline' },
+  { id: 'nfc', label: 'NFC', icon: 'nfc', isMci: true },
+  { id: 'qr', label: 'Placa QR', icon: 'qr-code-outline' },
+  { id: 'todos', label: 'Ver Todo', icon: 'layers-outline' },
+];
+
 export default function MascotaDetalleScreen() {
   const { isDark } = useAppTheme();
-  const { isVeterinario } = useAuth();
+  const { user, isVeterinario } = useAuth();
 
   const params = useLocalSearchParams<{
     id: string;
@@ -41,8 +62,9 @@ export default function MascotaDetalleScreen() {
   const [pet, setPet] = useState<Pet | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [nfcModalVisible, setNfcModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState<ClinicalTabId>('general');
 
-  // Firestore es la FUENTE DE VERDAD: Consultamos los datos actualizados del documento
   useEffect(() => {
     let isMounted = true;
     if (params.id) {
@@ -75,13 +97,13 @@ export default function MascotaDetalleScreen() {
     }
   }, [params.id]);
 
-  // Datos consolidados (prioriza Firestore en tiempo real, con fallback a route params)
+  // Datos consolidados
   const displayId = pet?.id || params.id || 'PET-001';
   const displayNombre = pet?.nombre || params.nombre || 'Mascota';
   const displayEspecie = pet?.especie || params.especie || 'Perro';
   const displayRaza = pet?.raza || params.raza || 'Raza no especificada';
-  const displaySexo = pet?.sexo || params.sexo || 'N/A';
-  const displayPeso = pet?.peso !== undefined ? String(pet.peso) : params.peso || 'N/A';
+  const displaySexo = pet?.sexo || params.sexo || 'No informado';
+  const displayPeso = pet?.peso !== undefined && pet?.peso !== 'N/A' ? String(pet.peso) : params.peso || 'N/A';
   const displayEdad = pet?.edad !== undefined ? String(pet.edad) : pet?.fechaNacimiento || params.edad || 'N/A';
   const displayFotoUrl = pet?.fotoUrl || params.fotoUrl || '';
   const displayDescripcion = pet?.descripcion || params.descripcion || '';
@@ -90,14 +112,41 @@ export default function MascotaDetalleScreen() {
   const isNfcLinked = pet?.nfcStatus === 'linked';
 
   const isMale = displaySexo.toLowerCase().includes('macho');
+  const isGato = displayEspecie.toLowerCase().includes('gato');
+
+  // Permisos: Veterinarios autorizados y Tutores propietarios verificados
+  const isOwner = Boolean(
+    user &&
+    pet &&
+    ((pet.userId && pet.userId === user.uid) ||
+     (pet.ownerId && pet.ownerId === user.uid))
+  );
+  const canEdit = isVeterinario || isOwner;
+
+  const formatEdad = (edadStr: string) => {
+    if (!edadStr || edadStr === 'N/A' || edadStr === 'No especificada') return 'Sin edad';
+    const lower = edadStr.toLowerCase().trim();
+    if (lower.includes('año') || lower.includes('mes') || lower.includes('/')) {
+      return edadStr;
+    }
+    return `${edadStr} años`;
+  };
+
+  const handleOpenEditModal = () => {
+    if (!pet) {
+      Alert.alert('Cargando ficha', 'Por favor espera a que se sincronicen los datos completos de la mascota.');
+      return;
+    }
+    setEditModalVisible(true);
+  };
 
   const handleToggleExtravio = async () => {
     if (!displayId) return;
     const nuevoEstado = !pet?.extraviada;
     Alert.alert(
-      nuevoEstado ? '🚨 Activar Alerta de Extravío' : '✅ Marcar como En Casa',
+      nuevoEstado ? 'Activar Alerta de Extravío' : 'Marcar como En Casa',
       nuevoEstado
-        ? `¿Confirmas que ${displayNombre} se ha extraviado? La ficha pública mostrará una alerta destacada y registrará la ubicación GPS de cualquier persona que la escanee.`
+        ? `¿Confirmas que ${displayNombre} se ha extraviado? La ficha pública mostrará una alerta destacada y registrará la ubicación GPS de quien la escanee.`
         : `¿${displayNombre} ya está a salvo en casa? Se desactivará la alerta de extravío.`,
       [
         { text: 'Cancelar', style: 'cancel' },
@@ -121,377 +170,564 @@ export default function MascotaDetalleScreen() {
   const handleOpenVincularNfc = () => {
     if (!isVeterinario) {
       Alert.alert(
-        'Acceso Denegado (Seguridad)',
-        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en Huellapp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
+        'Acceso Restringido',
+        'Solo los profesionales veterinarios autorizados tienen permisos para vincular o modificar etiquetas NFC en HuellaApp.\n\nPuedes cambiar tu rol a Veterinario en la sección "Mi Perfil" para probar esta funcionalidad.'
       );
       return;
     }
     setNfcModalVisible(true);
   };
 
+  const handlePetUpdated = (updatedPet: Pet) => {
+    setPet(updatedPet);
+  };
+
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'bottom']}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
-      {/* Top Navbar */}
+      {/* ── Top Navbar con Botón de Edición ─────────────────────────── */}
       <View style={[styles.navbar, isDark && styles.navbarDark]}>
         <TouchableOpacity
           style={[styles.backButton, isDark && styles.buttonDark]}
           onPress={() => router.back()}
           activeOpacity={0.7}
+          accessibilityLabel="Volver atrás"
         >
-          <Ionicons name="arrow-back" size={22} color={isDark ? '#fafafa' : '#0f172a'} />
+          <Ionicons name="arrow-back" size={20} color={isDark ? '#fafafa' : Palette.textPrimary} />
         </TouchableOpacity>
+
         <Text style={[styles.navTitle, isDark && styles.textDark]}>
-          Ficha Clínica: {displayNombre}
+          Ficha Clínica
         </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+
+        <View style={styles.navActionsRow}>
+          {canEdit && (
+            <TouchableOpacity
+              style={[styles.editNavBtn, isDark && styles.editNavBtnDark]}
+              onPress={handleOpenEditModal}
+              activeOpacity={0.75}
+              accessibilityLabel="Editar información de mascota"
+            >
+              <Ionicons name="create-outline" size={17} color={Palette.greenDeep} />
+              <Text style={styles.editNavBtnText}>Editar</Text>
+            </TouchableOpacity>
+          )}
+
           <ThemeToggleButton />
+
           <TouchableOpacity
             style={[styles.backButton, isDark && styles.buttonDark]}
             activeOpacity={0.7}
             onPress={onRefresh}
             accessibilityLabel="Actualizar ficha"
           >
-            <Ionicons name="refresh" size={20} color="#04b639" />
+            <Ionicons name="refresh-outline" size={20} color={Palette.greenDeep} />
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* ── Mini Header Persistente con Resumen de Mascota ──────────── */}
+      <View style={[styles.petCompactHeader, isDark && styles.petCompactHeaderDark]}>
+        <View style={styles.petCompactAvatarWrapper}>
+          {displayFotoUrl ? (
+            <Image source={{ uri: displayFotoUrl }} style={styles.petCompactAvatar} contentFit="cover" />
+          ) : (
+            <View style={[styles.petCompactFallback, isDark && styles.petCompactFallbackDark]}>
+              <MaterialCommunityIcons
+                name={isGato ? 'cat' : 'dog'}
+                size={24}
+                color={Palette.greenDeep}
+              />
+            </View>
+          )}
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={[styles.petCompactName, isDark && styles.textDark]}>{displayNombre}</Text>
+            <View style={[styles.codeBadge, isDark && styles.codeBadgeDark]}>
+              <Text style={styles.codeBadgeText}>{displayId}</Text>
+            </View>
+          </View>
+          <Text style={[styles.petCompactSub, isDark && styles.textSecondaryDark]}>
+            {displayEspecie} • {displayRaza}
+          </Text>
+        </View>
+
+        <View
+          style={[
+            styles.compactStatusPill,
+            pet?.extraviada ? styles.pillLost : styles.pillHome,
+          ]}
+        >
+          <Ionicons
+            name={pet?.extraviada ? 'alert-circle-outline' : 'shield-checkmark-outline'}
+            size={13}
+            color="#ffffff"
+          />
+          <Text style={styles.compactStatusPillText}>
+            {pet?.extraviada ? 'Extraviada' : 'En Casa'}
+          </Text>
+        </View>
+      </View>
+
+      {/* ── 1. MENÚ DE NAVEGACIÓN HORIZONTAL ENTRE SECCIONES CLÍNICAS ── */}
+      <View style={[styles.tabsWrapper, isDark && styles.tabsWrapperDark]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsScrollContent}
+        >
+          {CLINICAL_TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                style={[
+                  styles.tabPill,
+                  isDark && styles.tabPillDark,
+                  isActive && styles.tabPillActive,
+                ]}
+                onPress={() => setActiveTab(tab.id)}
+                activeOpacity={0.8}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+              >
+                {tab.isMci ? (
+                  <MaterialCommunityIcons
+                    name={tab.icon as any}
+                    size={16}
+                    color={isActive ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
+                    style={{ marginRight: 6 }}
+                  />
+                ) : (
+                  <Ionicons
+                    name={tab.icon as any}
+                    size={15}
+                    color={isActive ? '#ffffff' : (isDark ? '#a1a1aa' : Palette.textSecondary)}
+                    style={{ marginRight: 6 }}
+                  />
+                )}
+                <Text
+                  style={[
+                    styles.tabPillText,
+                    isDark && styles.tabPillTextDark,
+                    isActive && styles.tabPillTextActive,
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* ── Contenido Dinámico de la Sección Clínica Seleccionada ─────── */}
       <ScrollView
         style={[{ flex: 1 }, isDark && styles.scrollViewDark]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#04b639']} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Palette.greenPrimary]} />
         }
       >
-        {/* Banner / Foto Principal */}
-        <View style={styles.imageCard}>
-          {displayFotoUrl ? (
-            <Image
-              source={{ uri: displayFotoUrl }}
-              style={styles.petImage}
-              contentFit="cover"
-              transition={300}
-            />
-          ) : (
-            <View style={[styles.imageFallback, isDark && styles.imageFallbackDark]}>
-              <MaterialIcons name="pets" size={72} color="#04b639" />
-            </View>
-          )}
+        {/* ── SECCIÓN 1: GENERAL / DATOS PRINCIPALES ───────────────────── */}
+        {(activeTab === 'general' || activeTab === 'todos') && (
+          <View style={{ marginBottom: 14 }}>
+            {/* Banner / Foto Principal */}
+            <View style={styles.imageCard}>
+              {displayFotoUrl ? (
+                <Image
+                  source={{ uri: displayFotoUrl }}
+                  style={styles.petImage}
+                  contentFit="cover"
+                  transition={300}
+                />
+              ) : (
+                <View style={[styles.imageFallback, isDark && styles.imageFallbackDark]}>
+                  <MaterialCommunityIcons
+                    name={isGato ? 'cat' : 'dog'}
+                    size={72}
+                    color={Palette.greenDeep}
+                  />
+                </View>
+              )}
 
-          <View style={[styles.speciesFloatingBadge, isDark && styles.speciesFloatingBadgeDark]}>
-            <Text style={[styles.speciesFloatingText, isDark && styles.speciesFloatingTextDark]}>
-              {displayEspecie === 'Gato' ? '🐱 Gato' : '🐶 Perro'} • {displayId}
-            </Text>
-          </View>
-        </View>
-
-        {/* Datos Principales */}
-        <View style={[styles.infoCard, isDark && styles.cardDark]}>
-          <View style={styles.nameHeader}>
-            <View>
-              <Text style={[styles.petName, isDark && styles.textDark]}>{displayNombre}</Text>
-              <Text style={[styles.petBreed, isDark && styles.textSecondaryDark]}>{displayRaza}</Text>
-            </View>
-            <View
-              style={[
-                styles.genderTag,
-                { backgroundColor: isMale ? (isDark ? '#1e3a8a' : '#dbeafe') : (isDark ? '#831843' : '#fce7f3') },
-              ]}
-            >
-              <Ionicons
-                name={isMale ? 'male' : 'female'}
-                size={14}
-                color={isMale ? (isDark ? '#93c5fd' : '#1d4ed8') : (isDark ? '#f472b6' : '#be185d')}
-              />
-              <Text
-                style={[
-                  styles.genderTagText,
-                  { color: isMale ? (isDark ? '#93c5fd' : '#1d4ed8') : (isDark ? '#f472b6' : '#be185d') },
-                ]}
-              >
-                {displaySexo}
-              </Text>
-            </View>
-          </View>
-
-          {/* Ficha técnica rápida */}
-          <View style={styles.statsGrid}>
-            <View style={[styles.statBox, isDark && styles.statBoxDark]}>
-              <MaterialIcons name="scale" size={20} color="#04b639" />
-              <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Peso</Text>
-              <Text style={[styles.statValue, isDark && styles.textDark]}>{displayPeso}</Text>
-            </View>
-
-            <View style={[styles.statBox, isDark && styles.statBoxDark]}>
-              <MaterialIcons name="cake" size={20} color="#04b639" />
-              <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Edad</Text>
-              <Text style={[styles.statValue, isDark && styles.textDark]}>{displayEdad}</Text>
-            </View>
-
-            <View style={[styles.statBox, isDark && styles.statBoxDark]}>
-              <MaterialIcons name="verified" size={20} color="#04b639" />
-              <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>ID Estable</Text>
-              <Text style={[styles.statValue, isDark && styles.textDark]}>{displayId}</Text>
-            </View>
-          </View>
-
-          {/* Propietario / Contacto */}
-          {displayPropietario ? (
-            <View style={[styles.ownerSection, isDark && styles.ownerSectionDark]}>
-              <View style={styles.ownerRow}>
-                <Ionicons name="person" size={16} color="#04b639" />
-                <Text style={[styles.ownerLabel, isDark && styles.ownerLabelDark]}>
-                  Tutor / Propietario:{' '}
-                  <Text style={{ fontWeight: '700' }}>{displayPropietario}</Text>
+              <View style={[styles.speciesFloatingBadge, isDark && styles.speciesFloatingBadgeDark]}>
+                <MaterialCommunityIcons
+                  name={isGato ? 'cat' : 'dog'}
+                  size={14}
+                  color={Palette.greenDeep}
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={[styles.speciesFloatingText, isDark && styles.speciesFloatingTextDark]}>
+                  {displayEspecie} • {displayId}
                 </Text>
               </View>
-              {displayTelefono ? (
-                <View style={[styles.ownerRow, { marginTop: 4 }]}>
-                  <Ionicons name="call" size={16} color="#04b639" />
-                  <Text style={[styles.ownerLabel, isDark && styles.ownerLabelDark]}>
-                    Teléfono:{' '}
-                    <Text style={{ fontWeight: '700' }}>{displayTelefono}</Text>
+            </View>
+
+            {/* Datos Principales */}
+            <View style={[styles.infoCard, isDark && styles.cardDark]}>
+              <View style={styles.nameHeader}>
+                <View>
+                  <Text style={[styles.petName, isDark && styles.textDark]}>{displayNombre}</Text>
+                  <Text style={[styles.petBreed, isDark && styles.textSecondaryDark]}>{displayRaza}</Text>
+                </View>
+                <View
+                  style={[
+                    styles.genderTag,
+                    {
+                      backgroundColor: isMale
+                        ? (isDark ? 'rgba(2, 132, 199, 0.2)' : Palette.cyanLight)
+                        : (isDark ? 'rgba(244, 114, 182, 0.2)' : '#fff1f2'),
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={isMale ? 'male-outline' : 'female-outline'}
+                    size={14}
+                    color={isMale ? '#0284c7' : '#e11d48'}
+                  />
+                  <Text
+                    style={[
+                      styles.genderTagText,
+                      { color: isMale ? '#0284c7' : '#e11d48' },
+                    ]}
+                  >
+                    {displaySexo}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Ficha técnica rápida */}
+              <View style={styles.statsGrid}>
+                <View style={[styles.statBox, isDark && styles.statBoxDark]}>
+                  <Ionicons name="scale-outline" size={18} color={Palette.greenDeep} />
+                  <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Peso</Text>
+                  <Text style={[styles.statValue, isDark && styles.textDark]}>
+                    {displayPeso !== 'N/A' ? `${displayPeso} kg` : 'Sin peso'}
+                  </Text>
+                </View>
+
+                <View style={[styles.statBox, isDark && styles.statBoxDark]}>
+                  <Ionicons name="calendar-outline" size={18} color={Palette.greenDeep} />
+                  <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Edad</Text>
+                  <Text style={[styles.statValue, isDark && styles.textDark]}>
+                    {formatEdad(displayEdad)}
+                  </Text>
+                </View>
+
+                <View style={[styles.statBox, isDark && styles.statBoxDark]}>
+                  <Ionicons name="shield-checkmark-outline" size={18} color={Palette.greenDeep} />
+                  <Text style={[styles.statLabel, isDark && styles.textSecondaryDark]}>Código</Text>
+                  <Text style={[styles.statValue, isDark && styles.textDark]}>{displayId}</Text>
+                </View>
+              </View>
+
+              {/* Propietario / Contacto */}
+              {displayPropietario ? (
+                <View style={[styles.ownerSection, isDark && styles.ownerSectionDark]}>
+                  <View style={styles.ownerRow}>
+                    <Ionicons name="person-outline" size={16} color={Palette.greenDeep} />
+                    <Text style={[styles.ownerLabel, isDark && styles.ownerLabelDark]}>
+                      Tutor / Propietario:{' '}
+                      <Text style={{ fontWeight: '700' }}>{displayPropietario}</Text>
+                    </Text>
+                  </View>
+                  {displayTelefono ? (
+                    <View style={[styles.ownerRow, { marginTop: 4 }]}>
+                      <Ionicons name="call-outline" size={16} color={Palette.greenDeep} />
+                      <Text style={[styles.ownerLabel, isDark && styles.ownerLabelDark]}>
+                        Teléfono:{' '}
+                        <Text style={{ fontWeight: '700' }}>{displayTelefono}</Text>
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
+
+              {/* Descripción / Notas */}
+              {displayDescripcion ? (
+                <View style={[styles.section, isDark && styles.sectionDark]}>
+                  <Text style={[styles.sectionTitle, isDark && styles.textDark]}>Notas Clínicas</Text>
+                  <Text style={[styles.sectionBody, isDark && styles.textSecondaryDark]}>
+                    {displayDescripcion}
                   </Text>
                 </View>
               ) : null}
-            </View>
-          ) : null}
 
-          {/* Descripción / Notas */}
-          {displayDescripcion ? (
-            <View style={[styles.section, isDark && styles.sectionDark]}>
-              <Text style={[styles.sectionTitle, isDark && styles.textDark]}>Notas Clínicas</Text>
-              <Text style={[styles.sectionBody, isDark && styles.textSecondaryDark]}>
-                {displayDescripcion}
-              </Text>
+              {/* Botón Acción: Editar Información de Mascota */}
+              {canEdit && (
+                <TouchableOpacity
+                  style={[styles.btnEditMain, isDark && styles.btnEditMainDark]}
+                  onPress={handleOpenEditModal}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="create-outline" size={18} color={Palette.greenDeep} style={{ marginRight: 6 }} />
+                  <Text style={styles.btnEditMainText}>Editar Información de Mascota</Text>
+                </TouchableOpacity>
+              )}
             </View>
-          ) : null}
-        </View>
+          </View>
+        )}
 
-        {/* ── CARD DE SEGURIDAD, EXTRAVÍO Y LOCALIZACIÓN DE RESCATE ──────── */}
-        <View style={[styles.infoCard, isDark && styles.cardDark, { marginTop: 14 }]}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Ionicons
-                name={pet?.extraviada ? 'alert-circle' : 'shield-checkmark'}
-                size={22}
-                color={pet?.extraviada ? '#ef4444' : '#04b639'}
+        {/* ── SECCIÓN 2: HISTORIAL CLÍNICO ─────────────────────────────── */}
+        {(activeTab === 'historial' || activeTab === 'todos') && (
+          <View style={[styles.infoCard, isDark && styles.cardDark, { marginBottom: 14 }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="document-text-outline" size={22} color={Palette.greenDeep} />
+                <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
+                  Historial Clínico
+                </Text>
+              </View>
+              {pet?.historialClinico && pet.historialClinico.length > 0 && (
+                <View style={[styles.countBadge, isDark && styles.countBadgeDark]}>
+                  <Text style={styles.countBadgeText}>{pet.historialClinico.length} registros</Text>
+                </View>
+              )}
+            </View>
+
+            {pet?.historialClinico && pet.historialClinico.length > 0 ? (
+              pet.historialClinico.map((item, idx) => (
+                <View
+                  key={item.id || idx}
+                  style={[
+                    styles.historyRow,
+                    isDark && styles.historyRowDark,
+                    idx === (pet.historialClinico?.length || 1) - 1 && { borderBottomWidth: 0 },
+                  ]}
+                >
+                  <View style={styles.historyDot} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.historyTitle, isDark && styles.textDark]}>
+                      {item.titulo}
+                    </Text>
+                    <Text style={[styles.historySubtitle, isDark && styles.textSecondaryDark]}>
+                      {item.detalle} • {item.fecha}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name={item.completado ? 'checkmark-circle-outline' : 'time-outline'}
+                    size={20}
+                    color={item.completado ? Palette.greenDeep : '#f59e0b'}
+                  />
+                </View>
+              ))
+            ) : (
+              /* Estado vacío con Ilustración Vectorial amigable HuellaApp */
+              <EmptyState
+                variant="history"
+                title="Todavía no hay registros clínicos."
+                message="Las consultas médicas, vacunas y observaciones registradas para esta mascota aparecerán aquí."
+                compact
               />
-              <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
-                Seguridad y Rescate
-              </Text>
+            )}
+          </View>
+        )}
+
+        {/* ── SECCIÓN 3: SEGURIDAD, EXTRAVÍO Y RESCATE ─────────────────── */}
+        {(activeTab === 'seguridad' || activeTab === 'todos') && (
+          <View style={[styles.infoCard, isDark && styles.cardDark, { marginBottom: 14 }]}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons
+                  name={pet?.extraviada ? 'alert-circle-outline' : 'shield-checkmark-outline'}
+                  size={22}
+                  color={pet?.extraviada ? Palette.redEmergency : Palette.greenDeep}
+                />
+                <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
+                  Seguridad y Rescate
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.btnToggleExtravio,
+                  pet?.extraviada ? styles.btnExtraviadaActive : styles.btnExtraviadaInactive,
+                ]}
+                onPress={handleToggleExtravio}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name={pet?.extraviada ? 'alert-circle-outline' : 'shield-checkmark-outline'}
+                  size={14}
+                  color="#ffffff"
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={styles.btnToggleExtravioText}>
+                  {pet?.extraviada ? 'Extraviada' : 'En Casa'}
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              style={[
-                styles.btnToggleExtravio,
-                pet?.extraviada ? styles.btnExtraviadaActive : styles.btnExtraviadaInactive,
-              ]}
-              onPress={handleToggleExtravio}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.btnToggleExtravioText}>
-                {pet?.extraviada ? '🚨 Extraviada' : '✅ En Casa'}
+            {pet?.extraviada && (
+              <View style={styles.lostAlertBox}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="warning-outline" size={16} color={Palette.redEmergency} />
+                  <Text style={styles.lostAlertBoxTitle}>Modo de Búsqueda Activo</Text>
+                </View>
+                <Text style={styles.lostAlertBoxText}>
+                  Cualquier persona que escanee la chapita QR o NFC verá la alerta de extravío y podrá enviarte su ubicación GPS con un toque.
+                </Text>
+              </View>
+            )}
+
+            {/* Último escaneo detectado */}
+            {pet?.ultimoEscaneo ? (
+              <View style={[styles.scanDetectedBox, isDark && styles.scanDetectedBoxDark]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Ionicons name="location-outline" size={18} color="#2563eb" />
+                  <Text style={[styles.scanDetectedTitle, isDark && styles.textDark]}>
+                    Último Escaneo Detectado
+                  </Text>
+                </View>
+                <Text style={[styles.scanDetectedDate, isDark && styles.textSecondaryDark]}>
+                  {pet.ultimoEscaneo.fecha ? new Date(pet.ultimoEscaneo.fecha).toLocaleString() : 'Fecha no disponible'}
+                </Text>
+                <Text style={[styles.scanDetectedCoords, isDark && styles.textSecondaryDark]}>
+                  GPS:{' '}
+                  {typeof pet.ultimoEscaneo.lat === 'number' && typeof pet.ultimoEscaneo.lng === 'number'
+                    ? `${pet.ultimoEscaneo.lat.toFixed(5)}, ${pet.ultimoEscaneo.lng.toFixed(5)}`
+                    : 'Coordenadas no disponibles'}
+                </Text>
+
+                {typeof pet.ultimoEscaneo.lat === 'number' && typeof pet.ultimoEscaneo.lng === 'number' && (
+                  <TouchableOpacity
+                    style={styles.btnOpenMap}
+                    onPress={() =>
+                      Linking.openURL(
+                        `https://maps.google.com/?q=${pet.ultimoEscaneo!.lat},${pet.ultimoEscaneo!.lng}`
+                      )
+                    }
+                  >
+                    <Ionicons name="map-outline" size={16} color="#ffffff" />
+                    <Text style={styles.btnOpenMapText}>Ver Ubicación en Google Maps</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : (
+              <Text style={[styles.noScansText, isDark && styles.textSecondaryDark]}>
+                Aún no se registran escaneos de rescate para esta mascota.
               </Text>
+            )}
+
+            {/* Enlace para probar la ficha pública */}
+            <TouchableOpacity
+              style={styles.btnPreviewPublic}
+              onPress={() => router.push({ pathname: '/pet', params: { id: displayId } } as any)}
+            >
+              <Ionicons name="open-outline" size={16} color={Palette.greenDeep} />
+              <Text style={styles.btnPreviewPublicText}>Ver Ficha Pública de Rescate (Web)</Text>
             </TouchableOpacity>
           </View>
+        )}
 
-          {pet?.extraviada && (
-            <View style={styles.lostAlertBox}>
-              <Text style={styles.lostAlertBoxTitle}>Modo de Búsqueda Activo</Text>
-              <Text style={styles.lostAlertBoxText}>
-                Cualquier persona que escanee la chapita QR o NFC verá la alerta de extravío y podrá enviarte su ubicación GPS con un toque.
-              </Text>
-            </View>
-          )}
-
-          {/* Último escaneo detectado */}
-          {pet?.ultimoEscaneo ? (
-            <View style={[styles.scanDetectedBox, isDark && styles.scanDetectedBoxDark]}>
+        {/* ── SECCIÓN 4: IDENTIFICACIÓN NFC ───────────────────────────── */}
+        {(activeTab === 'nfc' || activeTab === 'todos') && (
+          <View style={[styles.infoCard, isDark && styles.cardDark, { marginBottom: 14 }]}>
+            <View style={styles.nfcCardHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Ionicons name="location" size={20} color="#2563eb" />
-                <Text style={[styles.scanDetectedTitle, isDark && styles.textDark]}>
-                  Último Escaneo Detectado
+                <MaterialCommunityIcons name="nfc" size={22} color={Palette.greenDeep} />
+                <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
+                  Identificación NFC
                 </Text>
               </View>
-              <Text style={[styles.scanDetectedDate, isDark && styles.textSecondaryDark]}>
-                {new Date(pet.ultimoEscaneo.fecha).toLocaleString()}
-              </Text>
-              <Text style={[styles.scanDetectedCoords, isDark && styles.textSecondaryDark]}>
-                GPS: {pet.ultimoEscaneo.lat.toFixed(5)}, {pet.ultimoEscaneo.lng.toFixed(5)}
-              </Text>
 
-              <TouchableOpacity
-                style={styles.btnOpenMap}
-                onPress={() =>
-                  Linking.openURL(
-                    `https://maps.google.com/?q=${pet.ultimoEscaneo!.lat},${pet.ultimoEscaneo!.lng}`
-                  )
-                }
-              >
-                <Ionicons name="map-outline" size={16} color="#ffffff" />
-                <Text style={styles.btnOpenMapText}>Ver Ubicación en Google Maps</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <Text style={[styles.noScansText, isDark && styles.textSecondaryDark]}>
-              Aún no se registran escaneos de rescate para esta mascota.
-            </Text>
-          )}
-
-          {/* Enlace para probar la ficha pública */}
-          <TouchableOpacity
-            style={styles.btnPreviewPublic}
-            onPress={() => router.push({ pathname: '/pet', params: { id: displayId } } as any)}
-          >
-            <Ionicons name="open-outline" size={16} color="#04b639" />
-            <Text style={styles.btnPreviewPublicText}>Ver Ficha Pública de Rescate (Web)</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* ── CARD DE IDENTIFICACIÓN NFC (SECCIÓN CLÍNICA) ────────────────── */}
-        <View style={[styles.infoCard, isDark && styles.cardDark, { marginTop: 14 }]}>
-          <View style={styles.nfcCardHeader}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <MaterialIcons name="nfc" size={22} color="#04b639" />
-              <Text style={[styles.sectionTitle, isDark && styles.textDark, { marginBottom: 0 }]}>
-                Identificación NFC
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.nfcStatusBadge,
-                isNfcLinked
-                  ? (isDark ? styles.nfcBadgeLinkedDark : styles.nfcBadgeLinked)
-                  : (isDark ? styles.nfcBadgeUnlinkedDark : styles.nfcBadgeUnlinked),
-              ]}
-            >
-              <Ionicons
-                name={isNfcLinked ? 'checkmark-circle' : 'alert-circle'}
-                size={14}
-                color={isNfcLinked ? (isDark ? '#4ade80' : '#15803d') : (isDark ? '#fcd34d' : '#92400e')}
-              />
-              <Text
-                style={[
-                  styles.nfcStatusBadgeText,
-                  isNfcLinked
-                    ? (isDark ? styles.nfcStatusTextLinkedDark : styles.nfcStatusTextLinked)
-                    : (isDark ? styles.nfcStatusTextUnlinkedDark : styles.nfcStatusTextUnlinked),
-                ]}
-              >
-                {isNfcLinked ? 'Vinculada' : 'No vinculada'}
-              </Text>
-            </View>
-          </View>
-
-          {isNfcLinked ? (
-            <View style={[styles.nfcDetailsBox, isDark && styles.nfcDetailsBoxDark]}>
-              <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
-                <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>ID de Etiqueta:</Text>
-                <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>{pet?.nfcTagId || 'N/A'}</Text>
-              </View>
-              <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
-                <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Enlace de Identificación:</Text>
-                <Text style={[styles.nfcDetailValue, styles.monospace, isDark && styles.textDark]}>
-                  {pet?.nfcUrl || `https://huellapp.app/pet?id=${displayId}`}
-                </Text>
-              </View>
-              {pet?.nfcLinkedAt && (
-                <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
-                  <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Fecha de vinculación:</Text>
-                  <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>
-                    {new Date(pet.nfcLinkedAt).toLocaleString('es-AR')}
-                  </Text>
-                </View>
-              )}
-              {pet?.nfcLinkedBy && (
-                <View style={[styles.nfcDetailRow, { borderBottomWidth: 0 }]}>
-                  <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Veterinario Emisor:</Text>
-                  <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>{pet.nfcLinkedBy}</Text>
-                </View>
-              )}
-
-              <TouchableOpacity
-                style={[styles.relinkNfcBtn, isDark && styles.relinkNfcBtnDark]}
-                onPress={handleOpenVincularNfc}
-                activeOpacity={0.8}
-              >
-                <MaterialIcons name="nfc" size={18} color="#04b639" style={{ marginRight: 6 }} />
-                <Text style={[styles.relinkNfcBtnText, isDark && styles.relinkNfcBtnTextDark]}>Reasignar o Reescribir Etiqueta NFC</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={[styles.unlinkedNfcBox, isDark && styles.unlinkedNfcBoxDark]}>
-              <Text style={[styles.unlinkedNfcDesc, isDark && styles.textSecondaryDark]}>
-                Esta mascota aún no tiene una etiqueta NFC asociada. Acerca una etiqueta compatible para vincularla a este registro oficial.
-              </Text>
-              <TouchableOpacity
-                style={styles.linkNfcPrimaryBtn}
-                onPress={handleOpenVincularNfc}
-                activeOpacity={0.8}
-              >
-                <MaterialIcons name="nfc" size={18} color="#ffffff" style={{ marginRight: 8 }} />
-                <Text style={styles.linkNfcPrimaryBtnText}>Vincular Etiqueta NFC</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-
-        {/* Secciones de Salud & Historial Clínico */}
-        <View style={[styles.infoCard, isDark && styles.cardDark, { marginTop: 14 }]}>
-          <Text style={[styles.sectionTitle, isDark && styles.textDark]}>
-            Historial Clínico
-          </Text>
-
-          {pet?.historialClinico && pet.historialClinico.length > 0 ? (
-            pet.historialClinico.map((item, idx) => (
               <View
-                key={item.id || idx}
                 style={[
-                  styles.historyRow,
-                  isDark && styles.historyRowDark,
-                  idx === (pet.historialClinico?.length || 1) - 1 && { borderBottomWidth: 0 },
+                  styles.nfcStatusBadge,
+                  isNfcLinked
+                    ? (isDark ? styles.nfcBadgeLinkedDark : styles.nfcBadgeLinked)
+                    : (isDark ? styles.nfcBadgeUnlinkedDark : styles.nfcBadgeUnlinked),
                 ]}
               >
-                <View style={styles.historyDot} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.historyTitle, isDark && styles.textDark]}>
-                    {item.titulo}
-                  </Text>
-                  <Text style={[styles.historySubtitle, isDark && styles.textSecondaryDark]}>
-                    {item.detalle} • {item.fecha}
+                <Ionicons
+                  name={isNfcLinked ? 'checkmark-circle-outline' : 'alert-circle-outline'}
+                  size={14}
+                  color={isNfcLinked ? (isDark ? '#4ade80' : Palette.greenDeep) : (isDark ? '#fcd34d' : '#92400e')}
+                />
+                <Text
+                  style={[
+                    styles.nfcStatusBadgeText,
+                    isNfcLinked
+                      ? (isDark ? styles.nfcStatusTextLinkedDark : styles.nfcStatusTextLinked)
+                      : (isDark ? styles.nfcStatusTextUnlinkedDark : styles.nfcStatusTextUnlinked),
+                  ]}
+                >
+                  {isNfcLinked ? 'Vinculada' : 'No vinculada'}
+                </Text>
+              </View>
+            </View>
+
+            {isNfcLinked ? (
+              <View style={[styles.nfcDetailsBox, isDark && styles.nfcDetailsBoxDark]}>
+                <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
+                  <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>ID de Etiqueta:</Text>
+                  <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>{pet?.nfcTagId || 'N/A'}</Text>
+                </View>
+                <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
+                  <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Enlace Oficial:</Text>
+                  <Text style={[styles.nfcDetailValue, styles.monospace, isDark && styles.textDark]}>
+                    {pet?.nfcUrl || `https://huellapp.app/pet?id=${displayId}`}
                   </Text>
                 </View>
-                <Ionicons
-                  name={item.completado ? 'checkmark-circle' : 'time-outline'}
-                  size={20}
-                  color={item.completado ? '#04b639' : '#f59e0b'}
-                />
-              </View>
-            ))
-          ) : (
-            <View style={styles.historyEmptyBox}>
-              <Ionicons name="medical-outline" size={26} color={isDark ? '#71717a' : '#9ca3af'} />
-              <Text style={[styles.historyEmptyText, isDark && styles.textDark]}>
-                Sin registros clínicos previos
-              </Text>
-              <Text style={[styles.historyEmptySubtext, isDark && styles.textSecondaryDark]}>
-                Las consultas, vacunas y observaciones registradas para esta mascota aparecerán en esta sección.
-              </Text>
-            </View>
-          )}
-        </View>
+                {pet?.nfcLinkedAt && (
+                  <View style={[styles.nfcDetailRow, isDark && styles.nfcDetailRowDark]}>
+                    <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Fecha de vinculación:</Text>
+                    <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>
+                      {new Date(pet.nfcLinkedAt).toLocaleString('es-AR')}
+                    </Text>
+                  </View>
+                )}
+                {pet?.nfcLinkedBy && (
+                  <View style={[styles.nfcDetailRow, { borderBottomWidth: 0 }]}>
+                    <Text style={[styles.nfcDetailLabel, isDark && styles.textSecondaryDark]}>Veterinario Emisor:</Text>
+                    <Text style={[styles.nfcDetailValue, isDark && styles.textDark]}>{pet.nfcLinkedBy}</Text>
+                  </View>
+                )}
 
-        {/* Sección QR — Generador nativo y Placas STL 3D */}
-        <QRMascotaCard
-          petId={displayId}
-          petName={displayNombre}
-          isDark={isDark}
-        />
+                <TouchableOpacity
+                  style={[styles.relinkNfcBtn, isDark && styles.relinkNfcBtnDark]}
+                  onPress={handleOpenVincularNfc}
+                  activeOpacity={0.8}
+                >
+                  <MaterialCommunityIcons name="nfc" size={18} color={Palette.greenDeep} style={{ marginRight: 6 }} />
+                  <Text style={[styles.relinkNfcBtnText, isDark && styles.relinkNfcBtnTextDark]}>
+                    Reasignar o Reescribir Etiqueta NFC
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={[styles.unlinkedNfcBox, isDark && styles.unlinkedNfcBoxDark]}>
+                <Text style={[styles.unlinkedNfcDesc, isDark && styles.textSecondaryDark]}>
+                  Esta mascota aún no tiene una etiqueta NFC asociada. Acerca una etiqueta compatible para vincularla a este registro oficial.
+                </Text>
+                <TouchableOpacity
+                  style={styles.linkNfcPrimaryBtn}
+                  onPress={handleOpenVincularNfc}
+                  activeOpacity={0.8}
+                >
+                  <MaterialCommunityIcons name="nfc" size={18} color="#ffffff" style={{ marginRight: 8 }} />
+                  <Text style={styles.linkNfcPrimaryBtnText}>Vincular Etiqueta NFC</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* ── SECCIÓN 5: PLACA QR Y MODELO 3D STL ──────────────────────── */}
+        {(activeTab === 'qr' || activeTab === 'todos') && (
+          <View style={{ marginBottom: 14 }}>
+            <QRMascotaCard
+              petId={displayId}
+              petName={displayNombre}
+              isDark={isDark}
+            />
+          </View>
+        )}
 
         {/* Botón de volver */}
         <TouchableOpacity
@@ -503,7 +739,15 @@ export default function MascotaDetalleScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Modal Vincular NFC Integrado */}
+      {/* ── Modal de Edición de Mascota ───────────────────────────────── */}
+      <EditarMascotaModal
+        visible={editModalVisible}
+        pet={pet || ({ ...params, id: displayId, nombre: displayNombre } as any)}
+        onClose={() => setEditModalVisible(false)}
+        onPetUpdated={handlePetUpdated}
+      />
+
+      {/* ── Modal Vincular NFC Integrado ──────────────────────────────── */}
       <VincularNfcModal
         visible={nfcModalVisible}
         mascota={pet || ({ ...params, id: displayId, nombre: displayNombre } as any)}
@@ -521,7 +765,7 @@ export default function MascotaDetalleScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
     backgroundColor: '#09090b',
@@ -531,103 +775,237 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
+    paddingVertical: 10,
+    backgroundColor: Palette.cardLight,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
   },
   navbarDark: {
     backgroundColor: '#18181b',
     borderBottomColor: '#27272a',
   },
   navTitle: {
-    fontSize: 17,
+    fontSize: Typography.size.bodyLarge,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
+  },
+  navActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#f1f5f9',
+    width: 38,
+    height: 38,
+    borderRadius: Radius.md,
+    backgroundColor: Palette.greenSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   buttonDark: {
     backgroundColor: '#27272a',
   },
+  editNavBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Palette.greenSoft,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: Radius.md,
+    gap: 4,
+  },
+  editNavBtnDark: {
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+  },
+  editNavBtnText: {
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
+  },
+  petCompactHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: Palette.cardLight,
+    borderBottomWidth: 1,
+    borderBottomColor: Palette.borderLight,
+    gap: 12,
+  },
+  petCompactHeaderDark: {
+    backgroundColor: '#18181b',
+    borderBottomColor: '#27272a',
+  },
+  petCompactAvatarWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: Palette.greenBorder,
+  },
+  petCompactAvatar: {
+    width: '100%',
+    height: '100%',
+  },
+  petCompactFallback: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: Palette.greenSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  petCompactFallbackDark: {
+    backgroundColor: '#27272a',
+  },
+  petCompactName: {
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
+  },
+  petCompactSub: {
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
+    marginTop: 1,
+  },
+  codeBadge: {
+    backgroundColor: Palette.greenSoft,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: Radius.sm,
+  },
+  codeBadgeDark: {
+    backgroundColor: 'rgba(8, 122, 67, 0.25)',
+  },
+  codeBadgeText: {
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
+  },
+  compactStatusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: Radius.full,
+  },
+  pillHome: {
+    backgroundColor: Palette.greenDeep,
+  },
+  pillLost: {
+    backgroundColor: Palette.redEmergency,
+  },
+  compactStatusPillText: {
+    color: '#ffffff',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+  },
+  // Tabs Bar
+  tabsWrapper: {
+    backgroundColor: Palette.cardLight,
+    borderBottomWidth: 1,
+    borderBottomColor: Palette.borderLight,
+    paddingVertical: 8,
+  },
+  tabsWrapperDark: {
+    backgroundColor: '#18181b',
+    borderBottomColor: '#27272a',
+  },
+  tabsScrollContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  tabPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: Radius.full,
+    backgroundColor: Palette.backgroundLight,
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
+  },
+  tabPillDark: {
+    backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
+  },
+  tabPillActive: {
+    backgroundColor: Palette.greenDeep,
+    borderColor: Palette.greenDeep,
+    ...Shadows.sm,
+  },
+  tabPillText: {
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
+  },
+  tabPillTextDark: {
+    color: '#a1a1aa',
+  },
+  tabPillTextActive: {
+    color: '#ffffff',
+    fontFamily: Typography.family.bodyBold,
+    fontWeight: '700',
+  },
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
   },
   imageCard: {
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     overflow: 'hidden',
     position: 'relative',
-    marginBottom: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 4,
-      },
-      web: {
-        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-      },
-    }),
+    marginBottom: 14,
+    ...Shadows.md,
   },
   petImage: {
     width: '100%',
-    height: 240,
+    height: 220,
     backgroundColor: '#f1f5f9',
   },
   imageFallback: {
     width: '100%',
-    height: 240,
-    backgroundColor: '#ecfdf5',
+    height: 220,
+    backgroundColor: Palette.greenSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   speciesFloatingBadge: {
     position: 'absolute',
-    bottom: 14,
-    left: 14,
+    bottom: 12,
+    left: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: Radius.full,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  speciesFloatingBadgeDark: {
+    backgroundColor: 'rgba(24, 24, 27, 0.95)',
+    borderColor: '#3f3f46',
   },
   speciesFloatingText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.textPrimary,
+  },
+  speciesFloatingTextDark: {
+    color: '#fafafa',
   },
   infoCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 20,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.xl,
+    padding: 18,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-      },
-    }),
+    borderColor: Palette.borderLight,
+    ...Shadows.sm,
   },
   cardDark: {
     backgroundColor: '#18181b',
@@ -637,16 +1015,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   petName: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.h2,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   petBreed: {
-    fontSize: 15,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
   genderTag: {
@@ -654,50 +1034,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 12,
+    borderRadius: Radius.full,
     gap: 4,
   },
   genderTagText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
   },
   statsGrid: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   statBox: {
     flex: 1,
-    backgroundColor: '#f8fafc',
-    borderRadius: 14,
-    padding: 12,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
+    padding: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: Palette.borderLight,
   },
   statBoxDark: {
     backgroundColor: '#27272a',
     borderColor: '#3f3f46',
   },
   statLabel: {
-    fontSize: 11,
-    color: '#64748b',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 4,
-    fontWeight: '500',
   },
   statValue: {
-    fontSize: 14,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
     marginTop: 2,
   },
   ownerSection: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Palette.greenSoft,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
-    marginBottom: 14,
+    borderColor: Palette.greenBorder,
+    marginBottom: 12,
   },
   ownerRow: {
     flexDirection: 'row',
@@ -705,25 +1086,62 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   ownerLabel: {
-    fontSize: 13,
-    color: '#166534',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.greenDeep,
   },
   section: {
-    marginTop: 8,
-    paddingTop: 14,
+    marginTop: 6,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: Palette.borderLight,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
     marginBottom: 8,
   },
   sectionBody: {
-    fontSize: 14,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     lineHeight: 20,
+  },
+  btnEditMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Palette.greenSoft,
+    borderWidth: 1.5,
+    borderColor: Palette.greenBorder,
+    borderRadius: Radius.md,
+    paddingVertical: 12,
+    marginTop: 14,
+  },
+  btnEditMainDark: {
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+    borderColor: Palette.greenDeep,
+  },
+  btnEditMainText: {
+    color: Palette.greenDeep,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.bodyBold,
+  },
+  countBadge: {
+    backgroundColor: Palette.greenSoft,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Radius.full,
+  },
+  countBadgeDark: {
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+  },
+  countBadgeText: {
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
   },
   // NFC Card
   nfcCardHeader: {
@@ -738,12 +1156,12 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: Radius.full,
   },
   nfcBadgeLinked: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   nfcBadgeUnlinked: {
     backgroundColor: '#fef3c7',
@@ -751,86 +1169,87 @@ const styles = StyleSheet.create({
     borderColor: '#fde68a',
   },
   nfcStatusBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
   },
   nfcStatusTextLinked: {
-    color: '#15803d',
+    color: Palette.greenDeep,
   },
   nfcStatusTextUnlinked: {
     color: '#92400e',
   },
   nfcDetailsBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
   },
   nfcDetailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
   },
   nfcDetailLabel: {
-    fontSize: 12,
-    color: '#64748b',
-    fontWeight: '500',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
   nfcDetailValue: {
-    fontSize: 12,
-    color: '#0f172a',
-    fontWeight: '700',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.textPrimary,
     flexShrink: 1,
     textAlign: 'right',
   },
   monospace: {
     fontFamily: Platform.select({ ios: 'Courier', default: 'monospace' }),
-    fontSize: 11,
+    fontSize: Typography.size.tiny,
   },
   relinkNfcBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ecfdf5',
+    backgroundColor: Palette.greenSoft,
     borderWidth: 1,
-    borderColor: '#a7f3d0',
-    borderRadius: 10,
+    borderColor: Palette.greenBorder,
+    borderRadius: Radius.md,
     paddingVertical: 10,
     marginTop: 12,
   },
   relinkNfcBtnText: {
-    color: '#04b639',
-    fontSize: 13,
-    fontWeight: '700',
+    color: Palette.greenDeep,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
   },
   unlinkedNfcBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
     gap: 12,
   },
   unlinkedNfcDesc: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     lineHeight: 18,
   },
   linkNfcPrimaryBtn: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
+    borderRadius: Radius.md,
     paddingVertical: 12,
   },
   linkNfcPrimaryBtnText: {
     color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.bodyBold,
   },
   // History
   historyRow: {
@@ -838,61 +1257,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
     gap: 12,
   },
   historyDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
   },
   historyTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0f172a',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   historySubtitle: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
-  historyEmptyBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    gap: 6,
-  },
-  historyEmptyText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0f172a',
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  historyEmptySubtext: {
-    fontSize: 12,
-    color: '#64748b',
-    textAlign: 'center',
-    lineHeight: 18,
-  },
   backHomeBtn: {
-    marginTop: 24,
-    backgroundColor: '#04b639',
-    borderRadius: 14,
-    paddingVertical: 16,
+    marginTop: 18,
+    backgroundColor: Palette.greenDeep,
+    borderRadius: Radius.md,
+    paddingVertical: 14,
     alignItems: 'center',
-    shadowColor: '#04b639',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...Shadows.md,
   },
   backHomeBtnText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.bodyBold,
   },
   textDark: {
     color: '#fafafa',
@@ -901,8 +1298,8 @@ const styles = StyleSheet.create({
     color: '#a1a1aa',
   },
   ownerSectionDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
+    backgroundColor: 'rgba(8, 122, 67, 0.15)',
+    borderColor: 'rgba(8, 122, 67, 0.3)',
   },
   ownerLabelDark: {
     color: '#4ade80',
@@ -911,8 +1308,8 @@ const styles = StyleSheet.create({
     borderTopColor: '#27272a',
   },
   nfcBadgeLinkedDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+    borderColor: Palette.greenDeep,
   },
   nfcBadgeUnlinkedDark: {
     backgroundColor: '#451a03',
@@ -932,8 +1329,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#3f3f46',
   },
   relinkNfcBtnDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+    borderColor: Palette.greenDeep,
   },
   relinkNfcBtnTextDark: {
     color: '#4ade80',
@@ -941,13 +1338,6 @@ const styles = StyleSheet.create({
   unlinkedNfcBoxDark: {
     backgroundColor: '#27272a',
     borderColor: '#3f3f46',
-  },
-  speciesFloatingBadgeDark: {
-    backgroundColor: 'rgba(24, 24, 27, 0.95)',
-    borderColor: '#3f3f46',
-  },
-  speciesFloatingTextDark: {
-    color: '#fafafa',
   },
   imageFallbackDark: {
     backgroundColor: '#18181b',
@@ -959,75 +1349,80 @@ const styles = StyleSheet.create({
     backgroundColor: '#09090b',
   },
   btnToggleExtravio: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
+    paddingVertical: 7,
+    borderRadius: Radius.md,
   },
   btnExtraviadaActive: {
-    backgroundColor: '#fee2e2',
-    borderColor: '#fca5a5',
+    backgroundColor: Palette.redEmergency,
   },
   btnExtraviadaInactive: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#86efac',
+    backgroundColor: Palette.greenDeep,
   },
   btnToggleExtravioText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: '#ffffff',
   },
   lostAlertBox: {
-    backgroundColor: '#fee2e2',
-    borderRadius: 12,
+    backgroundColor: Palette.redSoft,
+    borderRadius: Radius.md,
     padding: 12,
     marginTop: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#dc2626',
+    borderLeftColor: Palette.redEmergency,
+    borderWidth: 1,
+    borderColor: Palette.redBorder,
   },
   lostAlertBoxTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#991b1b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.redEmergency,
   },
   lostAlertBoxText: {
-    fontSize: 12,
-    color: '#7f1d1d',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
     lineHeight: 16,
   },
   scanDetectedBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
     padding: 12,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
   },
   scanDetectedBoxDark: {
     backgroundColor: '#27272a',
     borderColor: '#3f3f46',
   },
   scanDetectedTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   scanDetectedDate: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 4,
   },
   scanDetectedCoords: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    color: Palette.textSecondary,
     marginTop: 2,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
   btnOpenMap: {
-    backgroundColor: '#2563eb',
-    borderRadius: 10,
-    paddingVertical: 8,
+    backgroundColor: Palette.greenDeep,
+    borderRadius: Radius.md,
+    paddingVertical: 9,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1037,12 +1432,13 @@ const styles = StyleSheet.create({
   },
   btnOpenMapText: {
     color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
   },
   noScansText: {
-    fontSize: 12,
-    color: '#94a3b8',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textMuted,
     marginTop: 10,
     fontStyle: 'italic',
   },
@@ -1054,11 +1450,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: Palette.borderLight,
   },
   btnPreviewPublicText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#04b639',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
   },
 });

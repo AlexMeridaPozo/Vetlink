@@ -1,5 +1,5 @@
 import { useAppTheme } from '@/context/ThemeContext';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Palette } from '@/constants/theme';
 
 const BUTTON_SIZE = 58;
 const MARGIN = 16;
@@ -195,7 +196,7 @@ export function ChatLogo_Infferior() {
       accessibilityLabel="Abrir Asistente Chatbot"
       accessibilityHint="Toca para abrir o arrastra con el dedo para moverlo por la pantalla"
     >
-      {/* Icono con diseño de robot */}
+      {/* Ilustración de robot del Asistente HuellaApp */}
       <MaterialCommunityIcons name="robot" size={32} color="#ffffff" />
 
       {/* Luz indicadora activa del asistente IA */}
@@ -211,22 +212,22 @@ const styles = StyleSheet.create({
     left: 0,
     width: BUTTON_SIZE,
     height: BUTTON_SIZE,
-    borderRadius: 16,
-    backgroundColor: '#04b639',
+    borderRadius: 20,
+    backgroundColor: Palette.greenDeep,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 9999,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.45)',
-    shadowColor: '#04b639',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
   },
   squareButtonDark: {
-    backgroundColor: '#04b639',
-    borderColor: 'rgba(74, 222, 128, 0.55)',
+    backgroundColor: '#15803D',
+    borderColor: '#22C55E',
     shadowColor: '#000000',
     shadowOpacity: 0.5,
   },
@@ -237,12 +238,12 @@ const styles = StyleSheet.create({
     width: 9,
     height: 9,
     borderRadius: 4.5,
-    backgroundColor: '#bbf7d0',
+    backgroundColor: '#86efac',
     borderWidth: 1.5,
-    borderColor: '#04b639',
+    borderColor: Palette.greenDeep,
   },
   indicatorLightDark: {
-    backgroundColor: '#86efac',
-    borderColor: '#04b639',
+    backgroundColor: '#4ade80',
+    borderColor: '#15803D',
   },
 });

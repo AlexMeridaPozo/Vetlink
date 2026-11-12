@@ -27,6 +27,7 @@ import {
   formatDistance,
 } from '@/constants/veterinarias';
 import { ThemeToggleButton, useAppTheme } from '@/context/ThemeContext';
+import { Palette, Typography, Radius, Shadows } from '@/constants/theme';
 import { buscarVeterinariasCercanas } from '@/services/veterinariasService';
 
 type FilterType =
@@ -46,16 +47,16 @@ function getTipoConfig(tipo?: TipoLugarMascota | string) {
       return {
         label: 'Hospital 24hs',
         shortLabel: 'Hospital',
-        icon: 'medkit',
-        color: '#e11d48',
-        bg: '#ffe4e6',
-        bgDark: 'rgba(225, 29, 72, 0.25)',
+        icon: 'medkit-outline',
+        color: Palette.redEmergency,
+        bg: Palette.redSoft,
+        bgDark: 'rgba(217, 74, 74, 0.25)',
       };
     case 'publico':
       return {
         label: 'Zoonosis / Público',
         shortLabel: 'Zoonosis',
-        icon: 'business',
+        icon: 'business-outline',
         color: '#0284c7',
         bg: '#e0f2fe',
         bgDark: 'rgba(2, 132, 199, 0.25)',
@@ -64,7 +65,7 @@ function getTipoConfig(tipo?: TipoLugarMascota | string) {
       return {
         label: 'Pet Shop',
         shortLabel: 'Pet Shop',
-        icon: 'bag-handle',
+        icon: 'bag-handle-outline',
         color: '#d97706',
         bg: '#fef3c7',
         bgDark: 'rgba(217, 119, 6, 0.25)',
@@ -73,7 +74,7 @@ function getTipoConfig(tipo?: TipoLugarMascota | string) {
       return {
         label: 'Farmacia',
         shortLabel: 'Farmacia',
-        icon: 'bandage',
+        icon: 'bandage-outline',
         color: '#0f766e',
         bg: '#ccfbf1',
         bgDark: 'rgba(15, 118, 110, 0.25)',
@@ -82,10 +83,10 @@ function getTipoConfig(tipo?: TipoLugarMascota | string) {
       return {
         label: 'Clínica',
         shortLabel: 'Clínica',
-        icon: 'paw',
-        color: '#15803d',
-        bg: '#dcfce7',
-        bgDark: 'rgba(4, 182, 57, 0.25)',
+        icon: 'paw-outline',
+        color: Palette.greenDeep,
+        bg: Palette.greenSoft,
+        bgDark: 'rgba(8, 122, 67, 0.25)',
       };
   }
 }
@@ -334,7 +335,7 @@ export default function MapaScreen() {
           <View style={styles.subtitleRow}>
             <View style={[styles.liveIndicator, styles.liveIndicatorActive]} />
             <Text style={[styles.headerSubtitle, isDark && styles.textMutedDark]}>
-              Pilar Centro &bull; {veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length} en Huellapp &bull; {veterinarias.filter((v) => !(v.enHuellapp ?? v.enVetlink)).length} externas
+              Pilar Centro &bull; {veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length} en HuellaApp &bull; {veterinarias.filter((v) => !(v.enHuellapp ?? v.enVetlink)).length} externas
             </Text>
           </View>
         </View>
@@ -412,7 +413,7 @@ export default function MapaScreen() {
                 selectedFilter === 'huellapp' && styles.chipTextActiveHuellapp,
                 isDark && styles.chipTextDark,
               ]}>
-              En Huellapp ({veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length})
+              En HuellaApp ({veterinarias.filter((v) => (v.enHuellapp ?? v.enVetlink)).length})
             </Text>
           </TouchableOpacity>
 
@@ -710,7 +711,7 @@ export default function MapaScreen() {
                         <Text
                           style={[styles.suggestionSubtitle, isDark && styles.textMutedDark]}
                           numberOfLines={1}>
-                          {(item.enHuellapp ?? item.enVetlink) ? '🟢 En Huellapp' : '⚪ Externa'} &bull; {item.direccion}
+                          {(item.enHuellapp ?? item.enVetlink) ? 'En HuellaApp' : 'Externa'} &bull; {item.direccion}
                         </Text>
                       </View>
                       {item.distanceText && (
@@ -740,12 +741,12 @@ export default function MapaScreen() {
                         isDark && ((selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? styles.huellappBadgeOnDark : styles.huellappBadgeOffDark),
                       ]}>
                       <Ionicons
-                        name={(selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? 'checkmark-circle' : 'ellipse-outline'}
-                        size={11}
+                        name={(selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? 'checkmark-circle-outline' : 'ellipse-outline'}
+                        size={12}
                         color={
                           (selectedClinic.enHuellapp ?? selectedClinic.enVetlink)
-                            ? (isDark ? '#4ade80' : '#15803d')
-                            : (isDark ? '#a1a1aa' : '#64748b')
+                            ? (isDark ? '#4ade80' : Palette.greenDeep)
+                            : (isDark ? '#a1a1aa' : Palette.textMuted)
                         }
                       />
                       <Text
@@ -754,7 +755,7 @@ export default function MapaScreen() {
                           (selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? styles.huellappTextOn : styles.huellappTextOff,
                           isDark && ((selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? styles.huellappTextOnDark : styles.huellappTextOffDark),
                         ]}>
-                        {(selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? 'En Red Huellapp' : 'No adherida'}
+                        {(selectedClinic.enHuellapp ?? selectedClinic.enVetlink) ? 'En Red HuellaApp' : 'No adherida'}
                       </Text>
                     </View>
 
@@ -801,7 +802,7 @@ export default function MapaScreen() {
                     {/* Badge de distancia si hay GPS */}
                     {selectedClinic.distanceText && (
                       <View style={[styles.distancePill, isDark && styles.distancePillDark]}>
-                        <Ionicons name="navigate-sharp" size={11} color="#04b639" />
+                        <Ionicons name="navigate-outline" size={11} color={Palette.greenDeep} />
                         <Text style={styles.distancePillText}>
                           {selectedClinic.distanceText}
                         </Text>
@@ -827,7 +828,7 @@ export default function MapaScreen() {
                 <Ionicons
                   name="location-outline"
                   size={16}
-                  color={isDark ? '#a1a1aa' : '#64748b'}
+                  color={Palette.textMuted}
                 />
                 <Text
                   style={[styles.cardAddressText, isDark && styles.textMutedDark]}
@@ -841,7 +842,7 @@ export default function MapaScreen() {
                 <Ionicons
                   name="call-outline"
                   size={16}
-                  color={isDark ? '#a1a1aa' : '#64748b'}
+                  color={Palette.textMuted}
                 />
                 <Text
                   style={[styles.cardAddressText, isDark && styles.textMutedDark]}
@@ -855,7 +856,7 @@ export default function MapaScreen() {
                 <Ionicons
                   name="time-outline"
                   size={16}
-                  color={isDark ? '#a1a1aa' : '#64748b'}
+                  color={Palette.greenDeep}
                 />
                 <Text
                   style={[styles.cardHoursText, isDark && styles.textMutedDark]}
@@ -874,9 +875,9 @@ export default function MapaScreen() {
                     {selectedClinic.servicios.map((s, idx) => (
                       <View key={idx} style={[styles.serviceTag, isDark && styles.serviceTagDark]}>
                         <Ionicons
-                          name="checkmark-circle"
-                          size={11}
-                          color="#04b639"
+                          name="checkmark-circle-outline"
+                          size={12}
+                          color={Palette.greenDeep}
                           style={{ marginRight: 3 }}
                         />
                         <Text style={[styles.serviceTagText, isDark && styles.serviceTagTextDark]}>
@@ -894,7 +895,7 @@ export default function MapaScreen() {
                   style={styles.callButton}
                   activeOpacity={0.85}
                   onPress={() => handleCall(selectedClinic.telefono)}>
-                  <Ionicons name="call" size={16} color="#ffffff" />
+                  <Ionicons name="call-outline" size={16} color="#ffffff" />
                   <Text style={styles.callButtonText}>Llamar</Text>
                 </TouchableOpacity>
 
@@ -912,7 +913,7 @@ export default function MapaScreen() {
                       DEFAULT_COORDINATES.longitude;
                     handleDirections(lat, lng);
                   }}>
-                  <Ionicons name="navigate" size={16} color={isDark ? '#f4f4f5' : '#0f172a'} />
+                  <Ionicons name="navigate-outline" size={16} color={isDark ? '#f4f4f5' : Palette.textPrimary} />
                   <Text
                     style={[styles.directionsButtonText, isDark && styles.textDark]}>
                     Cómo llegar
@@ -930,7 +931,7 @@ export default function MapaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
     backgroundColor: '#09090b',
@@ -942,18 +943,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
+    backgroundColor: Palette.cardLight,
   },
   headerDark: {
     borderBottomColor: '#27272a',
+    backgroundColor: '#09090b',
   },
   headerTitleContainer: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.h3,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   subtitleRow: {
     flexDirection: 'row',
@@ -967,11 +971,12 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   liveIndicatorActive: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenPrimary,
   },
   headerSubtitle: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
   textDark: {
     color: '#f4f4f5',
@@ -983,22 +988,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 10,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.cardLight,
+    borderBottomWidth: 1,
+    borderBottomColor: Palette.borderLight,
   },
   searchSectionDark: {
     backgroundColor: '#09090b',
+    borderBottomColor: '#27272a',
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
-    borderRadius: 12,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
     paddingHorizontal: 12,
     height: 44,
   },
   searchBarDark: {
     backgroundColor: '#18181b',
-    borderWidth: 1,
     borderColor: '#27272a',
   },
   searchIcon: {
@@ -1006,8 +1015,9 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
-    color: '#0f172a',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textPrimary,
     height: '100%',
   },
   searchInputDark: {
@@ -1030,55 +1040,68 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: '#f1f5f9',
+    borderRadius: Radius.full,
+    backgroundColor: Palette.backgroundLight,
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
   },
   chipDark: {
     backgroundColor: '#18181b',
+    borderColor: '#27272a',
   },
   chipActive: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
+    borderColor: Palette.greenBorder,
   },
   chipActiveDark: {
-    backgroundColor: '#064e3b',
+    backgroundColor: 'rgba(8, 122, 67, 0.25)',
+    borderColor: Palette.greenDeep,
   },
   chipActiveRed: {
-    backgroundColor: '#ffe4e6',
+    backgroundColor: Palette.redSoft,
+    borderColor: Palette.redBorder,
   },
   chipActiveRedDark: {
-    backgroundColor: '#881337',
+    backgroundColor: 'rgba(217, 74, 74, 0.25)',
+    borderColor: Palette.redEmergency,
   },
   chipActiveAmber: {
     backgroundColor: '#fef3c7',
+    borderColor: '#fde68a',
   },
   chipActiveAmberDark: {
-    backgroundColor: '#78350f',
+    backgroundColor: 'rgba(217, 119, 6, 0.25)',
+    borderColor: '#d97706',
   },
   chipActiveBlue: {
     backgroundColor: '#e0f2fe',
+    borderColor: '#bae6fd',
   },
   chipActiveBlueDark: {
-    backgroundColor: '#075985',
+    backgroundColor: 'rgba(2, 132, 199, 0.25)',
+    borderColor: '#0284c7',
   },
   chipActiveTeal: {
     backgroundColor: '#ccfbf1',
+    borderColor: '#99f6e4',
   },
   chipActiveTealDark: {
-    backgroundColor: '#134e4a',
+    backgroundColor: 'rgba(15, 118, 110, 0.25)',
+    borderColor: '#0f766e',
   },
   chipActiveHuellapp: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   chipActiveHuellappDark: {
-    backgroundColor: '#064e3b',
-    borderColor: '#047857',
+    backgroundColor: 'rgba(8, 122, 67, 0.25)',
+    borderColor: Palette.greenDeep,
   },
   chipActiveGray: {
-    backgroundColor: '#e2e8f0',
+    backgroundColor: '#f1f5f9',
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#e2e8f0',
   },
   chipActiveGrayDark: {
     backgroundColor: '#27272a',
@@ -1088,44 +1111,44 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#e11d48',
+    backgroundColor: Palette.redEmergency,
     marginRight: 6,
   },
   huellappDotGreen: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     marginRight: 6,
   },
   huellappDotGray: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#64748b',
+    backgroundColor: Palette.textMuted,
     marginRight: 6,
   },
   chipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.textSecondary,
   },
   chipTextDark: {
     color: '#a1a1aa',
   },
   chipTextActive: {
-    color: '#15803d',
+    color: Palette.greenDeep,
   },
   chipTextActiveHuellapp: {
-    color: '#15803d',
+    color: Palette.greenDeep,
     fontWeight: '700',
   },
   chipTextActiveGray: {
-    color: '#334155',
+    color: Palette.textPrimary,
     fontWeight: '700',
   },
   chipTextActiveRed: {
-    color: '#be123c',
+    color: Palette.redEmergency,
   },
   chipTextActiveAmber: {
     color: '#b45309',
@@ -1145,24 +1168,25 @@ const styles = StyleSheet.create({
     top: 12,
     left: 16,
     right: 16,
-    backgroundColor: '#f0fdf4',
-    borderRadius: 10,
+    backgroundColor: Palette.greenSoft,
+    borderRadius: Radius.md,
     paddingHorizontal: 12,
     paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderColor: Palette.greenBorder,
     zIndex: 10,
   },
   locationBannerDark: {
-    backgroundColor: '#052e16',
-    borderColor: '#065f46',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+    borderColor: 'rgba(8, 122, 67, 0.4)',
   },
   locationBannerText: {
-    fontSize: 12,
-    color: '#15803d',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.greenDeep,
     flex: 1,
   },
   locationBannerTextDark: {
@@ -1176,19 +1200,15 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   fab: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#ffffff',
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: Palette.cardLight,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
+    ...Shadows.md,
   },
   fabDark: {
     backgroundColor: '#18181b',
@@ -1200,17 +1220,13 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     maxHeight: 260,
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 8,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.lg,
     zIndex: 30,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
+    ...Shadows.lg,
   },
   suggestionsDropdownDark: {
     backgroundColor: '#18181b',
@@ -1221,7 +1237,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
     gap: 12,
   },
   suggestionItemDark: {
@@ -1230,29 +1246,31 @@ const styles = StyleSheet.create({
   suggestionIconBox: {
     width: 32,
     height: 32,
-    borderRadius: 8,
-    backgroundColor: '#f1f5f9',
+    borderRadius: Radius.sm,
+    backgroundColor: Palette.backgroundLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   suggestionTitle: {
-    fontSize: 14,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
   },
   suggestionSubtitle: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
   },
   distanceBadge: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#04b639',
-    backgroundColor: '#dcfce7',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
+    backgroundColor: Palette.greenSoft,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: Radius.full,
   },
   noResultsBox: {
     padding: 24,
@@ -1260,8 +1278,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   noResultsText: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     textAlign: 'center',
   },
   detailCard: {
@@ -1269,17 +1288,13 @@ const styles = StyleSheet.create({
     bottom: 16,
     left: 16,
     right: 16,
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.xl,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    elevation: 10,
     zIndex: 25,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
+    ...Shadows.lg,
   },
   detailCardDark: {
     backgroundColor: '#18181b',
@@ -1298,7 +1313,7 @@ const styles = StyleSheet.create({
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     marginBottom: 6,
     flexWrap: 'wrap',
   },
@@ -1308,39 +1323,40 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: Radius.full,
   },
   huellappBadgeOn: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: Palette.greenSoft,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   huellappBadgeOnDark: {
-    backgroundColor: 'rgba(4, 182, 57, 0.25)',
-    borderColor: '#059669',
+    backgroundColor: 'rgba(8, 122, 67, 0.25)',
+    borderColor: Palette.greenDeep,
   },
   huellappBadgeOff: {
     backgroundColor: '#f1f5f9',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
   },
   huellappBadgeOffDark: {
     backgroundColor: 'rgba(100, 116, 139, 0.25)',
     borderColor: '#3f3f46',
   },
   huellappBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   huellappTextOn: {
-    color: '#15803d',
+    color: Palette.greenDeep,
   },
   huellappTextOnDark: {
     color: '#4ade80',
   },
   huellappTextOff: {
-    color: '#64748b',
+    color: Palette.textSecondary,
   },
   huellappTextOffDark: {
     color: '#cbd5e1',
@@ -1351,11 +1367,11 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: Radius.full,
   },
   typeBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
     textTransform: 'uppercase',
   },
   statusBadge: {
@@ -1363,21 +1379,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: Radius.full,
   },
   statusBadgeGuardia: {
-    backgroundColor: '#ffe4e6',
+    backgroundColor: Palette.redSoft,
+    borderWidth: 1,
+    borderColor: Palette.redBorder,
   },
   statusBadgeGuardiaDark: {
-    backgroundColor: 'rgba(244, 63, 94, 0.2)',
+    backgroundColor: 'rgba(217, 74, 74, 0.2)',
+    borderColor: 'rgba(217, 74, 74, 0.4)',
   },
   statusBadgeText: {
-    fontSize: 11,
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    textTransform: 'uppercase',
   },
   statusBadgeTextGuardia: {
-    color: '#e11d48',
+    color: Palette.redEmergency,
   },
   statusBadgeTextGuardiaDark: {
     color: '#fb7185',
@@ -1386,27 +1405,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
+    backgroundColor: Palette.greenSoft,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: Radius.full,
   },
   distancePillDark: {
     backgroundColor: '#27272a',
   },
   distancePillText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#04b639',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
   },
   clinicTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.bodyLarge,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   closeCardBtn: {
-    padding: 4,
-    borderRadius: 12,
+    padding: 6,
+    borderRadius: Radius.full,
   },
   closeCardBtnDark: {
     backgroundColor: '#27272a',
@@ -1418,13 +1438,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   cardAddressText: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     flex: 1,
   },
   cardHoursText: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
     flex: 1,
   },
   servicesSection: {
@@ -1432,9 +1454,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   servicesTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#64748b',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.textMuted,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
@@ -1446,18 +1468,21 @@ const styles = StyleSheet.create({
   serviceTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 7,
+    backgroundColor: Palette.backgroundLight,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
   },
   serviceTagDark: {
     backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
   },
   serviceTagText: {
-    fontSize: 11,
-    color: '#334155',
-    fontWeight: '500',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
   serviceTagTextDark: {
     color: '#cbd5e1',
@@ -1472,32 +1497,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     gap: 6,
   },
   callButtonText: {
     color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.bodyBold,
   },
   directionsButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Palette.greenSoft,
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     gap: 6,
   },
   directionsButtonDark: {
     backgroundColor: '#27272a',
+    borderColor: '#3f3f46',
   },
   directionsButtonText: {
-    color: '#0f172a',
-    fontSize: 14,
-    fontWeight: '700',
+    color: Palette.greenDeep,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.bodyBold,
   },
 });

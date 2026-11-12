@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import { useColorScheme as useRNColorScheme, TouchableOpacity, StyleSheet, View } from 'react-native';
+import { useColorScheme as useRNColorScheme, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
+import { Colors, Palette, Radius } from '@/constants/theme';
 
 export type ColorTheme = 'light' | 'dark';
 
@@ -15,21 +15,19 @@ interface ThemeContextType {
   setTheme: (theme: ColorTheme) => void;
 }
 
-const THEME_STORAGE_KEY = '@huellapp_color_theme';
-const LEGACY_THEME_STORAGE_KEY = '@vetlink_color_theme';
+const THEME_STORAGE_KEY = '@huellapp_color_theme_v2';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useRNColorScheme();
-  const [theme, setThemeState] = useState<ColorTheme>(systemScheme === 'dark' ? 'dark' : 'light');
+  const [theme, setThemeState] = useState<ColorTheme>('light');
 
-  // Cargar preferencia guardada al iniciar
+  // Cargar preferencia guardada al iniciar (inicia en light mode por defecto)
   useEffect(() => {
     let isMounted = true;
     (async () => {
       try {
-        const saved = (await AsyncStorage.getItem(THEME_STORAGE_KEY)) || (await AsyncStorage.getItem(LEGACY_THEME_STORAGE_KEY));
+        const saved = await AsyncStorage.getItem(THEME_STORAGE_KEY);
         if (isMounted && (saved === 'light' || saved === 'dark')) {
           setThemeState(saved);
         }
@@ -81,7 +79,6 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
 export function useAppTheme(): ThemeContextType {
   const context = useContext(ThemeContext);
   if (!context) {
-    // Fallback seguro si se usa fuera del provider
     return {
       theme: 'light',
       isDark: false,
@@ -94,7 +91,8 @@ export function useAppTheme(): ThemeContextType {
 }
 
 /**
- * Botón flotante o de encabezado para alternar rápidamente entre modo claro y oscuro.
+ * Botón para alternar entre tema claro y oscuro en encabezados
+ * con icono Line Art outline de contorno unificado.
  */
 export function ThemeToggleButton({ style }: { style?: any }) {
   const { isDark, toggleTheme } = useAppTheme();
@@ -109,9 +107,9 @@ export function ThemeToggleButton({ style }: { style?: any }) {
       accessibilityHint="Alterna entre el tema visual claro y oscuro de la aplicación"
     >
       <Ionicons
-        name={isDark ? 'sunny' : 'moon'}
+        name={isDark ? 'sunny-outline' : 'moon-outline'}
         size={18}
-        color={isDark ? '#facc15' : '#04b639'}
+        color={isDark ? '#FACC15' : Palette.greenDeep}
       />
     </TouchableOpacity>
   );
@@ -121,27 +119,27 @@ const styles = StyleSheet.create({
   toggleBtn: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
   toggleBtnLight: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#bbf7d0',
-    shadowColor: '#04b639',
+    backgroundColor: Palette.greenSoft,
+    borderColor: Palette.greenBorder,
+    shadowColor: Palette.greenDeep,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
   toggleBtnDark: {
-    backgroundColor: '#1f2937',
-    borderColor: '#374151',
-    shadowColor: '#000',
+    backgroundColor: '#18181B',
+    borderColor: '#27272A',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 2,
   },
 });

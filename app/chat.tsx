@@ -22,12 +22,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Palette, Typography, Radius, Shadows } from '@/constants/theme';
 
 const SUGERENCIAS_INICIALES = [
   '¿Cómo puedo registrar una nueva mascota?',
   '¿Qué turnos tengo agendados actualmente?',
   '¿Cómo identifico a mi mascota con código QR o NFC?',
-  '¿Cómo creo un recordatorio sanitario o de vacunación?',
+  '¿Cómo creo un recordatorio de vacunación?',
 ];
 
 function generarIdMensaje(prefix: 'user' | 'assistant'): string {
@@ -54,7 +55,6 @@ export default function ChatScreen() {
     }
   };
 
-  // Auto-scroll al final cuando se añade un mensaje o cambia el estado
   useEffect(() => {
     const timer = setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -65,10 +65,9 @@ export default function ChatScreen() {
   const handleEnviar = async (textoAEnviar?: string) => {
     const texto = (textoAEnviar !== undefined ? textoAEnviar : inputText).trim();
 
-    // Validar mensaje
     const validacion = validarMensajeUsuario(texto);
     if (!validacion.valido) {
-      Alert.alert('Consulta inválida', validacion.error);
+      Alert.alert('Consulta no válida', validacion.error);
       return;
     }
 
@@ -136,7 +135,6 @@ export default function ChatScreen() {
     }
   };
 
-  // Si no está autenticado, invitar a iniciar sesión
   if (!user) {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'bottom']}>
@@ -148,29 +146,29 @@ export default function ChatScreen() {
             accessibilityLabel="Regresar"
             accessibilityRole="button"
           >
-            <Ionicons name="arrow-back" size={18} color={isDark ? '#86efac' : '#166534'} />
+            <Ionicons name="arrow-back" size={18} color={Palette.greenDeep} />
             <Text style={[styles.backBtnText, isDark && styles.backBtnTextDark]}>Regresar</Text>
           </TouchableOpacity>
-          <Text style={[styles.screenTitle, isDark && styles.textDark]}>Asistente Huellapp</Text>
+          <Text style={[styles.screenTitle, isDark && styles.textDark]}>Asistente HuellaApp</Text>
           <ThemeToggleButton />
         </View>
 
         <View style={styles.authRequiredContainer}>
           <View style={[styles.authIconCircle, isDark && styles.authIconCircleDark]}>
-            <Ionicons name="lock-closed" size={48} color="#04b639" />
+            <Ionicons name="lock-closed-outline" size={44} color={Palette.greenDeep} />
           </View>
           <Text style={[styles.authRequiredTitle, isDark && styles.textDark]}>
             Inicia sesión para consultar
           </Text>
           <Text style={[styles.authRequiredDesc, isDark && styles.subtituloDark]}>
-            El Asistente Inteligente de Huellapp está disponible para usuarios autenticados. Ingresa con tu cuenta para comenzar a chatear.
+            El Asistente Inteligente de HuellaApp está disponible para usuarios autenticados. Ingresa con tu cuenta para comenzar a chatear.
           </Text>
           <TouchableOpacity
             style={styles.loginBtn}
             onPress={() => router.push('/(auth)/login')}
             activeOpacity={0.85}
           >
-            <Ionicons name="log-in-outline" size={20} color="#ffffff" style={{ marginRight: 6 }} />
+            <Ionicons name="log-in-outline" size={18} color="#ffffff" style={{ marginRight: 8 }} />
             <Text style={styles.loginBtnText}>Iniciar Sesión</Text>
           </TouchableOpacity>
         </View>
@@ -189,7 +187,7 @@ export default function ChatScreen() {
           accessibilityLabel="Regresar"
           accessibilityRole="button"
         >
-          <Ionicons name="arrow-back" size={18} color={isDark ? '#86efac' : '#166534'} />
+          <Ionicons name="arrow-back" size={18} color={Palette.greenDeep} />
           <Text style={[styles.backBtnText, isDark && styles.backBtnTextDark]}>Regresar</Text>
         </TouchableOpacity>
 
@@ -199,11 +197,11 @@ export default function ChatScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.screenTitle, isDark && styles.textDark]} numberOfLines={1}>
-              Asistente Huellapp
+              Asistente HuellaApp
             </Text>
             <View style={styles.statusRow}>
               <View style={styles.statusDot} />
-              <Text style={styles.statusText}>IA Activa • Orientación Canina y Felina</Text>
+              <Text style={styles.statusText}>IA Activa • Orientación y Cuidados</Text>
             </View>
           </View>
         </View>
@@ -216,7 +214,7 @@ export default function ChatScreen() {
               activeOpacity={0.7}
               accessibilityLabel="Borrar historial"
             >
-              <Ionicons name="trash-outline" size={19} color={isDark ? '#a1a1aa' : '#64748b'} />
+              <Ionicons name="trash-outline" size={19} color={isDark ? '#a1a1aa' : Palette.textSecondary} />
             </TouchableOpacity>
           )}
           <ThemeToggleButton />
@@ -225,9 +223,9 @@ export default function ChatScreen() {
 
       {/* ── BANNER DE RESPONSABILIDAD MÉDICA ────────────────────────────── */}
       <View style={[styles.disclaimerBanner, isDark && styles.disclaimerBannerDark]}>
-        <Ionicons name="information-circle-outline" size={16} color="#047857" style={{ marginRight: 6 }} />
+        <Ionicons name="information-circle-outline" size={16} color={Palette.greenDeep} style={{ marginRight: 6 }} />
         <Text style={[styles.disclaimerText, isDark && styles.disclaimerTextDark]}>
-          Orientación educativa. Ante síntomas graves, acude de inmediato a una guardia veterinaria.
+          Orientación educativa. Ante síntomas graves, acude de inmediato a una guardia veterinaria activa.
         </Text>
       </View>
 
@@ -247,13 +245,13 @@ export default function ChatScreen() {
             /* Estado Inicial / Bienvenida */
             <View style={styles.welcomeContainer}>
               <View style={[styles.welcomeIconCircle, isDark && styles.welcomeIconCircleDark]}>
-                <MaterialCommunityIcons name="robot" size={44} color="#04b639" />
+                <MaterialCommunityIcons name="robot" size={44} color={Palette.greenDeep} />
               </View>
               <Text style={[styles.welcomeTitle, isDark && styles.textDark]}>
-                Asistente Virtual Huellapp
+                Asistente Virtual HuellaApp
               </Text>
               <Text style={[styles.welcomeSubtitle, isDark && styles.subtituloDark]}>
-                Estimado/a {user.displayName || 'tutor/a'}, le doy la bienvenida. Estoy a su disposición para orientarle en el registro de sus mascotas, consulta de turnos, recordatorios y el uso de las funciones de la aplicación.
+                Hola, {user.displayName || 'tutor/a'}. Estoy para orientarte en el registro de tus mascotas, turnos, recordatorios y el uso de las funciones de la aplicación.
               </Text>
 
               <Text style={[styles.suggestionsHeader, isDark && styles.textDark]}>
@@ -268,6 +266,7 @@ export default function ChatScreen() {
                     onPress={() => handleEnviar(sug)}
                     activeOpacity={0.75}
                   >
+                    <Ionicons name="help-circle-outline" size={16} color={Palette.greenDeep} style={{ marginRight: 6 }} />
                     <Text style={[styles.suggestionChipText, isDark && styles.suggestionChipTextDark]}>
                       {sug}
                     </Text>
@@ -290,7 +289,7 @@ export default function ChatScreen() {
                 >
                   {!isUser && (
                     <View style={styles.assistantAvatar}>
-                      <MaterialCommunityIcons name="paw" size={16} color="#ffffff" />
+                      <MaterialCommunityIcons name="robot" size={15} color="#ffffff" />
                     </View>
                   )}
 
@@ -336,25 +335,25 @@ export default function ChatScreen() {
             })
           )}
 
-          {/* Indicador de carga cuando el modelo está respondiendo */}
+          {/* Indicador de carga */}
           {cargando && (
             <View style={[styles.messageWrapper, styles.messageWrapperAssistant]}>
               <View style={styles.assistantAvatar}>
-                <MaterialCommunityIcons name="paw" size={16} color="#ffffff" />
+                <MaterialCommunityIcons name="paw" size={15} color="#ffffff" />
               </View>
               <View style={[styles.bubble, isDark ? styles.bubbleAssistantDark : styles.bubbleAssistant, styles.typingBubble]}>
-                <ActivityIndicator size="small" color="#04b639" style={{ marginRight: 8 }} />
+                <ActivityIndicator size="small" color={Palette.greenDeep} style={{ marginRight: 8 }} />
                 <Text style={[styles.typingText, isDark && styles.subtituloDark]}>
-                  Huellapp está escribiendo...
+                  HuellaApp está escribiendo...
                 </Text>
               </View>
             </View>
           )}
 
-          {/* Mensaje de Error con opción de Reintentar */}
+          {/* Mensaje de Error */}
           {errorMensaje && (
             <View style={[styles.errorCard, isDark && styles.errorCardDark]}>
-              <Ionicons name="alert-circle" size={20} color="#ef4444" style={{ marginRight: 8 }} />
+              <Ionicons name="alert-circle-outline" size={20} color={Palette.redEmergency} style={{ marginRight: 8 }} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.errorText}>{errorMensaje}</Text>
               </View>
@@ -379,7 +378,7 @@ export default function ChatScreen() {
           <TextInput
             style={[styles.textInput, isDark && styles.textInputDark, isDark && styles.textDark]}
             placeholder="Escribe tu consulta sobre mascotas..."
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={Palette.textMuted}
             value={inputText}
             onChangeText={setInputText}
             multiline
@@ -418,7 +417,7 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
     backgroundColor: '#09090b',
@@ -429,35 +428,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: Palette.borderLight,
+    backgroundColor: Palette.cardLight,
     gap: 8,
   },
   topBarDark: {
     borderBottomColor: '#27272a',
+    backgroundColor: '#09090b',
   },
   backBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 10,
-    borderRadius: 12,
-    backgroundColor: '#dcfce7',
+    borderRadius: Radius.md,
+    backgroundColor: Palette.greenSoft,
     gap: 4,
   },
   backBtnDark: {
-    backgroundColor: '#132e1f',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
   },
   backBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#166534',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
   },
   backBtnTextDark: {
     color: '#86efac',
   },
   clearBtn: {
     padding: 6,
-    borderRadius: 8,
+    borderRadius: Radius.sm,
     marginRight: 4,
   },
   headerInfo: {
@@ -467,17 +468,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   avatarMini: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#04b639',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: Palette.greenDeep,
     alignItems: 'center',
     justifyContent: 'center',
   },
   screenTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   statusRow: {
     flexDirection: 'row',
@@ -489,104 +491,113 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenPrimary,
   },
   statusText: {
-    fontSize: 11,
-    color: '#04b639',
-    fontWeight: '600',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.greenDeep,
   },
   disclaimerBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Palette.cyanLight,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#bbf7d0',
+    borderBottomColor: Palette.borderLight,
   },
   disclaimerBannerDark: {
-    backgroundColor: '#132e1f',
-    borderBottomColor: '#166534',
+    backgroundColor: 'rgba(101, 207, 224, 0.12)',
+    borderBottomColor: '#27272a',
   },
   disclaimerText: {
     flex: 1,
-    fontSize: 11,
-    color: '#166534',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.textPrimary,
     lineHeight: 15,
   },
   disclaimerTextDark: {
-    color: '#86efac',
+    color: '#cbd5e1',
   },
   scrollContent: {
     padding: 16,
     paddingBottom: 24,
   },
-  // Welcome State
   welcomeContainer: {
     alignItems: 'center',
     paddingVertical: 20,
     paddingHorizontal: 10,
   },
   welcomeIconCircle: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    backgroundColor: '#dcfce7',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Palette.greenSoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
   },
   welcomeIconCircleDark: {
-    backgroundColor: '#132e1f',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
+    borderColor: Palette.greenDeep,
   },
   welcomeTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.h2,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
     textAlign: 'center',
     marginBottom: 8,
   },
   welcomeSubtitle: {
-    fontSize: 14,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,
   },
   suggestionsHeader: {
-    fontSize: 13,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
     alignSelf: 'flex-start',
     marginBottom: 10,
   },
   suggestionsGrid: {
     width: '100%',
-    gap: 10,
+    gap: 8,
   },
   suggestionChip: {
-    backgroundColor: '#f8fafc',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Palette.cardLight,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 14,
+    borderColor: Palette.borderLight,
+    borderRadius: Radius.lg,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    ...Shadows.sm,
   },
   suggestionChipDark: {
     backgroundColor: '#18181b',
     borderColor: '#27272a',
   },
   suggestionChipText: {
-    fontSize: 13,
-    color: '#1e293b',
-    fontWeight: '600',
+    flex: 1,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textPrimary,
     lineHeight: 18,
   },
   suggestionChipTextDark: {
     color: '#e2e8f0',
   },
-  // Message Bubbles
   messageWrapper: {
     flexDirection: 'row',
     marginVertical: 6,
@@ -603,26 +614,28 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
   bubble: {
     maxWidth: '82%',
-    borderRadius: 18,
+    borderRadius: Radius.lg,
     paddingHorizontal: 15,
     paddingVertical: 11,
   },
   bubbleUser: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     borderBottomRightRadius: 4,
+    ...Shadows.sm,
   },
   bubbleAssistant: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Palette.cyanLight,
     borderBottomLeftRadius: 4,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
+    ...Shadows.sm,
   },
   bubbleAssistantDark: {
     backgroundColor: '#18181b',
@@ -631,21 +644,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   bubbleText: {
-    fontSize: 14,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
     lineHeight: 21,
   },
   bubbleTextUser: {
     color: '#ffffff',
-    fontWeight: '500',
   },
   bubbleTextAssistant: {
-    color: '#0f172a',
+    color: Palette.textPrimary,
   },
   bubbleTextAssistantDark: {
     color: '#fafafa',
   },
   bubbleTime: {
-    fontSize: 10,
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
     marginTop: 4,
     alignSelf: 'flex-end',
   },
@@ -653,7 +667,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.75)',
   },
   bubbleTimeAssistant: {
-    color: '#94a3b8',
+    color: Palette.textMuted,
   },
   bubbleTimeAssistantDark: {
     color: '#71717a',
@@ -664,51 +678,51 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   typingText: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     fontStyle: 'italic',
   },
-  // Error Card
   errorCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fef2f2',
+    backgroundColor: Palette.redSoft,
     borderWidth: 1,
-    borderColor: '#fecaca',
-    borderRadius: 12,
+    borderColor: Palette.redBorder,
+    borderRadius: Radius.md,
     padding: 12,
     marginVertical: 10,
   },
   errorCardDark: {
-    backgroundColor: '#450a0a',
-    borderColor: '#7f1d1d',
+    backgroundColor: 'rgba(217, 74, 74, 0.15)',
+    borderColor: 'rgba(217, 74, 74, 0.3)',
   },
   errorText: {
-    fontSize: 12,
-    color: '#dc2626',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.redEmergency,
     lineHeight: 16,
   },
   retryBtn: {
-    backgroundColor: '#dc2626',
-    paddingHorizontal: 10,
+    backgroundColor: Palette.redEmergency,
+    paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: Radius.sm,
     marginLeft: 8,
   },
   retryBtnText: {
     color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
   },
-  // Bottom Input Bar
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.cardLight,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: Palette.borderLight,
     gap: 10,
   },
   inputContainerDark: {
@@ -717,15 +731,16 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.backgroundLight,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 20,
+    borderColor: Palette.borderLight,
+    borderRadius: Radius.lg,
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 10,
-    fontSize: 14,
-    color: '#0f172a',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textPrimary,
     maxHeight: 100,
   },
   textInputDark: {
@@ -737,29 +752,24 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#04b639',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Shadows.sm,
   },
   sendButtonDisabled: {
-    backgroundColor: '#94a3b8',
+    backgroundColor: '#cbd5e1',
     opacity: 0.6,
     shadowOpacity: 0,
     elevation: 0,
   },
   charCounter: {
-    fontSize: 10,
-    color: '#94a3b8',
+    fontSize: Typography.size.tiny,
+    color: Palette.textMuted,
     textAlign: 'right',
     paddingHorizontal: 20,
     paddingBottom: 4,
   },
-  // Auth Required
   authRequiredContainer: {
     flex: 1,
     alignItems: 'center',
@@ -767,27 +777,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   authIconCircle: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#f0fdf4',
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: Palette.greenSoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
   },
   authIconCircleDark: {
-    backgroundColor: '#132e1f',
+    backgroundColor: 'rgba(8, 122, 67, 0.2)',
   },
   authRequiredTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.h2,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
     textAlign: 'center',
     marginBottom: 8,
   },
   authRequiredDesc: {
-    fontSize: 14,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     textAlign: 'center',
     lineHeight: 21,
     marginBottom: 24,
@@ -795,20 +809,16 @@ const styles = StyleSheet.create({
   loginBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
     paddingHorizontal: 24,
     paddingVertical: 14,
-    borderRadius: 14,
-    shadowColor: '#04b639',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 3,
+    borderRadius: Radius.md,
+    ...Shadows.sm,
   },
   loginBtnText: {
     color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.bodyBold,
   },
   textDark: {
     color: '#fafafa',

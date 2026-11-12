@@ -18,11 +18,13 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { nfcService } from '@/services/nfcService';
 import { generateQRMatrix } from '@/utils/qrGenerator';
 import { generateSTL, arrayBufferToBase64 } from '@/utils/stlGenerator';
+import { Palette, Typography, Radius, Shadows } from '@/constants/theme';
 
 // ── SVG-like QR view (dibujado con Views de React Native) ─────────────────────
 
@@ -257,7 +259,7 @@ export default function QRMascotaCard({ petId, petName, isDark = false }: QRMasc
             <ActivityIndicator size="small" color="#ffffff" />
           ) : (
             <>
-              <Text style={styles.botonIcono}>🖼️</Text>
+              <Ionicons name="image-outline" size={18} color="#ffffff" />
               <Text style={styles.botonTexto}>Imagen SVG</Text>
             </>
           )}
@@ -273,7 +275,7 @@ export default function QRMascotaCard({ petId, petName, isDark = false }: QRMasc
             <ActivityIndicator size="small" color="#ffffff" />
           ) : (
             <>
-              <Text style={styles.botonIcono}>🖨️</Text>
+              <Ionicons name="cube-outline" size={18} color="#ffffff" />
               <Text style={styles.botonTexto}>STL 3D</Text>
             </>
           )}
@@ -300,17 +302,13 @@ function DimBadge({ label, value, isDark }: { label: string; value: string; isDa
 // ── Estilos ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.xl,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: Palette.borderLight,
     marginTop: 16,
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8 },
-      android: { elevation: 3 },
-      web: { boxShadow: '0 2px 12px rgba(0,0,0,0.07)' },
-    }),
+    ...Shadows.sm,
   },
   cardDark: {
     backgroundColor: '#18181b',
@@ -323,66 +321,65 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    fontSize: 17,
+    fontSize: Typography.size.bodyLarge,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
   },
   textDark: { color: '#fafafa' },
   textSecDark: { color: '#a1a1aa' },
   badge: {
-    backgroundColor: '#ecfdf5',
-    borderRadius: 20,
+    backgroundColor: Palette.greenSoft,
+    borderRadius: Radius.full,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: '#04b639',
+    borderColor: Palette.greenBorder,
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: Typography.size.tiny,
     fontWeight: '700',
-    color: '#04b639',
+    color: Palette.greenDeep,
     fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
   },
   subtitle: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginBottom: 16,
   },
   qrWrapper: {
     alignSelf: 'center',
     padding: 16,
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: Palette.borderLight,
     marginBottom: 16,
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4 },
-      android: { elevation: 2 },
-      web: { boxShadow: '0 1px 6px rgba(0,0,0,0.06)' },
-    }),
+    ...Shadows.sm,
   },
   qrWrapperDark: {
     borderColor: '#3f3f46',
   },
   infoBox: {
-    backgroundColor: '#f0fdf4',
-    borderRadius: 12,
+    backgroundColor: Palette.greenSoft,
+    borderRadius: Radius.md,
     padding: 12,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderColor: Palette.greenBorder,
   },
   infoBoxDark: {
-    backgroundColor: '#14532d22',
-    borderColor: '#166534',
+    backgroundColor: 'rgba(8, 122, 67, 0.15)',
+    borderColor: 'rgba(8, 122, 67, 0.3)',
   },
   infoText: {
-    fontSize: 13,
-    color: '#166534',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.greenDeep,
     textAlign: 'center',
     marginBottom: 10,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   dimensionsRow: {
     flexDirection: 'row',
@@ -390,29 +387,30 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   dimBadge: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.sm,
     paddingHorizontal: 10,
     paddingVertical: 5,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#d1fae5',
+    borderColor: Palette.borderLight,
   },
   dimBadgeDark: {
     backgroundColor: '#27272a',
     borderColor: '#3f3f46',
   },
   dimLabel: {
-    fontSize: 10,
-    color: '#6b7280',
-    fontWeight: '500',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
   dimLabelDark: {
     color: '#a1a1aa',
   },
   dimValue: {
-    fontSize: 13,
-    color: '#04b639',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.heading,
+    color: Palette.greenDeep,
     fontWeight: '700',
   },
   botonesRow: {
@@ -425,36 +423,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 12,
+    borderRadius: Radius.md,
     gap: 6,
   },
   botonPNG: {
-    backgroundColor: '#0ea5e9',
+    backgroundColor: '#0284c7',
   },
   botonSTL: {
-    backgroundColor: '#04b639',
+    backgroundColor: Palette.greenDeep,
   },
   botonDisabled: {
     opacity: 0.6,
   },
-  botonIcono: {
-    fontSize: 16,
-  },
   botonTexto: {
     color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.bodyBold,
   },
   hint: {
-    fontSize: 11,
-    color: '#94a3b8',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.textMuted,
     textAlign: 'center',
     lineHeight: 16,
   },
   errorText: {
-    color: '#ef4444',
-    fontSize: 13,
+    color: Palette.redEmergency,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
     textAlign: 'center',
   },
 });

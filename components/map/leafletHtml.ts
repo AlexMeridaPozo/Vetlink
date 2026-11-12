@@ -25,7 +25,7 @@ export function generateLeafletHtml({
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Huellapp Mapa</title>
+  <title>HuellaApp Mapa</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -320,7 +320,7 @@ export function generateLeafletHtml({
   <div class="map-huellapp-legend">
     <div class="legend-row">
       <span class="legend-indicator ind-green"></span>
-      <span>En Huellapp</span>
+      <span>En HuellaApp</span>
     </div>
     <div class="legend-row">
       <span class="legend-indicator ind-gray"></span>
@@ -431,7 +431,7 @@ export function generateLeafletHtml({
           })();
 
           var huellappBadgeHtml = isHuellapp
-            ? '<span class="popup-huellapp-badge badge-huellapp-on">✓ En Red Huellapp</span>'
+            ? '<span class="popup-huellapp-badge badge-huellapp-on">✓ En Red HuellaApp</span>'
             : '<span class="popup-huellapp-badge badge-huellapp-off">✕ No adherida</span>';
 
           var iconSvg = (function() {

@@ -1,10 +1,12 @@
 import { auth } from '@/config/firebase';
 import { useAppTheme, ThemeToggleButton } from '@/context/ThemeContext';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
+import { Palette, FontFamily } from '@/constants/theme';
+
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -20,7 +22,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
-  const { isDark } = useAppTheme();
+  const { isDark, colors } = useAppTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -73,16 +75,19 @@ export default function LoginScreen() {
     }
   };
 
-  const placeholderColor = isDark ? '#71717a' : '#94a3b8';
-  const textColor = isDark ? '#f4f4f5' : '#0f172a';
+  const placeholderColor = isDark ? colors.textMuted : Palette.textPlaceholder;
+  const textColor = isDark ? colors.text : Palette.textPrimary;
 
   return (
     <SafeAreaView style={[styles.safeArea, isDark && styles.safeAreaDark]} edges={['top', 'bottom']}>
-      {/* Botón flotante para alternar tema */}
+      {/* Barra superior con marca y alternador de tema */}
       <View style={styles.topBar}>
         <View style={styles.brandSmallRow}>
-          <Ionicons name="paw" size={20} color="#04b639" />
-          <Text style={[styles.brandSmallText, isDark && styles.textDark]}>Huellapp</Text>
+          <Ionicons name="paw-outline" size={22} color={Palette.greenPrimary} />
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={[styles.brandSmallGreen]}>Huell</Text>
+            <Text style={[styles.brandSmallDark, isDark && styles.textDark]}>App</Text>
+          </View>
         </View>
         <ThemeToggleButton />
       </View>
@@ -100,11 +105,11 @@ export default function LoginScreen() {
             {/* Logo / Badge */}
             <View style={styles.header}>
               <View style={[styles.logoBadge, isDark && styles.logoBadgeDark]}>
-                <Ionicons name="paw" size={36} color="#04b639" />
+                <Ionicons name="paw-outline" size={38} color={Palette.greenPrimary} />
               </View>
-              <Text style={[styles.title, isDark && styles.textDark]}>Bienvenido de nuevo</Text>
+              <Text style={[styles.title, isDark && styles.textDark]}>¡Bienvenido!</Text>
               <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
-                Ingresa tus credenciales para acceder a Huellapp
+                Ingresa tus credenciales para acceder a HuellaApp
               </Text>
             </View>
 
@@ -121,7 +126,7 @@ export default function LoginScreen() {
                 <Ionicons
                   name="mail-outline"
                   size={20}
-                  color={isDark ? '#a1a1aa' : '#64748b'}
+                  color={isDark ? colors.textSecondary : Palette.textSecondary}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -156,7 +161,7 @@ export default function LoginScreen() {
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color={isDark ? '#a1a1aa' : '#64748b'}
+                  color={isDark ? colors.textSecondary : Palette.textSecondary}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -181,7 +186,7 @@ export default function LoginScreen() {
                   <Ionicons
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
-                    color={isDark ? '#a1a1aa' : '#64748b'}
+                    color={isDark ? colors.textSecondary : Palette.textSecondary}
                   />
                 </TouchableOpacity>
               </View>
@@ -194,14 +199,14 @@ export default function LoginScreen() {
             <TouchableOpacity
               style={[styles.primaryButton, loading && styles.buttonDisabled]}
               onPress={!loading ? handleLogin : undefined}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
               {loading ? (
                 <ActivityIndicator color="#ffffff" />
               ) : (
                 <>
                   <Text style={styles.primaryButtonText}>Iniciar sesión</Text>
-                  <Ionicons name="arrow-forward" size={18} color="#ffffff" style={{ marginLeft: 8 }} />
+                  <Ionicons name="arrow-forward-outline" size={18} color="#ffffff" style={{ marginLeft: 8 }} />
                 </>
               )}
             </TouchableOpacity>
@@ -230,6 +235,25 @@ export default function LoginScreen() {
                 <Text style={styles.footerLink}>Regístrate aquí</Text>
               </TouchableOpacity>
             </View>
+
+            {/* Acceso a Presentación / Onboarding */}
+            <View style={styles.introContainer}>
+              <TouchableOpacity
+                onPress={() => router.push('/onboarding')}
+                style={styles.introButton}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name="sparkles-outline"
+                  size={15}
+                  color={isDark ? Palette.greenPrimary : Palette.greenDeep}
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={[styles.introLink, isDark && styles.introLinkDark]}>
+                  Sobre Huellapp
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -240,10 +264,10 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.backgroundLight,
   },
   safeAreaDark: {
-    backgroundColor: '#09090b',
+    backgroundColor: Palette.backgroundDark,
   },
   topBar: {
     flexDirection: 'row',
@@ -258,11 +282,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  brandSmallText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#0f172a',
-    letterSpacing: -0.5,
+  brandSmallGreen: {
+    fontSize: 20,
+    fontFamily: FontFamily.headingBold,
+    color: Palette.greenPrimary,
+    letterSpacing: -0.3,
+  },
+  brandSmallDark: {
+    fontSize: 20,
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
+    letterSpacing: -0.3,
   },
   keyboardView: {
     flex: 1,
@@ -277,87 +307,88 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 420,
     alignSelf: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.surfaceLight,
     borderRadius: 24,
-    padding: 28,
+    padding: 26,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000000',
+    borderColor: Palette.borderLight,
+    shadowColor: Palette.greenDeep,
     shadowOpacity: 0.05,
     shadowRadius: 15,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
   cardDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#27272a',
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
     shadowOpacity: 0.25,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 24,
   },
   logoBadge: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: '#dcfce7',
+    width: 72,
+    height: 72,
+    borderRadius: 22,
+    backgroundColor: Palette.greenSoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderWidth: 1.5,
+    borderColor: Palette.greenBorder,
   },
   logoBadgeDark: {
-    backgroundColor: '#064e3b',
-    borderColor: '#047857',
+    backgroundColor: '#133324',
+    borderColor: '#1F543B',
   },
   title: {
     fontSize: 24,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontFamily: FontFamily.headingBold,
+    color: Palette.textPrimary,
     marginBottom: 6,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
   subtitleDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   textDark: {
-    color: '#f4f4f5',
+    color: Palette.textPrimaryDark,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   label: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#334155',
-    marginBottom: 8,
+    fontFamily: FontFamily.bodySemiBold,
+    color: Palette.textPrimary,
+    marginBottom: 6,
   },
   labelDark: {
-    color: '#e4e4e7',
+    color: Palette.textPrimaryDark,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.surfaceLight,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
     borderRadius: 14,
     paddingHorizontal: 14,
   },
   inputWrapperDark: {
-    backgroundColor: '#27272a',
-    borderColor: '#3f3f46',
+    backgroundColor: Palette.surfaceDark,
+    borderColor: Palette.borderDark,
   },
   inputWrapperError: {
-    borderColor: '#ef4444',
+    borderColor: Palette.redEmergency,
   },
   inputIcon: {
     marginRight: 10,
@@ -365,26 +396,28 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 15,
-    paddingVertical: 14,
+    fontFamily: FontFamily.bodyRegular,
+    paddingVertical: 13,
   },
   eyeBtn: {
     padding: 6,
   },
   errorText: {
-    color: '#ef4444',
+    color: Palette.redEmergency,
     fontSize: 12,
-    marginTop: 6,
+    fontFamily: FontFamily.bodyRegular,
+    marginTop: 5,
     marginLeft: 2,
   },
   primaryButton: {
-    backgroundColor: '#04b639',
-    borderRadius: 14,
-    paddingVertical: 16,
+    backgroundColor: Palette.greenDeep,
+    borderRadius: 16,
+    paddingVertical: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 10,
-    shadowColor: '#04b639',
+    marginTop: 8,
+    shadowColor: Palette.greenDeep,
     shadowOpacity: 0.25,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
@@ -396,7 +429,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
   },
   dividerRow: {
     flexDirection: 'row',
@@ -407,35 +440,57 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: Palette.borderLight,
   },
   dividerLineDark: {
-    backgroundColor: '#27272a',
+    backgroundColor: Palette.borderDark,
   },
   dividerText: {
     fontSize: 13,
-    color: '#64748b',
-    fontWeight: '500',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
   },
   dividerTextDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   footerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 22,
   },
   footerText: {
     fontSize: 14,
-    color: '#64748b',
+    fontFamily: FontFamily.bodyRegular,
+    color: Palette.textSecondary,
   },
   footerTextDark: {
-    color: '#a1a1aa',
+    color: Palette.textSecondaryDark,
   },
   footerLink: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#04b639',
+    fontFamily: FontFamily.bodyBold,
+    color: Palette.greenDeep,
+  },
+  introContainer: {
+    alignItems: 'center',
+    marginTop: 18,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: Palette.borderLight,
+  },
+  introButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  introLink: {
+    fontSize: 13,
+    fontFamily: FontFamily.bodySemiBold,
+    color: Palette.greenDeep,
+  },
+  introLinkDark: {
+    color: Palette.greenPrimary,
   },
 });

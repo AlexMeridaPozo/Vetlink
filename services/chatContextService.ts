@@ -68,7 +68,7 @@ export async function obtenerContextoUsuarioAutenticado(): Promise<ContextoUsuar
 
   const authenticatedUid = currentUser.uid;
   const userEmail = (currentUser.email || '').toLowerCase().trim();
-  const usuarioNombre = currentUser.displayName || 'Tutor Huellapp';
+  const usuarioNombre = currentUser.displayName || 'Tutor HuellaApp';
 
   // ── 1. Consultar Mascotas del usuario ─────────────────────────────────────
   const mascotasMap = new Map<string, MascotaResumen>();
@@ -207,7 +207,7 @@ export async function obtenerContextoUsuarioAutenticado(): Promise<ContextoUsuar
 export function formatearContextoParaPrompt(contexto: ContextoUsuarioVerificado): string {
   const lineas: string[] = [];
 
-  lineas.push(`=== DATOS VERIFICADOS DEL USUARIO EN HUELLAPP ===`);
+  lineas.push(`=== DATOS VERIFICADOS DEL USUARIO EN HUELLAAPP ===`);
   lineas.push(`Usuario autenticado: ${contexto.usuarioNombre}`);
 
   // Mascotas
@@ -253,7 +253,7 @@ export function formatearContextoParaPrompt(contexto: ContextoUsuarioVerificado)
   lineas.push(`DIRECTIVAS OBLIGATORIAS DE COMUNICACIÓN Y REDACCIÓN:`);
   lineas.push(`- Tono: Exclusivamente formal, profesional, empático y respetuoso. Trata al tutor de usted y mantén una ortografía y gramática impecables.`);
   lineas.push(`- Cero asteriscos ni markdown: Queda terminantemente PROHIBIDO utilizar asteriscos (** o *), signos de numeral (#) o caracteres especiales de marcado. Escribe en texto plano pulcro y fluido.`);
-  lineas.push(`- Guía sobre el funcionamiento de Huellapp:`);
+  lineas.push(`- Guía sobre el funcionamiento de HuellaApp:`);
   lineas.push(`  * Para registrar una mascota: Indique al usuario dirigirse a la pestaña 'Mascotas' en el menú inferior y pulsar el botón para agregar una nueva mascota, completando los datos requeridos.`);
   lineas.push(`  * Para consultar turnos: Informe con precisión los turnos que figuran arriba en sus datos verificados. Si no tiene turnos, explíquele cordialmente que no registra turnos activos y que puede agendarlos en la sección 'Turnos'.`);
   lineas.push(`  * Para identificar mascotas: Explique que cada perfil de mascota incluye un código QR único escaneable por cualquier persona desde la pestaña 'Escanear QR', y que además puede vincular una placa con tecnología NFC desde el perfil de su mascota mediante la opción 'Vincular NFC'.`);

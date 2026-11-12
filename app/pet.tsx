@@ -10,12 +10,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 
 import { getPetById, registrarEscaneoRescate, type Pet } from '@/services/petService';
 import { useAppTheme } from '@/context/ThemeContext';
+import { Palette, Typography, Radius, Shadows } from '@/constants/theme';
 
 export default function FichaRescatePublicaScreen() {
   const params = useLocalSearchParams<{ id?: string; petId?: string }>();
@@ -55,7 +56,7 @@ export default function FichaRescatePublicaScreen() {
       } catch (err) {
         console.error('[FichaRescate] Error al cargar mascota:', err);
         if (isMounted) {
-          setErrorCarga('Error al conectar con la base de datos de Huellapp. Revisa tu conexión.');
+          setErrorCarga('Error al conectar con la base de datos de HuellaApp. Revisa tu conexión.');
         }
       } finally {
         if (isMounted) setCargando(false);
@@ -69,7 +70,6 @@ export default function FichaRescatePublicaScreen() {
     };
   }, [petId]);
 
-  // Manejador para solicitar y enviar la geolocalización del rescatista
   const handleEnviarUbicacion = () => {
     if (!petId) return;
 
@@ -90,7 +90,7 @@ export default function FichaRescatePublicaScreen() {
             console.error('[FichaRescate] Error al guardar escaneo:', err);
             Alert.alert(
               'Aviso',
-              'No se pudo registrar la ubicación en el servidor. Por favor, comunícate directamente con el dueño por llamada o WhatsApp.'
+              'No se pudo registrar la ubicación en el servidor. Por favor, comunícate directamente con el tutor por llamada o WhatsApp.'
             );
           } finally {
             setEnviandoUbicacion(false);
@@ -101,22 +101,22 @@ export default function FichaRescatePublicaScreen() {
           console.warn('[FichaRescate] Error de geolocalización:', error);
           Alert.alert(
             'Ubicación no disponible',
-            'No se pudo acceder a tu ubicación GPS. Puedes indicarle tu zona al dueño por llamada o WhatsApp.'
+            'No se pudo acceder a tu ubicación GPS. Puedes indicarle tu zona al tutor por llamada o WhatsApp.'
           );
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
       );
     } else {
       Alert.alert(
-        'GPS no soportado',
-        'Tu navegador no soporta geolocalización automática. Por favor llama al dueño directamente.'
+        'GPS no disponible',
+        'Tu navegador no soporta geolocalización automática. Por favor llama al tutor directamente.'
       );
     }
   };
 
   const handleLlamar = () => {
     if (!pet?.telefonoContacto) {
-      Alert.alert('Sin teléfono', 'El dueño no registró un número de teléfono de contacto.');
+      Alert.alert('Sin teléfono', 'El tutor no registró un número de teléfono de contacto.');
       return;
     }
     const cleanPhone = pet.telefonoContacto.replace(/[^\d+]/g, '');
@@ -127,12 +127,12 @@ export default function FichaRescatePublicaScreen() {
 
   const handleWhatsApp = () => {
     if (!pet?.telefonoContacto) {
-      Alert.alert('Sin teléfono', 'El dueño no registró un número de contacto.');
+      Alert.alert('Sin teléfono', 'El tutor no registró un número de contacto.');
       return;
     }
     const cleanPhone = pet.telefonoContacto.replace(/[^\d]/g, '');
     const mensaje = encodeURIComponent(
-      `¡Hola! Encontré a tu mascota ${pet.nombre || ''} gracias a su chapita inteligente de Huellapp. ¿Podemos coordinar para reunirte con ella?`
+      `¡Hola! Encontré a tu mascota ${pet.nombre || ''} gracias a su chapita inteligente de HuellaApp. ¿Podemos coordinar para reunirte con ella?`
     );
     Linking.openURL(`https://wa.me/${cleanPhone}?text=${mensaje}`).catch(() => {
       Alert.alert('Error', 'No se pudo abrir WhatsApp.');
@@ -143,7 +143,7 @@ export default function FichaRescatePublicaScreen() {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.centerBox}>
-          <ActivityIndicator size="large" color="#04b639" />
+          <ActivityIndicator size="large" color={Palette.greenPrimary} />
           <Text style={[styles.loadingText, isDark && styles.textDark]}>
             Consultando identificación de la mascota...
           </Text>
@@ -157,7 +157,7 @@ export default function FichaRescatePublicaScreen() {
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
         <View style={styles.centerBox}>
           <View style={styles.iconCircleError}>
-            <Ionicons name="alert-circle" size={48} color="#ef4444" />
+            <Ionicons name="alert-circle-outline" size={44} color={Palette.redEmergency} />
           </View>
           <Text style={[styles.errorTitle, isDark && styles.textDark]}>Ficha No Encontrada</Text>
           <Text style={[styles.errorSubtitle, isDark && styles.subtituloDark]}>
@@ -169,15 +169,22 @@ export default function FichaRescatePublicaScreen() {
   }
 
   const esExtraviada = pet.extraviada === true;
+  const isGato = pet.especie?.toLowerCase().includes('gato');
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Cabecera Huellapp */}
+        {/* Cabecera HuellaApp */}
         <View style={styles.brandHeader}>
           <View style={styles.brandLogoRow}>
-            <Ionicons name="paw" size={24} color="#04b639" />
-            <Text style={styles.brandTitle}>Huellapp • Rescate</Text>
+            <View style={styles.brandIconCircle}>
+              <MaterialCommunityIcons name="paw" size={18} color={Palette.greenDeep} />
+            </View>
+            <Text style={styles.brandTitle}>
+              <Text style={{ color: Palette.greenDeep }}>Huell</Text>
+              <Text style={{ color: Palette.textPrimary }}>App</Text>
+              <Text style={styles.brandSubtitle}> • Rescate</Text>
+            </Text>
           </View>
           <View style={styles.badgeId}>
             <Text style={styles.badgeIdText}>{pet.id}</Text>
@@ -187,33 +194,33 @@ export default function FichaRescatePublicaScreen() {
         {/* ALERTA DE EXTRAVÍO O FICHA DE CONTACTO */}
         {esExtraviada ? (
           <View style={styles.alertLostBanner}>
-            <View style={styles.alertPulse} />
+            <Ionicons name="warning-outline" size={26} color="#ffffff" />
             <View style={{ flex: 1 }}>
-              <Text style={styles.alertLostTitle}>🚨 ¡MASCOTA EXTRAVIADA!</Text>
+              <Text style={styles.alertLostTitle}>¡MASCOTA EXTRAVIADA!</Text>
               <Text style={styles.alertLostText}>
-                Su familia la está buscando desesperadamente. Por favor, comunícate con su tutor o comparte tu ubicación abajo.
+                Su familia la está buscando. Por favor, comunícate con su tutor o comparte tu ubicación GPS abajo.
               </Text>
             </View>
           </View>
         ) : (
           <View style={[styles.noticeBanner, isDark && styles.noticeBannerDark]}>
-            <Ionicons name="shield-checkmark" size={22} color="#04b639" />
+            <Ionicons name="shield-checkmark-outline" size={20} color={Palette.greenDeep} />
             <Text style={[styles.noticeText, isDark && styles.subtituloDark]}>
-              Identificación Oficial Huellapp. Si has encontrado a este animalito, por favor avísale a su dueño.
+              Identificación Oficial HuellaApp. Si has encontrado a este animalito, por favor avísale a su tutor.
             </Text>
           </View>
         )}
 
-        {/* BOTONES PRINCIPALES DE CONTACTO (LO MÁS DESTACADO) */}
+        {/* BOTONES PRINCIPALES DE CONTACTO */}
         <View style={styles.actionsContainer}>
           <Pressable
             style={({ pressed }) => [styles.btnCall, pressed && styles.btnPressed]}
             onPress={handleLlamar}
           >
-            <Ionicons name="call" size={22} color="#ffffff" />
+            <Ionicons name="call-outline" size={22} color="#ffffff" />
             <View style={styles.btnContent}>
-              <Text style={styles.btnTitle}>Llamar al Dueño</Text>
-              <Text style={styles.btnSubtitle}>{pet.telefonoContacto || 'Iniciar llamada'}</Text>
+              <Text style={styles.btnTitle}>Llamar al Tutor</Text>
+              <Text style={styles.btnSubtitle}>{pet.telefonoContacto || 'Iniciar llamada telefónica'}</Text>
             </View>
           </Pressable>
 
@@ -233,25 +240,25 @@ export default function FichaRescatePublicaScreen() {
         <View style={[styles.gpsCard, isDark && styles.gpsCardDark]}>
           <View style={styles.gpsCardHeader}>
             <View style={styles.gpsIconCircle}>
-              <Ionicons name="location" size={22} color="#2563eb" />
+              <Ionicons name="location-outline" size={20} color="#0284c7" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.gpsCardTitle, isDark && styles.textDark]}>
-                Avisarle al dueño dónde está
+                Avisarle al tutor dónde está
               </Text>
               <Text style={[styles.gpsCardSubtitle, isDark && styles.subtituloDark]}>
-                Toca para enviar tus coordenadas GPS y que el dueño vea la ubicación en el mapa.
+                Envía tus coordenadas GPS para que el tutor vea la ubicación exacta en el mapa de rescate.
               </Text>
             </View>
           </View>
 
           {ubicacionEnviada ? (
             <View style={styles.gpsSuccessBox}>
-              <Ionicons name="checkmark-circle" size={24} color="#16a34a" />
+              <Ionicons name="checkmark-circle-outline" size={22} color={Palette.greenDeep} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.gpsSuccessTitle}>¡Ubicación enviada con éxito!</Text>
                 <Text style={styles.gpsSuccessText}>
-                  El dueño ha recibido las coordenadas de rescate en su mapa de Huellapp.
+                  El tutor ha recibido las coordenadas de rescate en su mapa de HuellaApp.
                 </Text>
                 {coordsEnviadas && (
                   <Pressable
@@ -262,7 +269,7 @@ export default function FichaRescatePublicaScreen() {
                       )
                     }
                   >
-                    <Ionicons name="map-outline" size={16} color="#16a34a" />
+                    <Ionicons name="map-outline" size={15} color={Palette.greenDeep} />
                     <Text style={styles.btnVerMapaText}>Ver en Google Maps</Text>
                   </Pressable>
                 )}
@@ -285,8 +292,8 @@ export default function FichaRescatePublicaScreen() {
                 </>
               ) : (
                 <>
-                  <Ionicons name="navigate-circle" size={20} color="#ffffff" />
-                  <Text style={styles.btnGpsText}>Compartir mi ubicación con el dueño</Text>
+                  <Ionicons name="navigate-outline" size={18} color="#ffffff" />
+                  <Text style={styles.btnGpsText}>Compartir mi ubicación con el tutor</Text>
                 </>
               )}
             </Pressable>
@@ -299,7 +306,7 @@ export default function FichaRescatePublicaScreen() {
             <Image source={{ uri: pet.fotoUrl }} style={styles.petImage} contentFit="cover" />
           ) : (
             <View style={[styles.imageFallback, isDark && styles.imageFallbackDark]}>
-              <MaterialIcons name="pets" size={64} color="#04b639" />
+              <MaterialCommunityIcons name={isGato ? 'cat' : 'dog'} size={64} color={Palette.greenDeep} />
             </View>
           )}
 
@@ -307,8 +314,14 @@ export default function FichaRescatePublicaScreen() {
             <View style={styles.petNameRow}>
               <Text style={[styles.petName, isDark && styles.textDark]}>{pet.nombre}</Text>
               <View style={styles.speciesBadge}>
+                <MaterialCommunityIcons
+                  name={isGato ? 'cat' : 'dog'}
+                  size={14}
+                  color={Palette.greenDeep}
+                  style={{ marginRight: 4 }}
+                />
                 <Text style={styles.speciesBadgeText}>
-                  {pet.especie?.toLowerCase().includes('gato') ? '🐱 Gato' : '🐶 Perro'}
+                  {pet.especie || 'Mascota'}
                 </Text>
               </View>
             </View>
@@ -345,7 +358,7 @@ export default function FichaRescatePublicaScreen() {
             {pet.descripcion ? (
               <View style={[styles.notesBox, isDark && styles.notesBoxDark]}>
                 <View style={styles.notesBoxHeader}>
-                  <Ionicons name="medical" size={16} color="#d97706" />
+                  <Ionicons name="medical-outline" size={16} color="#b45309" />
                   <Text style={styles.notesBoxTitle}>Notas de Salud y Cuidados:</Text>
                 </View>
                 <Text style={[styles.notesBoxContent, isDark && styles.subtituloDark]}>
@@ -359,7 +372,7 @@ export default function FichaRescatePublicaScreen() {
         {/* Pie informativo */}
         <View style={styles.footer}>
           <Text style={[styles.footerText, isDark && styles.subtituloDark]}>
-            Huellapp es una plataforma de salud e identificación animal. Este perfil se muestra públicamente para coordinar el rescate seguro de la mascota.
+            HuellaApp es una plataforma de salud e identificación animal. Este perfil se muestra públicamente para coordinar el rescate seguro de la mascota.
           </Text>
         </View>
       </ScrollView>
@@ -370,7 +383,7 @@ export default function FichaRescatePublicaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Palette.backgroundLight,
   },
   containerDark: {
     backgroundColor: '#09090b',
@@ -387,28 +400,30 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 14,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#334155',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
   iconCircleError: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#fee2e2',
+    backgroundColor: Palette.redSoft,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
   errorTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.h3,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
     marginBottom: 8,
   },
   errorSubtitle: {
-    fontSize: 14,
-    color: '#64748b',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -431,79 +446,86 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  brandIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Palette.greenSoft,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   brandTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.bodyLarge,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+  },
+  brandSubtitle: {
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
   },
   badgeId: {
-    backgroundColor: '#e2e8f0',
-    paddingHorizontal: 8,
+    backgroundColor: Palette.greenSoft,
+    paddingHorizontal: 9,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
   },
   badgeIdText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
   },
 
   // Lost banner
   alertLostBanner: {
-    backgroundColor: '#dc2626',
-    borderRadius: 16,
+    backgroundColor: Palette.redEmergency,
+    borderRadius: Radius.xl,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
     gap: 12,
-    shadowColor: '#dc2626',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  alertPulse: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#fef08a',
+    ...Shadows.md,
   },
   alertLostTitle: {
-    fontSize: 16,
-    fontWeight: '900',
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
     color: '#ffffff',
     letterSpacing: 0.5,
   },
   alertLostText: {
-    fontSize: 13,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
     color: '#fee2e2',
-    marginTop: 4,
+    marginTop: 3,
     lineHeight: 18,
   },
 
   // Normal notice banner
   noticeBanner: {
-    backgroundColor: '#f0fdf4',
-    borderRadius: 14,
+    backgroundColor: Palette.greenSoft,
+    borderRadius: Radius.md,
     padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderColor: Palette.greenBorder,
   },
   noticeBannerDark: {
-    backgroundColor: '#132e1f',
-    borderColor: '#166534',
+    backgroundColor: 'rgba(8, 122, 67, 0.15)',
+    borderColor: 'rgba(8, 122, 67, 0.3)',
   },
   noticeText: {
-    fontSize: 12,
-    color: '#166534',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.greenDeep,
     flex: 1,
     lineHeight: 16,
-    fontWeight: '500',
   },
 
   // Action buttons
@@ -512,32 +534,24 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   btnCall: {
-    backgroundColor: '#04b639',
-    borderRadius: 16,
+    backgroundColor: Palette.greenDeep,
+    borderRadius: Radius.lg,
     paddingVertical: 14,
     paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    shadowColor: '#04b639',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
+    ...Shadows.sm,
   },
   btnWhatsapp: {
-    backgroundColor: '#25d366',
-    borderRadius: 16,
+    backgroundColor: '#16a34a',
+    borderRadius: Radius.lg,
     paddingVertical: 14,
     paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    shadowColor: '#25d366',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
+    ...Shadows.sm,
   },
   btnPressed: {
     transform: [{ scale: 0.98 }],
@@ -547,29 +561,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   btnTitle: {
-    fontSize: 16,
-    fontWeight: '800',
+    fontSize: Typography.size.body,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
     color: '#ffffff',
   },
   btnSubtitle: {
-    fontSize: 12,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
     color: 'rgba(255, 255, 255, 0.85)',
     marginTop: 1,
   },
 
   // GPS Card
   gpsCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.xl,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    borderColor: Palette.borderLight,
+    ...Shadows.sm,
   },
   gpsCardDark: {
     backgroundColor: '#18181b',
@@ -582,27 +594,29 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   gpsIconCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#dbeafe',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Palette.cyanLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   gpsCardTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   gpsCardSubtitle: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginTop: 2,
     lineHeight: 16,
   },
   btnGps: {
-    backgroundColor: '#2563eb',
-    borderRadius: 12,
+    backgroundColor: '#0284c7',
+    borderRadius: Radius.md,
     paddingVertical: 12,
     paddingHorizontal: 16,
     flexDirection: 'row',
@@ -615,26 +629,28 @@ const styles = StyleSheet.create({
   },
   btnGpsText: {
     color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 14,
+    fontFamily: Typography.family.bodyBold,
+    fontSize: Typography.size.bodySmall,
   },
   gpsSuccessBox: {
-    backgroundColor: '#f0fdf4',
-    borderRadius: 12,
+    backgroundColor: Palette.greenSoft,
+    borderRadius: Radius.md,
     padding: 12,
     flexDirection: 'row',
     gap: 10,
     borderWidth: 1,
-    borderColor: '#86efac',
+    borderColor: Palette.greenBorder,
   },
   gpsSuccessTitle: {
-    fontSize: 14,
+    fontSize: Typography.size.bodySmall,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#15803d',
+    color: Palette.greenDeep,
   },
   gpsSuccessText: {
-    fontSize: 12,
-    color: '#166534',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.greenDeep,
     marginTop: 2,
     lineHeight: 16,
   },
@@ -645,20 +661,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   btnVerMapaText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#16a34a',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
     textDecorationLine: 'underline',
   },
 
   // Pet card
   petCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+    backgroundColor: Palette.cardLight,
+    borderRadius: Radius.xl,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
     marginBottom: 16,
+    ...Shadows.sm,
   },
   petCardDark: {
     backgroundColor: '#18181b',
@@ -671,7 +688,7 @@ const styles = StyleSheet.create({
   imageFallback: {
     width: '100%',
     height: 180,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Palette.greenSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -688,24 +705,30 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   petName: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#0f172a',
+    fontSize: Typography.size.h3,
+    fontFamily: Typography.family.heading,
+    fontWeight: '700',
+    color: Palette.textPrimary,
   },
   speciesBadge: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Palette.greenSoft,
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: 3,
+    borderRadius: Radius.full,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Palette.greenBorder,
   },
   speciesBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.bodyBold,
+    color: Palette.greenDeep,
   },
   petBreed: {
-    fontSize: 14,
-    color: '#64748b',
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
+    color: Palette.textSecondary,
     marginBottom: 14,
   },
   chipsRow: {
@@ -715,32 +738,33 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   chip: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 10,
+    backgroundColor: Palette.backgroundLight,
+    borderRadius: Radius.sm,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: Palette.borderLight,
   },
   chipDark: {
     backgroundColor: '#27272a',
     borderColor: '#3f3f46',
   },
   chipLabel: {
-    fontSize: 10,
-    color: '#94a3b8',
+    fontSize: Typography.size.tiny,
+    color: Palette.textSecondary,
     textTransform: 'uppercase',
-    fontWeight: '700',
+    fontFamily: Typography.family.bodyBold,
   },
   chipValue: {
-    fontSize: 13,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
-    color: '#0f172a',
+    color: Palette.textPrimary,
     marginTop: 1,
   },
   notesBox: {
     backgroundColor: '#fffbeb',
-    borderRadius: 12,
+    borderRadius: Radius.md,
     padding: 12,
     borderWidth: 1,
     borderColor: '#fde68a',
@@ -756,12 +780,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   notesBoxTitle: {
-    fontSize: 13,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.heading,
     fontWeight: '700',
     color: '#b45309',
   },
   notesBoxContent: {
-    fontSize: 13,
+    fontSize: Typography.size.caption,
+    fontFamily: Typography.family.body,
     color: '#78350f',
     lineHeight: 18,
   },
@@ -772,8 +798,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 11,
-    color: '#94a3b8',
+    fontSize: Typography.size.tiny,
+    fontFamily: Typography.family.body,
+    color: Palette.textMuted,
     textAlign: 'center',
     lineHeight: 16,
   },

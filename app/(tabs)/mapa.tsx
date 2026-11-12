@@ -122,33 +122,38 @@ export default function MapaScreen() {
   });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  // Auto-foco y zoom si se ingresa desde el botón Guardias 24hs de SOS o con parámetros
+  // Auto-foco y zoom si se ingresa desde el botón Guardias 24hs de SOS o desde Veterinarias Cercanas
   useEffect(() => {
     const targetId = (params.filter === 'guardia' || params.zoomGuardia === 'true')
       ? (params.focusId || 'vet-2')
       : params.focusId;
 
     if (targetId) {
+      setSelectedClinicId(targetId);
+      if (params.filter === 'guardia' || params.zoomGuardia === 'true') {
+        setSelectedFilter('guardia');
+      } else {
+        setSelectedFilter('todas');
+      }
+      pendingFocusIdRef.current = targetId;
       if (isMapReadyRef.current) {
         setTimeout(() => {
           mapRef.current?.focusClinic(targetId);
         }, 300);
-      } else {
-        pendingFocusIdRef.current = targetId;
       }
     }
   }, [params.filter, params.focusId, params.zoomGuardia]);
 
   const handleMapReady = useCallback(() => {
     isMapReadyRef.current = true;
-    if (pendingFocusIdRef.current) {
-      const targetId = pendingFocusIdRef.current;
+    const targetId = pendingFocusIdRef.current || params.focusId;
+    if (targetId) {
       pendingFocusIdRef.current = null;
       setTimeout(() => {
         mapRef.current?.focusClinic(targetId);
       }, 350);
     }
-  }, []);
+  }, [params.focusId]);
 
   // Cargar veterinarias y lugares de Pilar directamente desde el servicio
   const loadVeterinarias = useCallback(async () => {

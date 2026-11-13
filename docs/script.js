@@ -10,7 +10,7 @@
 const DOWNLOAD_LINKS = {
   android: "",
   ios: "",
-  apk: ""
+  apk: "https://github.com/AlexMeridaPozo/Vetlink/releases/download/v1.0.0/HuellApp.apk"
 };
 
 const BUTTONS = [

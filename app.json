@@ -25,7 +25,25 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION"
       ],
-      "package": "com.alexmp.huellapp"
+      "package": "com.alexmp.huellapp",
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "huellapp"
+            },
+            {
+              "scheme": "com.googleusercontent.apps.811948016554-357ccdjf214fnvofgsuvs1no7nv64jl6"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "output": "single",

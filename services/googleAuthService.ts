@@ -19,7 +19,7 @@ const googleDiscovery: AuthSession.DiscoveryDocument = {
   tokenEndpoint: 'https://oauth2.googleapis.com/token',
   revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
 };
-
+  
 /**
  * Guarda o sincroniza el perfil del usuario de Google en Firestore si es nuevo
  */
@@ -75,46 +75,81 @@ export async function signInWithGoogle(): Promise<{
     }
 
     // ── 2. Flujo Móvil (iOS / Android con Expo AuthSession) ───────────────────
+    const isAndroid = Platform.OS === 'android';
+    const isIos = Platform.OS === 'ios';
+
     const clientId =
-      (Platform.OS === 'ios'
+      (isIos
         ? process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
         : process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID) ||
-      process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+      process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+      '811948016554-357ccdjf214fnvofgsuvs1no7nv64jl6.apps.googleusercontent.com';
 
-    if (!clientId) {
-      Alert.alert(
-        'Configuración de Google en Móvil',
-        'Para utilizar Google Sign-In en dispositivos móviles nativos, añade EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID a tu archivo .env. En Web funciona directamente con Firebase.'
-      );
-      return {
-        success: false,
-        error: 'Falta configurar EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID en .env para móvil',
-      };
-    }
+    // Esquema de redirección para Google OAuth en Android/iOS:
+    // Requiere el client ID invertido (ej: com.googleusercontent.apps.811948016554-357ccdjf214fnvofgsuvs1no7nv64jl6)
+    const clientPrefix = clientId.replace('.apps.googleusercontent.com', '');
+    const scheme = isAndroid || isIos
+      ? `com.googleusercontent.apps.${clientPrefix}`
+      : 'huellapp';
 
     const redirectUri = AuthSession.makeRedirectUri({
-      scheme: 'huellapp',
+      scheme,
+      path: 'oauth2redirect',
     });
+
+    // En dispositivos móviles con clientes nativos Android/iOS, Google requiere Authorization Code Flow (PKCE)
+    const responseType = isAndroid || isIos
+      ? AuthSession.ResponseType.Code
+      : AuthSession.ResponseType.IdToken;
 
     const request = new AuthSession.AuthRequest({
       clientId,
       scopes: ['openid', 'profile', 'email'],
-      responseType: AuthSession.ResponseType.IdToken,
+      responseType,
       redirectUri,
     });
 
     const result = await request.promptAsync(googleDiscovery);
 
-    if (result.type === 'success' && result.params.id_token) {
-      const credential = GoogleAuthProvider.credential(result.params.id_token);
-      const userCredential = await signInWithCredential(auth, credential);
-      const isNewUser = await syncGoogleUserProfile(userCredential.user);
+    if (result.type === 'success') {
+      let idToken: string | undefined = result.params?.id_token;
+      const authCode: string | undefined = result.params?.code;
 
-      return {
-        success: true,
-        user: userCredential.user,
-        isNewUser,
-      };
+      // Si recibimos un código de autorización (flujo nativo PKCE), lo intercambiamos por el id_token
+      if (!idToken && authCode) {
+        try {
+          const tokenResponse = await AuthSession.exchangeCodeAsync(
+            {
+              clientId,
+              code: authCode,
+              redirectUri,
+              extraParams: {
+                code_verifier: request.codeVerifier || '',
+              },
+            },
+            googleDiscovery
+          );
+          idToken = tokenResponse.idToken;
+        } catch (exchangeError: any) {
+          console.error('[googleAuthService] Error intercambiando código OAuth:', exchangeError);
+          return {
+            success: false,
+            error: 'No se pudo validar la autorización de Google en el servidor.',
+          };
+        }
+      }
+
+      if (idToken) {
+        const credential = GoogleAuthProvider.credential(idToken);
+        const userCredential = await signInWithCredential(auth, credential);
+        const isNewUser = await syncGoogleUserProfile(userCredential.user);
+
+        return {
+          success: true,
+          user: userCredential.user,
+          isNewUser,
+        };
+      }
     }
 
     if (result.type === 'cancel' || result.type === 'dismiss') {

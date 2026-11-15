@@ -93,7 +93,7 @@ export async function signInWithGoogle(): Promise<{
     }
 
     const redirectUri = AuthSession.makeRedirectUri({
-      scheme: 'civilink',
+      scheme: 'huellapp',
     });
 
     const request = new AuthSession.AuthRequest({

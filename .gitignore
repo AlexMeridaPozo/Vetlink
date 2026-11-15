@@ -129,3 +129,5 @@ scratch/
 temp/
 tmp/
 *.log
+*.apk
+
